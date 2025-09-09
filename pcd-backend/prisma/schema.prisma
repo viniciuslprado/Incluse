@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//define o modelo de dados Empresa
+
+model Empresa{
+  id Int @id @default(autoincrement())
+  nome String
+  email String @unique
+}
+
+//define o tipo da deficiência do usuario
+//o tipo de deficiencia é o nome do tipo, como por exemplo: "visual
+
+model TipoDeficiencia {
+  id        Int                   @id @default(autoincrement())
+  nome      String                @unique
+  subtipos  SubtipoDeficiencia[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+}
+
+//chave estrangeira para armazenar o tipo de deficiencia do usuario
+//o tipo de deficiencia é o nome do tipo, como por exemplo: "visual"
+// o subtipo de deficiencia é o nome do subtipo, como por exemplo: "baixa visão"
+
+model SubtipoDeficiencia {
+  id         Int                  @id @default(autoincrement())
+  nome       String
+  tipoId     Int
+  tipo       TipoDeficiencia      @relation(fields: [tipoId], references: [id], onDelete: Cascade)
+  barreiras  SubtipoBarreira[]
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  @@unique([tipoId, nome]) // evita subtipo duplicado dentro do mesmo tipo
+}
+
+// define o modelo de dados Barreira
+// a barreira é o nome da barreira, como por exemplo: "escada"
+
+model Barreira {
+  id               Int                      @id @default(autoincrement())
+  descricao        String                   @unique
+  subtipos         SubtipoBarreira[]
+  acessibilidades  BarreiraAcessibilidade[]
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+}
+
+// define o modelo de dados Acessibilidade
+// a acessibilidade é o nome da acessibilidade, como por exemplo: "rampa"
+
+model Acessibilidade {
+  id               Int                      @id @default(autoincrement())
+  descricao        String                   @unique
+  barreiras        BarreiraAcessibilidade[]
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+}
+
+// tabelas de junção explícitas (para fácil evolução)
+// chave estrangeira de subtipo de deficiencia e da barreira
+model SubtipoBarreira {
+  subtipoId  Int
+  barreiraId Int
+  subtipo    SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
+  barreira   Barreira           @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
+
+  @@id([subtipoId, barreiraId])
+  @@index([barreiraId])
+}
+// pega chav estranfeira de barreira e acessibilidade
+model BarreiraAcessibilidade {
+  barreiraId       Int
+  acessibilidadeId Int
+  barreira         Barreira        @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
+  acessibilidade   Acessibilidade  @relation(fields: [acessibilidadeId], references: [id], onDelete: Cascade)
+
+  @@id([barreiraId, acessibilidadeId])
+  @@index([acessibilidadeId])
+}
