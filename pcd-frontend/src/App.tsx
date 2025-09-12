@@ -1,49 +1,26 @@
-/* import SubtiposPage from "./pages/SubtiposPage";
-import TiposPage from "./pages/TiposPage";
-export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <SubtiposPage />
-    </div>
-  );
-}
- */
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AdminPage from "./pages/AdminPage";
 
-import { useState, useEffect } from "react";
+// já existentes
+import TiposPage from "./pages/TiposPage";
 import SubtiposPage from "./pages/SubtiposPage";
-import TiposPage from "./pages/TiposPage";
 
 export default function App() {
-  const [dark, setDark] = useState(() => {
-    // Carrega tema salvo ou usa "claro" como padrão
-    return localStorage.getItem("theme") === "dark";
-  });
-
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [dark]);
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors">
-      {/* Botão para alternar o tema */}
-      <div className="p-4 flex justify-end">
-        <button
-          onClick={() => setDark(!dark)}
-          className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700"
-        >
-          Alternar Tema
-        </button>
-      </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Redireciona raiz para /admin */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
 
-      {/* Suas páginas */}
-      <SubtiposPage />
-      {/* <TiposPage /> se quiser exibir também */}
-    </div>
+        {/* Área admin com layout e rotas filhas */}
+        <Route path="/admin" element={<AdminPage />}>
+          <Route path="tipos" element={<TiposPage />} />
+          <Route path="subtipos" element={<SubtiposPage />} />
+        </Route>
+
+        {/* 404 simples */}
+        <Route path="*" element={<div className="container-page py-8">Página não encontrada.</div>} />
+      </Routes>
+    </BrowserRouter>
   );
 }

@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+
 export const TiposRepo = {
   list() {
     return prisma.tipoDeficiencia.findMany({ orderBy: { id: "asc" } });

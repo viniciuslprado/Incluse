@@ -6,4 +6,3 @@ router.get("/", AcessibilidadesController.list); // /acessibilidades
 router.post("/", AcessibilidadesController.create);
 
 export default router;
-

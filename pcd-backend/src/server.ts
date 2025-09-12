@@ -1,3 +1,4 @@
+// src/server.ts
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors";
@@ -7,16 +8,17 @@ import tiposRoutes from "./routes/tipos.routes";
 import subtiposRoutes from "./routes/subtipos.routes";
 import barreirasRoutes from "./routes/barreiras.routes";
 import acessibilidadesRoutes from "./routes/acessibilidades.routes";
+import vinculosRoutes from "./routes/vinculos.routes"
 
 const app = express();
 const prisma = new PrismaClient();
-
+app.use(cors({ origin: true })); // antes das rotas
 app.use(express.json());
-app.use(cors());
 
 // usa os módulos de rotas
 app.use("/tipos", tiposRoutes);
 app.use("/subtipos", subtiposRoutes);
+app.use("/vinculos", vinculosRoutes)
 app.use("/barreiras", barreirasRoutes);
 app.use("/acessibilidades", acessibilidadesRoutes);
 

@@ -12,8 +12,15 @@ export type SubtipoDeficiencia = {
   createdAt?: string;
   updatedAt?: string;
 };
+
 // útil para listar: cada tipo com seus subtipos
 export type TipoComSubtipos = TipoDeficiencia & {
   subtipos: SubtipoDeficiencia[];
 };
 
+export type Barreira = {
+  id: number;
+  descricao: string;
+  createdAt?: string;
+  updatedAt?: string;
+};

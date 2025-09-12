@@ -1,11 +1,10 @@
-Form com select de tipos + input nome. Ao salvar, chama onCreated() para recarregar a lista.
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { TipoDeficiencia } from "../types";
 
-type Props = { onCreated: () => void };
+type Props = { pedro: () => void };
 
-export default function SubtipoForm({ onCreated }: Props) {
+export default function SubtipoForm({ pedro }: Props) {
   const [tipos, setTipos] = useState<TipoDeficiencia[]>([]);
   const [tipoId, setTipoId] = useState<number | "">("");
   const [nome, setNome] = useState("");
@@ -19,7 +18,7 @@ export default function SubtipoForm({ onCreated }: Props) {
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+    e.preventDefault(); // não recarrega a página
     setErro(null);
 
     const trimmed = nome.trim();
@@ -33,7 +32,7 @@ export default function SubtipoForm({ onCreated }: Props) {
       await api.criarSubtipo(trimmed, Number(tipoId));
       setNome("");
       setTipoId("");
-      onCreated();
+      pedro(); // chama a função do pai - carregar()
     } catch (e: any) {
       setErro(e.message ?? "Erro ao criar subtipo");
     } finally {
