@@ -35,9 +35,9 @@ export default function BarreirasPage() {
                     Crie novas barreiras e vincule a subtipos de deficiência.
                 </p>
             </header>
-            
+
             <BarreiraForm onCreated={carregar} />
-            <VincularBarreiraForm onLinked={carregar} />
+            <VincularBarreiraForm onLinked={carregar} /> {/* é uma props */}
 
             {loading ? (
                 <div className="card">Carregando...</div>

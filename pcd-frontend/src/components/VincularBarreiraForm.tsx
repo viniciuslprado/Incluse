@@ -17,7 +17,7 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
             })
             .catch((e) => setErro(e.message));
     }, []);
-
+    //filtra o id que foi desmarcado
     function toggleBarreira(id: number) {
         setBarreiraIds((prev) =>
             prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -52,7 +52,7 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
                     value={subtipoId}
                     onChange={(e) =>
                         setSubtipoId(e.target.value ? Number(e.target.value) : "")
-                    }
+                    } // transforma em numero 
                     disabled={loading}
                 >
                     <option value="">Selecione...</option>
@@ -69,9 +69,9 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
                     {barreiras.map((b) => (
                         <label key={b.id} className="flex items-center gap-2">
                             <input
-                                type="checkbox"
-                                checked={barreiraIds.includes(b.id)}
-                                onChange={() => toggleBarreira(b.id)}
+                                type="checkbox" //input de quadradinhos
+                                checked={barreiraIds.includes(b.id)}//insere no vetor se selecionado
+                                onChange={() => toggleBarreira(b.id)}//tira do vetor
                                 disabled={loading}
                             />
                             {b.descricao}

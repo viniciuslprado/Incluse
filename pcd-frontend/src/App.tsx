@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AdminPage from "./pages/AdminPage";
+import BarreirasPage from "./pages/BarreirasPage.tsx";
 
 // já existentes
 import TiposPage from "./pages/TiposPage";
@@ -16,11 +17,15 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />}>
           <Route path="tipos" element={<TiposPage />} />
           <Route path="subtipos" element={<SubtiposPage />} />
+          <Route path="barreiras" element={<BarreirasPage />} />
         </Route>
 
         {/* 404 simples */}
         <Route path="*" element={<div className="container-page py-8">Página não encontrada.</div>} />
       </Routes>
     </BrowserRouter>
+
+    
   );
 }
+
