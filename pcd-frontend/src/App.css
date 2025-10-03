@@ -1,8 +1,24 @@
 #root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.container-page {
   max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin: 0 auto !important;
+  padding: 0 2rem;
+  text-align: center !important;
+}
+
+/* Garantir que elementos dentro do container-page também sejam centralizados */
+.container-page h1,
+.container-page h2,
+.container-page h3,
+.container-page p,
+.container-page div {
+  text-align: center !important;
 }
 
 .logo {
@@ -26,6 +42,7 @@
   }
 
   to {
+    
     transform: rotate(360deg);
   }
 }

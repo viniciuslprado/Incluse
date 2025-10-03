@@ -29,13 +29,11 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  justify-content: center;
-  /* centraliza na horizontal */
-  align-items: flex-start;
-  /* mantém alinhado no topo (se não quiser no meio da tela) */
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
 }
 
 h1 {
