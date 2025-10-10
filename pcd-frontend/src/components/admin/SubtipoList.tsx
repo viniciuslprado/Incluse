@@ -1,4 +1,4 @@
-import type { TipoComSubtipos } from "../types";
+import type { TipoComSubtipos } from "../../types";
 
 type Props = { tipos: TipoComSubtipos[] };
 

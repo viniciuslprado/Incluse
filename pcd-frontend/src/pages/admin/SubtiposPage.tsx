@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import type { TipoComSubtipos } from "../types";
-import SubtipoList from "../components/SubtipoList";
-import SubtipoForm from "../components/SubtipoForm";
+import { api } from "../../lib/api";
+import type { TipoComSubtipos } from "../../types";
+import SubtipoList from "../../components/admin/SubtipoList";
+import SubtipoForm from "../../components/admin/SubtipoForm";
 
 export default function SubtiposPage() {
   const [tipos, setTipos] = useState<TipoComSubtipos[]>([]);
@@ -15,8 +15,8 @@ export default function SubtiposPage() {
     try {
       const data = await api.listarTiposComSubtipos();
       setTipos(data);
-    } catch (e: any) {
-      setErro(e.message ?? "Erro ao carregar subtipos");
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao carregar subtipos");
     } finally {
       setLoading(false);
     }

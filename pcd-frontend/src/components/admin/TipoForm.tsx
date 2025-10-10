@@ -2,7 +2,7 @@
 api: objeto importado que tem funções para chamar o backend (nesse caso, criarTipo). */
 
 import { useState } from "react";
-import { api } from "../lib/api";
+import { api } from "../../lib/api";
 type Props = {
   onCreated: () => void; // para recarregar a lista ao criar
 };
@@ -24,8 +24,8 @@ export default function TipoForm({ onCreated }: Props) {
       await api.criarTipo(trimmed); // chama API para salvar
       setNome("");
       onCreated(); // avisa componente pai que criou
-    } catch (err: any) {
-      setErro(err?.message ?? "Erro ao criar tipo");
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao criar tipo");
     } finally {
       setLoading(false); // volta botão ao normal
     }

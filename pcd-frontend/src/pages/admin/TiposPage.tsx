@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import TipoForm from "../components/TipoForm";
-import TipoList from "../components/TipoList";
-import { api } from "../lib/api";
-import type { TipoDeficiencia } from "../types";
+import TipoForm from "../../components/admin/TipoForm";
+import TipoList from "../../components/admin/TipoList";
+import { api } from "../../lib/api";
+import type { TipoDeficiencia } from "../../types";
 
 export default function TiposPage() {
   const [tipos, setTipos] = useState<TipoDeficiencia[]>([]);
@@ -15,8 +15,8 @@ export default function TiposPage() {
     try {
       const data = await api.listarTipos();
       setTipos(data);
-    } catch (err: any) {
-      setErro(err?.message ?? "Erro ao carregar tipos");
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao carregar tipos");
     } finally {
       setLoading(false);
     }

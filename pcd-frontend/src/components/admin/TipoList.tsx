@@ -1,4 +1,4 @@
-import type { TipoDeficiencia } from "../types";
+import type { TipoDeficiencia } from "../../types";
 type Props = {
   tipos: TipoDeficiencia[];
 };

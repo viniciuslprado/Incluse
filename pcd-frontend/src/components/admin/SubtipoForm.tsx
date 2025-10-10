@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import type { TipoDeficiencia } from "../types";
+import { api } from "../../lib/api";
+import type { TipoDeficiencia } from "../../types";
 
 type Props = { pedro: () => void };
 
@@ -33,8 +33,8 @@ export default function SubtipoForm({ pedro }: Props) {
       setNome("");
       setTipoId("");
       pedro(); // chama a função do pai - carregar()
-    } catch (e: any) {
-      setErro(e.message ?? "Erro ao criar subtipo");
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao criar subtipo");
     } finally {
       setLoading(false);
     }

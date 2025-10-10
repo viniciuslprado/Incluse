@@ -1,13 +1,16 @@
 import { prisma } from "./prisma";
+
 export const VagasRepo = {
-  list() {
-    return prisma.vaga.findMany({
-      orderBy: { id: "asc" },
-      include: {
-        empresa: { select: { id: true, nome: true } },
-      },
-    });
-  },
+ list(empresaId?: number) {
+  return prisma.vaga.findMany({
+    where: empresaId ? { empresaId } : undefined,
+    orderBy: { id: "asc" },
+    include: {
+      empresa: { select: { id: true, nome: true } },
+    },
+  });
+},
+
   findById(id: number) {
     return prisma.vaga.findUnique({
       where: { id },
@@ -24,13 +27,16 @@ export const VagasRepo = {
       },
     });
   },
+
   create(empresaId: number, descricao: string, escolaridade: string) {
     return prisma.vaga.create({ data: { empresaId, descricao, escolaridade } });
   },
+
   linkSubtipos(vagaId: number, subtipoIds: number[]) {
     const data = subtipoIds.map((subtipoId) => ({ vagaId, subtipoId }));
     return prisma.vagaSubtipo.createMany({ data, skipDuplicates: true });
   },
+
   linkAcessibilidades(vagaId: number, acessibilidadeIds: number[]) {
     const data = acessibilidadeIds.map((acessibilidadeId) => ({ vagaId, acessibilidadeId }));
     return prisma.vagaAcessibilidade.createMany({ data, skipDuplicates: true });

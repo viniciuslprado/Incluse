@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import type { Barreira } from "../types";
-import BarreiraForm from "../components/BarreiraForm";
-import VincularBarreiraForm from "../components/VincularBarreiraForm";
+import { api } from "../../lib/api";
+import type { Barreira } from "../../types";
+import BarreiraForm from "../../components/admin/BarreiraForm";
+import VincularBarreiraForm from "../../components/admin/VincularBarreiraForm";
 
 export default function BarreirasPage() {
     const [barreiras, setBarreiras] = useState<Barreira[]>([]);
@@ -16,8 +16,8 @@ export default function BarreirasPage() {
         try {//await espera a api devolver o resultado
             const data = await api.listarBarreiras();
             setBarreiras(data);//altera o valor da 
-        } catch (e: any) {
-            setErro(e.message ?? "Erro ao carregar barreiras");
+        } catch (e) {
+            setErro(e instanceof Error ? e.message : "Erro ao carregar barreiras");
         } finally {
             setLoading(false);
         }

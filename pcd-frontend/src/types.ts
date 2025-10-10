@@ -24,3 +24,28 @@ export type Barreira = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type Acessibilidade = {
+  id: number;
+  descricao: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Empresa = {
+  id: number;
+  nome: string;
+  cnpj?: string;
+  email?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+export type Vaga = {
+  id: number;
+  descricao: string;
+  escolaridade: string;
+  empresaId: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import type { Barreira, SubtipoDeficiencia } from "../types";
+import { api } from "../../lib/api";
+import type { Barreira, SubtipoDeficiencia } from "../../types";
 type Props = { onLinked: () => void };
 export default function VincularBarreiraForm({ onLinked }: Props) {
     const [subtipos, setSubtipos] = useState<SubtipoDeficiencia[]>([]);
@@ -37,8 +37,8 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
             setBarreiraIds([]);
             setSubtipoId("");
             onLinked();
-        } catch (e: any) {
-            setErro(e.message ?? "Erro ao vincular barreiras");
+        } catch (e) {
+            setErro(e instanceof Error ? e.message : "Erro ao vincular barreiras");
         } finally {
             setLoading(false);
         }

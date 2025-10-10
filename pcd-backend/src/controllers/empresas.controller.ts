@@ -7,12 +7,14 @@ export const EmpresasController = {
     const data = await EmpresasRepo.list();
     res.json(data);
   },
+
   async detalhar(req: Request, res: Response) {
     const id = Number(req.params.id);
     const empresa = await EmpresasRepo.findById(id);
     if (!empresa) return res.status(404).json({ error: "Empresa não encontrada" });
     res.json(empresa);
   },
+
   async criar(req: Request, res: Response) {
     try {
       const { nome, cnpj, email } = req.body;

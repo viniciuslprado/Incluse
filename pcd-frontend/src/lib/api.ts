@@ -1,5 +1,5 @@
 //react chama a API do backend para consumir
-import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia } from "../types";
+import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga } from "../types";
 
 // Define a URL base da API. Primeiro tenta pegar do arquivo .env (VITE_API_URL),
 // caso não exista, usa "http://localhost:3000" como padrão.
@@ -23,7 +23,9 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const j = JSON.parse(text);
       msg = j.error || msg;
-    } catch { }
+    } catch {
+      // Ignora erro de parsing do JSON, usa msg original
+    }
     throw new Error(msg);
   }
   return res.json() as Promise<T>;
@@ -77,6 +79,54 @@ export const api = {
       body: JSON.stringify({ barreiraIds }),
     });
   },
+  async buscarEmpresa(id: number) {
+    const res = await fetch(`http://localhost:3000/empresas/${id}`);
+    if (!res.ok) throw new Error("Erro ao buscar empresa");
+    return res.json();
+  },
+  async listarVagas(empresaId: number) {
+    const res = await fetch(`http://localhost:3000/vagas/empresa/${empresaId}`);
+    if (!res.ok) throw new Error("Erro ao listar vagas");
+    return res.json();
+  },
+  async criarVaga(empresaId: number, descricao: string, escolaridade: string) {
+    const res = await fetch("http://localhost:3000/vagas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ empresaId, descricao, escolaridade }),
+    });
+    if (!res.ok) throw new Error("Erro ao criar vaga");
+    return res.json();
+  },
+
+  // Acessibilidades
+  listarAcessibilidades(): Promise<Acessibilidade[]> {
+    return http("/acessibilidades");
+  },
+  criarAcessibilidade(descricao: string): Promise<Acessibilidade> {
+    return http("/acessibilidades", {
+      method: "POST",
+      body: JSON.stringify({ descricao }),
+    });
+  },
+  vincularAcessibilidadesABarreira(barreiraId: number, acessibilidadeIds: number[]) {
+    return http(`/barreiras/${barreiraId}/acessibilidades`, {
+      method: "POST",
+      body: JSON.stringify({ acessibilidadeIds }),
+    });
+  },
+  
+  vincularSubtiposAVaga(vagaId: number, subtipoIds: number[]) {
+    return http(`/vagas/${vagaId}/subtipos`, {
+      method: "POST",
+      body: JSON.stringify({ subtipoIds }),
+    });
+  },
+  obterVaga(vagaId: number): Promise<Vaga> {
+    return http(`/vagas/${vagaId}`);
+  },
+
+
 };
 
 /* GET → buscar dados.

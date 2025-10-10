@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "../lib/api";
+import { api } from "../../lib/api";
 type Props = { onCreated: () => void };
 //barreira form instanciado passa como parametro onCreated
 export default function BarreiraForm({ onCreated }: Props) {
@@ -18,8 +18,8 @@ export default function BarreiraForm({ onCreated }: Props) {
             await api.criarBarreira(descricao.trim());
             setDescricao("");
             onCreated();//função definida no pai 
-        } catch (e: any) {
-            setErro(e.message ?? "Erro ao criar barreira");
+        } catch (e) {
+            setErro(e instanceof Error ? e.message : "Erro ao criar barreira");
         } finally {
             setLoading(false);
         }
