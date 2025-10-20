@@ -3,6 +3,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   // limpa dados (apenas para desenvolvimento)
+  await prisma.vaga.deleteMany();
+  await prisma.empresa.deleteMany();
   await prisma.subtipoBarreira.deleteMany();
   await prisma.barreiraAcessibilidade.deleteMany();
   await prisma.acessibilidade.deleteMany();
@@ -94,7 +96,63 @@ async function main() {
     skipDuplicates: true,
   });
 
+  // Empresas
+  const empresa1 = await prisma.empresa.create({
+    data: {
+      nome: "TechInclusiva Ltda",
+      cnpj: "12.345.678/0001-90",
+      email: "rh@techinclusiva.com.br",
+    }
+  });
+
+  const empresa2 = await prisma.empresa.create({
+    data: {
+      nome: "InnovaCorps",
+      cnpj: "98.765.432/0001-10",
+      email: "contato@innovacorps.com",
+    }
+  });
+
+  // Vagas
+  await prisma.vaga.createMany({
+    data: [
+      {
+        empresaId: empresa1.id,
+        descricao: "Desenvolvedor Frontend React/TypeScript",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa1.id,
+        descricao: "Analista de Suporte Técnico",
+        escolaridade: "Ensino Médio Completo"
+      },
+      {
+        empresaId: empresa1.id,
+        descricao: "Designer UX/UI",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa2.id,
+        descricao: "Atendimento ao Cliente - Remoto",
+        escolaridade: "Ensino Médio Completo"
+      },
+      {
+        empresaId: empresa2.id,
+        descricao: "Auxiliar Administrativo",
+        escolaridade: "Ensino Médio Completo"
+      },
+      {
+        empresaId: empresa2.id,
+        descricao: "Analista de Dados Júnior",
+        escolaridade: "Ensino Superior Incompleto"
+      }
+    ]
+  });
+
   console.log("Seed concluído ✅");
+  console.log("Empresas criadas:");
+  console.log(`- ${empresa1.nome} (ID: ${empresa1.id})`);
+  console.log(`- ${empresa2.nome} (ID: ${empresa2.id})`);
 }
 
 main()
