@@ -42,9 +42,16 @@ export type Empresa = {
 };
 export type Vaga = {
   id: number;
+  titulo?: string;
   descricao: string;
   escolaridade: string;
+  cidade?: string;
+  estado?: string;
   empresaId: number;
+  empresa?: {
+    id: number;
+    nome: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 };

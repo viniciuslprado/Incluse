@@ -10,7 +10,7 @@ import barreirasRoutes from "./routes/barreiras.routes";
 import acessibilidadesRoutes from "./routes/acessibilidades.routes";
 import vinculosRoutes from "./routes/vinculos.routes"
 import empresasRoutes from "./routes/empresas.routes";
-import vagasRoutes from "./routes/"
+import vagasRoutes from "./routes/vagas.routes";
 
 const app = express();
 const prisma = new PrismaClient();

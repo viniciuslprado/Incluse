@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== ESTILOS DE ACESSIBILIDADE ===== */
+
+/* Skip links */
+.skip-link {
+  position: absolute;
+  top: -100vh;
+  left: 0.5rem;
+  z-index: 9999;
+  background-color: #000;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 0.375rem 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Movimento reduzido */
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Focus indicators melhorados */
+[data-enhanced-focus="true"] *:focus {
+  outline: 3px solid #f97316 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.3) !important;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -12,38 +51,44 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Classes utilitárias personalizadas para componentes */
-@layer components {
-  .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+/* Paleta Azul + Verde Inclusivo - Variáveis CSS */
+@layer base {
+  :root {
+    /* Cores Principais */
+    --incluse-primary: #0057B8;        /* Azul médio - confiança */
+    --incluse-secondary: #2E8B57;      /* Verde suave - inclusão */
+    --incluse-accent: #2E8BFF;         /* Azul vibrante - interação */
+    
+    /* Fundos */
+    --incluse-bg-primary: #E6F0FF;     /* Azul muito claro */
+    --incluse-bg-secondary: #E8F5E9;   /* Verde muito claro */
+    --incluse-bg-neutral: #F5F5F5;     /* Cinza claro */
+    --incluse-bg-white: #FFFFFF;
+    
+    /* Texto */
+    --incluse-text: #333333;           /* Cinza escuro */
+    --incluse-text-secondary: #555555; /* Cinza médio */
+    --incluse-text-light: #666666;     /* Cinza claro */
+    
+    /* Estados */
+    --incluse-success: #43A047;        /* Verde vibrante */
+    --incluse-error: #D32F2F;          /* Vermelho suave */
+    --incluse-warning: #FF8F00;        /* Laranja */
+    --incluse-info: #1976D2;           /* Azul info */
   }
   
-  .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:ring-blue-500;
-  }
-  
-  .btn-secondary {
-    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 focus:ring-gray-500;
-  }
-  
-  .input {
-    @apply w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
-  }
-  
-  .label {
-    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
-  }
-  
-  .card {
-    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm;
-  }
-  
-  .error {
-    @apply text-red-600 dark:text-red-400 text-sm;
-  }
-  
-  .container-page {
-    @apply max-w-4xl mx-auto px-4;
+  .dark {
+    /* Adaptações para modo escuro */
+    --incluse-primary: #4FC3F7;
+    --incluse-secondary: #66BB6A;
+    --incluse-accent: #64B5F6;
+    --incluse-bg-primary: #0D47A1;
+    --incluse-bg-secondary: #1B5E20;
+    --incluse-bg-neutral: #374151;
+    --incluse-bg-white: #1F2937;
+    --incluse-text: #F5F5F5;
+    --incluse-text-secondary: #E0E0E0;
+    --incluse-text-light: #D1D5DB;
   }
 }
 
@@ -90,6 +135,48 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Tema Colorido */
+.theme-colorful {
+  --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --bg-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+}
+
+.theme-colorful .bg-white {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.theme-colorful .bg-gray-50 {
+  background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+}
+
+.theme-colorful .bg-blue-600 {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.theme-colorful .bg-blue-600:hover {
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+}
+
+.theme-colorful .text-blue-600 {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.theme-colorful .border-gray-200 {
+  border-color: #cbd5e0;
+}
+
+.theme-colorful .shadow-sm {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 
+              0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 @media (prefers-color-scheme: light) {

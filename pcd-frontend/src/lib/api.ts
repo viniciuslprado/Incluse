@@ -79,6 +79,11 @@ export const api = {
       body: JSON.stringify({ barreiraIds }),
     });
   },
+  async listarEmpresas() {
+    const res = await fetch("http://localhost:3000/empresas");
+    if (!res.ok) throw new Error("Erro ao listar empresas");
+    return res.json();
+  },
   async buscarEmpresa(id: number) {
     const res = await fetch(`http://localhost:3000/empresas/${id}`);
     if (!res.ok) throw new Error("Erro ao buscar empresa");
@@ -89,11 +94,11 @@ export const api = {
     if (!res.ok) throw new Error("Erro ao listar vagas");
     return res.json();
   },
-  async criarVaga(empresaId: number, descricao: string, escolaridade: string) {
+  async criarVaga(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade?: string, estado?: string) {
     const res = await fetch("http://localhost:3000/vagas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ empresaId, descricao, escolaridade }),
+      body: JSON.stringify({ empresaId, titulo, descricao, escolaridade, cidade, estado }),
     });
     if (!res.ok) throw new Error("Erro ao criar vaga");
     return res.json();
@@ -120,6 +125,12 @@ export const api = {
     return http(`/vagas/${vagaId}/subtipos`, {
       method: "POST",
       body: JSON.stringify({ subtipoIds }),
+    });
+  },
+  vincularAcessibilidadesAVaga(vagaId: number, acessibilidadeIds: number[]) {
+    return http(`/vagas/${vagaId}/acessibilidades`, {
+      method: "POST",
+      body: JSON.stringify({ acessibilidadeIds }),
     });
   },
   obterVaga(vagaId: number): Promise<Vaga> {

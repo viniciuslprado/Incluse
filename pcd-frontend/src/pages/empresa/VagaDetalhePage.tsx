@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api } from "../../lib/api";
 import VagaSubtiposForm from "../../components/vaga/VagaSubtiposForm";
+import VagaAcessibilidadesForm from "../../components/vaga/VagaAcessibilidadesForm";
 import type { Vaga } from "../../types";
 
 export default function VagaDetalhePage() {
@@ -10,7 +11,7 @@ export default function VagaDetalhePage() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
-  async function carregar() {
+  const carregar = useCallback(async () => {
     setErro(null);
     setLoading(true);
     try {
@@ -21,18 +22,18 @@ export default function VagaDetalhePage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [vagaId]);
 
   useEffect(() => {
     carregar();
-  }, [vagaId]);
+  }, [carregar]);
 
   return (
     <div className="container-page space-y-6 py-8">
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">
-            Detalhes da Vaga #{vagaId}
+            {vaga ? (vaga.titulo || vaga.descricao) : `Detalhes da Vaga #${vagaId}`}
           </h1>
           <p className="text-gray-600">Gerencie os subtipos e acessibilidades desta vaga.</p>
         </div>
@@ -57,10 +58,11 @@ export default function VagaDetalhePage() {
             </p>
           </div>
 
-          {/* Aqui entra o formulário de subtipos */}
+          {/* Formulário de subtipos */}
           <VagaSubtiposForm vagaId={vaga.id} />
 
-          {/* Depois, futuramente, adicionaremos o VagaAcessibilidadesForm */}
+          {/* Formulário de acessibilidades */}
+          <VagaAcessibilidadesForm vagaId={vaga.id} />
         </>
       ) : (
         <div className="card text-gray-500">Vaga não encontrada.</div>

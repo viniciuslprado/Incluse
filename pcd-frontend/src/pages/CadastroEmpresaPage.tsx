@@ -1,0 +1,377 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
+export default function CadastroEmpresaPage() {
+  const [formData, setFormData] = useState({
+    nomeContato: '',
+    nomeEmpresa: '',
+    cnpj: '',
+    email: '',
+    telefone: '',
+    quantidadeFuncionarios: '',
+    cargo: '',
+    senha: '',
+    confirmarSenha: '',
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const opcoesQuantidadeFuncionarios = [
+    { value: '1-10', label: '1 a 10 funcionários' },
+    { value: '11-50', label: '11 a 50 funcionários' },
+    { value: '51-200', label: '51 a 200 funcionários' },
+    { value: '201-1000', label: '201 a 1000 funcionários' },
+    { value: '1000+', label: 'Mais de 1000 funcionários' },
+  ];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const formatCNPJ = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    return numbers.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
+  };
+
+  const formatTelefone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 10) {
+      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    } else {
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    }
+  };
+
+  const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCNPJ(e.target.value);
+    setFormData(prev => ({ ...prev, cnpj: formatted }));
+  };
+
+  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatTelefone(e.target.value);
+    setFormData(prev => ({ ...prev, telefone: formatted }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro(null);
+
+    // Validações
+    if (!formData.nomeContato.trim()) {
+      setErro('Nome do contato é obrigatório.');
+      return;
+    }
+
+    if (!formData.nomeEmpresa.trim()) {
+      setErro('Nome da empresa é obrigatório.');
+      return;
+    }
+
+    if (formData.cnpj.replace(/\D/g, '').length !== 14) {
+      setErro('CNPJ deve ter 14 dígitos.');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setErro('E-mail é obrigatório.');
+      return;
+    }
+
+    if (!formData.telefone.trim()) {
+      setErro('Telefone é obrigatório.');
+      return;
+    }
+
+    if (!formData.quantidadeFuncionarios) {
+      setErro('Selecione a quantidade de funcionários.');
+      return;
+    }
+
+    if (!formData.cargo.trim()) {
+      setErro('Cargo é obrigatório.');
+      return;
+    }
+
+    if (formData.senha.length < 6) {
+      setErro('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    if (formData.senha !== formData.confirmarSenha) {
+      setErro('As senhas não conferem.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Aqui será implementada a lógica de cadastro
+      console.log('Cadastro empresa:', formData);
+      
+      // Simular delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      alert('Cadastro realizado com sucesso! Sua conta será analisada em até 24h.');
+    } catch (error) {
+      setErro('Erro ao realizar cadastro. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Cadastro de Empresa
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Já tem uma conta?{' '}
+            <Link to="/login" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">
+              Fazer login
+            </Link>
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow rounded-lg">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Nome do Contato */}
+            <div>
+              <label htmlFor="nomeContato" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nome do Contato *
+              </label>
+              <input
+                type="text"
+                name="nomeContato"
+                id="nomeContato"
+                required
+                value={formData.nomeContato}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="Nome da pessoa responsável"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Nome da Empresa */}
+            <div>
+              <label htmlFor="nomeEmpresa" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nome da Empresa *
+              </label>
+              <input
+                type="text"
+                name="nomeEmpresa"
+                id="nomeEmpresa"
+                required
+                value={formData.nomeEmpresa}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="Razão social ou nome fantasia"
+                disabled={loading}
+              />
+            </div>
+
+            {/* CNPJ */}
+            <div>
+              <label htmlFor="cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                CNPJ *
+              </label>
+              <input
+                type="text"
+                name="cnpj"
+                id="cnpj"
+                required
+                value={formData.cnpj}
+                onChange={handleCNPJChange}
+                maxLength={18}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="00.000.000/0000-00"
+                disabled={loading}
+              />
+            </div>
+
+            {/* E-mail */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                E-mail Corporativo *
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="contato@empresa.com"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Telefone */}
+            <div>
+              <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Telefone/Celular *
+              </label>
+              <input
+                type="tel"
+                name="telefone"
+                id="telefone"
+                required
+                value={formData.telefone}
+                onChange={handleTelefoneChange}
+                maxLength={15}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="(00) 00000-0000"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Quantidade de Funcionários */}
+            <div>
+              <label htmlFor="quantidadeFuncionarios" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Quantidade de Funcionários *
+              </label>
+              <select
+                name="quantidadeFuncionarios"
+                id="quantidadeFuncionarios"
+                required
+                value={formData.quantidadeFuncionarios}
+                onChange={handleInputChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                disabled={loading}
+              >
+                <option value="">Selecione...</option>
+                {opcoesQuantidadeFuncionarios.map((opcao) => (
+                  <option key={opcao.value} value={opcao.value}>
+                    {opcao.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cargo */}
+            <div>
+              <label htmlFor="cargo" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Seu Cargo na Empresa *
+              </label>
+              <input
+                type="text"
+                name="cargo"
+                id="cargo"
+                required
+                value={formData.cargo}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="Ex: Gerente de RH, CEO, Analista de Recrutamento"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Senha */}
+            <div>
+              <label htmlFor="senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Senha *
+              </label>
+              <input
+                type="password"
+                name="senha"
+                id="senha"
+                required
+                value={formData.senha}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="Mínimo 6 caracteres"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Confirmar Senha */}
+            <div>
+              <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Confirmar Senha *
+              </label>
+              <input
+                type="password"
+                name="confirmarSenha"
+                id="confirmarSenha"
+                required
+                value={formData.confirmarSenha}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                placeholder="Digite a senha novamente"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Informações importantes */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    Importante
+                  </h3>
+                  <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                    <p>• Sua conta será analisada em até 24 horas</p>
+                    <p>• Você receberá um e-mail de confirmação</p>
+                    <p>• Mantenha seus dados atualizados</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mensagem de erro */}
+            {erro && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700 dark:text-red-300">{erro}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Botão de submit */}
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Enviando para análise...
+                  </>
+                ) : (
+                  'Criar Conta Empresa'
+                )}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link 
+              to="/cadastro" 
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+            >
+              ← Voltar para seleção de tipo
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

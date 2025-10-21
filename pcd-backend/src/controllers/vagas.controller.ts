@@ -4,9 +4,13 @@ import { VagasService } from "../services/vagas.service";
 
 export const VagasController = {
   async listar(req: Request, res: Response) {
-     const empresaId = req.query.empresaId ? Number(req.query.empresaId) : undefined;
-    const data = await VagasRepo.list(empresaId);
-    res.json(data);
+    try {
+      const empresaId = Number(req.params.id); // pegando da URL /empresa/:id
+      const data = await VagasRepo.list(empresaId);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message ?? "Erro ao listar vagas" });
+    }
   },
 
   async detalhar(req: Request, res: Response) {
@@ -30,8 +34,8 @@ export const VagasController = {
 
   async criar(req: Request, res: Response) {
     try {
-      const { empresaId, descricao, escolaridade } = req.body;
-      const vaga = await VagasService.criarVaga(Number(empresaId), descricao, escolaridade);
+      const { empresaId, titulo, descricao, escolaridade, cidade, estado } = req.body;
+      const vaga = await VagasService.criarVaga(Number(empresaId), titulo, descricao, escolaridade, cidade, estado);
       res.status(201).json(vaga);
     } catch (e: any) {
       res.status(400).json({ error: e.message ?? "Erro ao criar vaga" });

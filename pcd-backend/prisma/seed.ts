@@ -12,6 +12,16 @@ async function main() {
   await prisma.subtipoDeficiencia.deleteMany();
   await prisma.tipoDeficiencia.deleteMany();
 
+  // Reset auto-increment sequences (PostgreSQL)
+  await prisma.$executeRaw`ALTER SEQUENCE "TipoDeficiencia_id_seq" RESTART WITH 1`;
+  await prisma.$executeRaw`ALTER SEQUENCE "SubtipoDeficiencia_id_seq" RESTART WITH 1`;
+  await prisma.$executeRaw`ALTER SEQUENCE "Barreira_id_seq" RESTART WITH 1`;
+  await prisma.$executeRaw`ALTER SEQUENCE "Acessibilidade_id_seq" RESTART WITH 1`;
+  await prisma.$executeRaw`ALTER SEQUENCE "Empresa_id_seq" RESTART WITH 1`;
+  await prisma.$executeRaw`ALTER SEQUENCE "Vaga_id_seq" RESTART WITH 1`;
+  
+  console.log("🗑️ Dados limpos e contadores resetados");
+
   // Tipos
   const motora = await prisma.tipoDeficiencia.create({
     data: { nome: "Deficiência Motora" },
@@ -99,7 +109,7 @@ async function main() {
   // Empresas
   const empresa1 = await prisma.empresa.create({
     data: {
-      nome: "TechInclusiva Ltda",
+      nome: "TechInclusiva - Tecnologia Acessível",
       cnpj: "12.345.678/0001-90",
       email: "rh@techinclusiva.com.br",
     }
@@ -107,44 +117,102 @@ async function main() {
 
   const empresa2 = await prisma.empresa.create({
     data: {
-      nome: "InnovaCorps",
+      nome: "InnovaCorps - Inovação Inclusiva",
       cnpj: "98.765.432/0001-10",
-      email: "contato@innovacorps.com",
+      email: "inclusao@innovacorps.com",
     }
   });
 
-  // Vagas
+  const empresa3 = await prisma.empresa.create({
+    data: {
+      nome: "AcessoTotal Consultoria",
+      cnpj: "11.222.333/0001-44",
+      email: "vagas@acessototal.com.br",
+    }
+  });
+
+  // Vagas com descrições mais detalhadas
   await prisma.vaga.createMany({
     data: [
+      // TechInclusiva - Vagas de tecnologia inclusiva
       {
         empresaId: empresa1.id,
-        descricao: "Desenvolvedor Frontend React/TypeScript",
+        descricao: "Desenvolvedor Frontend React/TypeScript - Trabalho remoto com foco em acessibilidade web. Desenvolvimento de interfaces inclusivas seguindo padrões WCAG. Conhecimentos em screen readers e navegação por teclado são um diferencial.",
         escolaridade: "Ensino Superior Completo"
       },
       {
         empresaId: empresa1.id,
-        descricao: "Analista de Suporte Técnico",
+        descricao: "Analista de Suporte Técnico - Atendimento especializado para pessoas com deficiência. Ambiente de trabalho adaptado com tecnologias assistivas. Horário flexível e possibilidade de home office.",
         escolaridade: "Ensino Médio Completo"
       },
       {
         empresaId: empresa1.id,
-        descricao: "Designer UX/UI",
+        descricao: "Designer UX/UI Inclusivo - Criação de interfaces acessíveis e inclusivas. Conhecimento em design universal, contraste de cores, e usabilidade para pessoas com deficiência. Trabalho híbrido.",
         escolaridade: "Ensino Superior Completo"
       },
       {
+        empresaId: empresa1.id,
+        descricao: "Especialista em Testes de Acessibilidade - Responsável por garantir que nossos produtos sejam acessíveis. Experiência com ferramentas de teste de acessibilidade e conhecimento em WCAG 2.1.",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa1.id,
+        descricao: "Tradutor e Intérprete de Libras - Atuação em reuniões, treinamentos e eventos da empresa. Certificação em Libras é obrigatória. Ambiente colaborativo e inclusivo.",
+        escolaridade: "Ensino Superior Completo"
+      },
+
+      // InnovaCorps - Vagas corporativas inclusivas  
+      {
         empresaId: empresa2.id,
-        descricao: "Atendimento ao Cliente - Remoto",
+        descricao: "Atendimento ao Cliente - Remoto com Libras - Canal especializado para atendimento em Libras via videochamada. Conhecimento em Libras obrigatório. Treinamento completo fornecido pela empresa.",
         escolaridade: "Ensino Médio Completo"
       },
       {
         empresaId: empresa2.id,
-        descricao: "Auxiliar Administrativo",
+        descricao: "Auxiliar Administrativo - Escritório adaptado com elevador, rampas e banheiros acessíveis. Softwares com leitores de tela disponíveis. Horário flexível de 6h diárias.",
         escolaridade: "Ensino Médio Completo"
       },
       {
         empresaId: empresa2.id,
-        descricao: "Analista de Dados Júnior",
+        descricao: "Analista de Dados Júnior - Trabalho com Excel, Power BI e análise de métricas de inclusão. Ambiente 100% acessível com tecnologias assistivas. Mentoria especializada.",
         escolaridade: "Ensino Superior Incompleto"
+      },
+      {
+        empresaId: empresa2.id,
+        descricao: "Coordenador de Diversidade e Inclusão - Desenvolvimento de políticas inclusivas, treinamentos de sensibilização e acompanhamento de colaboradores PcD. Experiência em RH desejável.",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa2.id,
+        descricao: "Operador de Telemarketing Adaptado - Call center com equipamentos adaptados, software de ampliação de tela e teclados especiais. Treinamento em comunicação inclusiva.",
+        escolaridade: "Ensino Médio Completo"
+      },
+      {
+        empresaId: empresa2.id,
+        descricao: "Assistente de Marketing Digital - Criação de conteúdo inclusivo para redes sociais, campanhas de conscientização sobre acessibilidade. Conhecimento em Canva e redes sociais.",
+        escolaridade: "Ensino Médio Completo"
+      },
+
+      // AcessoTotal - Consultoria especializada
+      {
+        empresaId: empresa3.id,
+        descricao: "Consultor em Acessibilidade Arquitetônica - Análise e adequação de espaços físicos conforme NBR 9050. Formação em Arquitetura ou Engenharia. Conhecimento em legislação de acessibilidade.",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa3.id,
+        descricao: "Instrutor de Libras - Ministrar cursos de Libras para empresas e instituições. Certificação Prolibras obrigatória. Experiência em ensino é um diferencial.",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa3.id,
+        descricao: "Terapeuta Ocupacional - Avaliação e adaptação de postos de trabalho. Prescrição de tecnologias assistivas. Acompanhamento de funcionários PcD em empresas clientes.",
+        escolaridade: "Ensino Superior Completo"
+      },
+      {
+        empresaId: empresa3.id,
+        descricao: "Assistente Administrativo - Apoio em projetos de consultoria, organização de documentos e agendamentos. Ambiente totalmente acessível com estação de trabalho adaptável.",
+        escolaridade: "Ensino Médio Completo"
       }
     ]
   });
@@ -153,6 +221,11 @@ async function main() {
   console.log("Empresas criadas:");
   console.log(`- ${empresa1.nome} (ID: ${empresa1.id})`);
   console.log(`- ${empresa2.nome} (ID: ${empresa2.id})`);
+  console.log(`- ${empresa3.nome} (ID: ${empresa3.id})`);
+  console.log("\n🎯 Acesse as vagas em:");
+  console.log(`http://localhost:5173/empresa/${empresa1.id}/vagas`);
+  console.log(`http://localhost:5173/empresa/${empresa2.id}/vagas`);
+  console.log(`http://localhost:5173/empresa/${empresa3.id}/vagas`);
 }
 
 main()

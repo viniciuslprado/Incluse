@@ -28,8 +28,17 @@ export const VagasRepo = {
     });
   },
 
-  create(empresaId: number, descricao: string, escolaridade: string) {
-    return prisma.vaga.create({ data: { empresaId, descricao, escolaridade } });
+  create(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade?: string, estado?: string) {
+    return prisma.vaga.create({ 
+      data: { 
+        empresaId, 
+        titulo,
+        descricao, 
+        escolaridade,
+        cidade,
+        estado 
+      } 
+    });
   },
 
   linkSubtipos(vagaId: number, subtipoIds: number[]) {

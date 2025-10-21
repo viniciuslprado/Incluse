@@ -106,8 +106,11 @@ model Vaga {
   id              Int                   @id @default(autoincrement())
   empresaId       Int
   empresa         Empresa               @relation(fields: [empresaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  descricao       String
+  titulo          String?               @default("Vaga") // <- título da vaga (ex: "Desenvolvedor Frontend React/TypeScript")
+  descricao       String                // <- descrição completa com detalhes
   escolaridade    String                // <- adicionado (ou troque por enum se quiser)
+  cidade          String?               @default("A definir") // <- cidade da vaga
+  estado          String?               @default("A definir") // <- estado da vaga
   subtiposAceitos VagaSubtipo[]
   acessibilidades VagaAcessibilidade[]
   isActive        Boolean   @default(true)
