@@ -52,7 +52,29 @@ export type Vaga = {
     id: number;
     nome: string;
   };
+  subtipos?: SubtipoDeficiencia[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+// Tipos para Candidato e associação com subtipos/barreiras
+export type CandidatoSubtipoBarreira = {
+  barreiraId: number;
+  barreira: Barreira;
+};
+
+export type CandidatoSubtipo = {
+  subtipoId: number;
+  subtipo: SubtipoDeficiencia;
+  barreiras?: CandidatoSubtipoBarreira[];
+};
+
+export type Candidato = {
+  id: number;
+  nome: string;
+  email?: string;
+  telefone?: string;
+  escolaridade: string;
+  subtipos?: CandidatoSubtipo[];
 };
 

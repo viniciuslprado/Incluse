@@ -175,7 +175,7 @@ export default function EmpresasParceirasPage() {
         </div>
 
         {/* Filtros */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+  <div className="bg-white dark:bg-transparent rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Busca */}
             <div>
@@ -237,7 +237,7 @@ export default function EmpresasParceirasPage() {
           {empresasFiltradas.map((empresa) => (
             <div
               key={empresa.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-transparent rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
             >
               {/* Header da Empresa */}
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -323,7 +323,7 @@ export default function EmpresasParceirasPage() {
                   </Link>
                   <a
                     href={`mailto:${empresa.email}`}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Contatar
                   </a>

@@ -19,7 +19,7 @@ export default function CadastroPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+  <div className="bg-white dark:bg-transparent py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <div className="text-center mb-8">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               Escolha o tipo de conta

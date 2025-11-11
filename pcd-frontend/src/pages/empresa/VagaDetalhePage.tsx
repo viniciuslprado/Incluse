@@ -10,6 +10,7 @@ export default function VagaDetalhePage() {
   const [vaga, setVaga] = useState<Vaga | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [subtiposSelecionados, setSubtiposSelecionados] = useState<number[]>([]);
 
   const carregar = useCallback(async () => {
     setErro(null);
@@ -58,11 +59,11 @@ export default function VagaDetalhePage() {
             </p>
           </div>
 
-          {/* Formulário de subtipos */}
-          <VagaSubtiposForm vagaId={vaga.id} />
+          {/* Formulário de subtipos (eleva seleção para este componente) */}
+          <VagaSubtiposForm vagaId={vaga.id} onChange={(sel) => setSubtiposSelecionados(sel)} />
 
-          {/* Formulário de acessibilidades */}
-          <VagaAcessibilidadesForm vagaId={vaga.id} />
+          {/* Formulário de acessibilidades - mostra apenas acessibilidades ligadas aos subtipos selecionados */}
+          <VagaAcessibilidadesForm vagaId={vaga.id} subtiposSelecionados={subtiposSelecionados} />
         </>
       ) : (
         <div className="card text-gray-500">Vaga não encontrada.</div>

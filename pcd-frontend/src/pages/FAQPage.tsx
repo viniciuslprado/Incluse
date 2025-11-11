@@ -130,7 +130,7 @@ export default function FAQPage() {
         </div>
 
         {/* Filtros */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-300 dark:border-gray-700 p-6 mb-8">
+  <div className="bg-white dark:bg-transparent rounded-lg shadow-md border border-gray-300 dark:border-gray-700 p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Filtrar por categoria
           </h2>
@@ -156,11 +156,11 @@ export default function FAQPage() {
           {faqFiltrados.map((item) => (
             <div
               key={item.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-300 dark:border-gray-700 overflow-hidden"
+              className="bg-white rounded-lg shadow-md border border-gray-300 dark:border-gray-700 overflow-hidden"
             >
               <button
                 onClick={() => toggleExpansao(item.id)}
-                className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="w-full px-6 py-4 text-left flex items-center justify-between"
               >
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
@@ -174,12 +174,12 @@ export default function FAQPage() {
                       {getCategoriaLabel(item.categoria)}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-400/70 via-blue-300/50 to-emerald-400/70 bg-clip-text text-transparent dark:from-blue-200/40 dark:via-blue-100/30 dark:to-emerald-200/40">
                     {item.pergunta}
                   </h3>
                 </div>
                 <svg
-                  className={`w-5 h-5 text-gray-500 dark:text-gray-400 transform transition-transform ${
+                  className={`w-5 h-5 text-gray-500 ${
                     expandido === item.id ? 'rotate-180' : ''
                   }`}
                   fill="none"
@@ -191,10 +191,8 @@ export default function FAQPage() {
               </button>
               
               {expandido === item.id && (
-                <div className="px-6 pb-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                  <p className="text-gray-800 dark:text-gray-200 mt-4 leading-relaxed">
-                    {item.resposta}
-                  </p>
+                <div className="px-6 pb-4 border-t border-gray-200 bg-white">
+                  <p className="text-gray-800 mt-4 leading-relaxed">{item.resposta}</p>
                 </div>
               )}
             </div>
@@ -221,7 +219,7 @@ export default function FAQPage() {
             </a>
             <a
               href="tel:+5511999999999"
-              className="inline-flex items-center px-6 py-3 border border-incluse-secondary text-base font-medium rounded-md text-incluse-secondary bg-white dark:bg-gray-800 hover:bg-incluse-secondary hover:text-white dark:hover:bg-incluse-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-incluse-secondary transition-all duration-300 transform hover:scale-105"
+              className="inline-flex items-center px-6 py-3 border border-incluse-secondary text-base font-medium rounded-md text-incluse-secondary bg-white dark:bg-transparent hover:bg-incluse-secondary hover:text-white dark:hover:bg-incluse-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-incluse-secondary transition-all duration-300 transform hover:scale-105"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

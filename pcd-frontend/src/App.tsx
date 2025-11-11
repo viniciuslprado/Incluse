@@ -2,13 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import VagasPage from "./pages/VagasPage";
 import LoginPage from "./pages/LoginPage";
-import CadastroPage from "./pages/CadastroPage";
-import CadastroCandidatoPage from "./pages/CadastroCandidatoPage";
-import CadastroEmpresaPage from "./pages/CadastroEmpresaPage";
-import CadastroEmpresaMinima from "./pages/CadastroEmpresaMinima";
+import CadastroPage from "./pages/Cadastro/CadastroPage";
+import CadastroCandidatoPage from "./pages/Cadastro/CadastroCandidatoPage";
+import CadastroEmpresaPage from "./pages/Cadastro/CadastroEmpresaPage";
+import CadastroEmpresaMinima from "./pages/Cadastro/CadastroEmpresaMinima";
 import FAQPage from "./pages/FAQPage";
 import PoliticaPrivacidadePage from "./pages/PoliticaPrivacidadePage";
-import EmpresasParceirasPage from "./pages/EmpresasParceirasPage";
+import EmpresasParceirasPage from "./pages/empresa/EmpresasParceirasPage";
 import AccessibilityTestPage from "./pages/AccessibilityTestPage";
 import { ColorPaletteDemo } from "./components/ColorPaletteDemo";
 import AdminPage from "./pages/admin/AdminPage";
@@ -19,6 +19,7 @@ import AcessibilidadesPage from "./pages/admin/AcessibilidadesPage";
 import VagaPage from "./pages/empresa/VagaPage";
 import VagaDetalhePage from "./pages/empresa/VagaDetalhePage";
 import EmpresaPage from "./pages/empresa/EmpresaPage";
+import CandidatoPage from "./pages/Candidato/CandidatoPage";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import SkipLinks from "./components/SkipLinks";
@@ -66,6 +67,7 @@ export default function App() {
               </Route>
 
               {/* 404 */}
+              <Route path="/candidato/:id" element={<CandidatoPage />} />
               <Route path="*" element={
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="text-center">

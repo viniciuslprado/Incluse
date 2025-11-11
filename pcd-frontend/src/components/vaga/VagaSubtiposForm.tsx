@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
-import type { SubtipoDeficiencia, TipoComSubtipos } from "../../types";
+import type { TipoComSubtipos } from "../../types";
 
 type Props = {
   vagaId: number;
+  onChange?: (selecionados: number[]) => void;
+  onUpdated?: () => void;
 };
 
-export default function VagaSubtiposForm({ vagaId }: Props) {
+export default function VagaSubtiposForm({ vagaId, onChange, onUpdated }: Props) {
   const [tiposComSubtipos, setTiposComSubtipos] = useState<TipoComSubtipos[]>([]);
   const [selecionados, setSelecionados] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,7 @@ export default function VagaSubtiposForm({ vagaId }: Props) {
     try {
       await api.vincularSubtiposAVaga(vagaId, selecionados);
       setOk(true);
+      onUpdated?.();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao vincular subtipos");
     } finally {
@@ -46,6 +49,11 @@ export default function VagaSubtiposForm({ vagaId }: Props) {
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   }
+
+  // notify parent when selecionados change
+  useEffect(() => {
+    if (onChange) onChange(selecionados);
+  }, [selecionados, onChange]);
 
   useEffect(() => {
     carregarSubtipos();
@@ -116,15 +124,15 @@ export default function VagaSubtiposForm({ vagaId }: Props) {
         )}
       </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={handleSalvar}
-          disabled={loading}
-          className="btn btn-primary"
-        >
-          {loading ? "Salvando..." : "Salvar subtipos"}
-        </button>
-      </div>
+          <div className="flex justify-end">
+            <button
+              onClick={handleSalvar}
+              disabled={loading}
+              className="px-4 py-2 bg-incluse-primary text-white rounded-md hover:bg-incluse-primary-dark disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:ring-offset-2"
+            >
+              {loading ? "Salvando..." : "Salvar subtipos"}
+            </button>
+          </div>
     </div>
   );
 }

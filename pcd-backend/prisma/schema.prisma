@@ -20,6 +20,7 @@ model Empresa {
   nome      String
   cnpj      String? @unique
   email     String? @unique
+  senhaHash String?
   vagas     Vaga[]
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -48,6 +49,9 @@ model SubtipoDeficiencia {
   tipoId     Int
   tipo       TipoDeficiencia      @relation(fields: [tipoId], references: [id], onDelete: Cascade)
   barreiras  SubtipoBarreira[]
+  // associações com candidatos
+  candidatoSubtipos CandidatoSubtipo[]
+  candidatoBarreiras CandidatoSubtipoBarreira[]
   createdAt  DateTime             @default(now())
   updatedAt  DateTime             @updatedAt
 
@@ -63,6 +67,8 @@ model Barreira {
   descricao        String                   @unique
   subtipos         SubtipoBarreira[]
   acessibilidades  BarreiraAcessibilidade[]
+  // associações com candidatos
+  candidatoBarreiras CandidatoSubtipoBarreira[]
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @updatedAt
 }
@@ -133,4 +139,43 @@ model VagaAcessibilidade {
   acessibilidade   Acessibilidade @relation(fields: [acessibilidadeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   @@id([vagaId, acessibilidadeId])
   @@index([acessibilidadeId])
+}
+
+// Candidatos e suas associações com subtipos e barreiras
+model Candidato {
+  id         Int                 @id @default(autoincrement())
+  cpf        String?             @unique
+  nome       String
+  email      String?             @unique
+  telefone   String?
+  senhaHash  String?
+  escolaridade String
+  subtipos   CandidatoSubtipo[]
+  // barreiras escolhidas por subtipo
+  barras     CandidatoSubtipoBarreira[]
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}
+
+model CandidatoSubtipo {
+  candidatoId Int
+  subtipoId   Int
+  candidato   Candidato           @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  subtipo     SubtipoDeficiencia  @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
+
+  @@id([candidatoId, subtipoId])
+  @@index([subtipoId])
+}
+
+model CandidatoSubtipoBarreira {
+  candidatoId Int
+  subtipoId   Int
+  barreiraId  Int
+  candidato   Candidato          @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  subtipo     SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
+  barreira    Barreira           @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
+
+  @@id([candidatoId, subtipoId, barreiraId])
+  @@index([subtipoId])
+  @@index([barreiraId])
 }

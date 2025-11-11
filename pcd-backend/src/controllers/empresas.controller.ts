@@ -17,8 +17,8 @@ export const EmpresasController = {
 
   async criar(req: Request, res: Response) {
     try {
-      const { nome, cnpj, email } = req.body;
-      const empresa = await EmpresasService.criarEmpresa(nome, cnpj, email);
+      const { nome, cnpj, email, senha } = req.body;
+      const empresa = await EmpresasService.criarEmpresa(nome, cnpj, email, senha);
       res.status(201).json(empresa);
     } catch (e: any) {
       res.status(400).json({ error: e.message ?? "Erro ao criar empresa" });

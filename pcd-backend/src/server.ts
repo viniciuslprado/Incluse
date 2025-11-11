@@ -11,6 +11,8 @@ import acessibilidadesRoutes from "./routes/acessibilidades.routes";
 import vinculosRoutes from "./routes/vinculos.routes"
 import empresasRoutes from "./routes/empresas.routes";
 import vagasRoutes from "./routes/vagas.routes";
+import candidatosRoutes from "./routes/candidatos.routes";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -26,6 +28,8 @@ app.use("/barreiras", barreirasRoutes);
 app.use("/acessibilidades", acessibilidadesRoutes);
 app.use("/empresas", empresasRoutes);
 app.use("/vagas", vagasRoutes);
+app.use("/candidatos", candidatosRoutes);
+app.use("/auth", authRoutes);
 
 
 // middleware de erro genérico

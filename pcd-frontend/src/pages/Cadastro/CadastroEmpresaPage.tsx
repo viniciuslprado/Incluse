@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../../lib/api';
 
 export default function CadastroEmpresaPage() {
   const [formData, setFormData] = useState({
@@ -106,19 +107,24 @@ export default function CadastroEmpresaPage() {
 
     setLoading(true);
     try {
-      // Aqui será implementada a lógica de cadastro
-      console.log('Cadastro empresa:', formData);
-      
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      alert('Cadastro realizado com sucesso! Sua conta será analisada em até 24h.');
-    } catch (error) {
-      setErro('Erro ao realizar cadastro. Tente novamente.');
+      const payload = {
+        nome: formData.nomeEmpresa,
+        cnpj: formData.cnpj,
+        email: formData.email,
+        telefone: formData.telefone,
+        senha: formData.senha,
+      };
+      await api.registerEmpresa(payload);
+      navigate('/login');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setErro(msg || 'Erro ao realizar cadastro. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -135,7 +141,7 @@ export default function CadastroEmpresaPage() {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow rounded-lg">
+  <div className="bg-white dark:bg-transparent py-8 px-6 shadow rounded-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Nome do Contato */}
             <div>

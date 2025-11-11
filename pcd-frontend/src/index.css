@@ -123,7 +123,8 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #ffffff;
+  color: var(--incluse-text);
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -189,7 +190,15 @@ button:focus-visible {
     color: #747bff;
   }
 
+  /* keep light-mode button slightly off-white for subtle contrast */
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Ensure buttons remain white even if the .dark variables change
+   --incluse-bg-white. This prevents default button styles becoming dark. */
+.dark button {
+  background-color: #ffffff;
+  color: var(--incluse-text);
 }

@@ -12,10 +12,6 @@ export default function AccessibilityMenu() {
     setFontFamily, 
     setTheme, 
     toggleTheme, 
-    toggleReducedMotion,
-    toggleHighContrast,
-    toggleFocusIndicators,
-    toggleScreenReaderOptimized,
     resetSettings 
   } = useAccessibility();
 
@@ -34,7 +30,6 @@ export default function AccessibilityMenu() {
   const themeLabels: Record<Theme, string> = {
     light: "Claro",
     dark: "Escuro",
-    "high-contrast": "Alto Contraste"
   };
 
   return (
@@ -162,102 +157,7 @@ export default function AccessibilityMenu() {
               </div>
             </div>
 
-            {/* Configurações Avançadas */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Configurações Avançadas
-              </h3>
-              <div className="space-y-3">
-                {/* Movimento Reduzido */}
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Reduzir Movimento</span>
-                  </div>
-                  <button
-                    onClick={toggleReducedMotion}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.reducedMotion ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                    role="switch"
-                    aria-checked={settings.reducedMotion}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.reducedMotion ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </label>
-
-                {/* Alto Contraste */}
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Alto Contraste</span>
-                  </div>
-                  <button
-                    onClick={toggleHighContrast}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.highContrast ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                    role="switch"
-                    aria-checked={settings.highContrast}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.highContrast ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </label>
-
-                {/* Indicadores de Foco */}
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Indicadores de Foco</span>
-                  </div>
-                  <button
-                    onClick={toggleFocusIndicators}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.focusIndicators ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                    role="switch"
-                    aria-checked={settings.focusIndicators}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.focusIndicators ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </label>
-
-                {/* Leitor de Tela */}
-                <label className="flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                    </svg>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Otimizar para Leitor de Tela</span>
-                  </div>
-                  <button
-                    onClick={toggleScreenReaderOptimized}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.screenReaderOptimized ? 'bg-orange-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                    role="switch"
-                    aria-checked={settings.screenReaderOptimized}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.screenReaderOptimized ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </label>
-              </div>
-            </div>
+            {/* Configurações Avançadas removidas */}
 
             {/* Botão de Reset */}
             <div className="pt-4 border-t border-gray-200 dark:border-gray-600">

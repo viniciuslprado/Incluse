@@ -52,7 +52,7 @@ export default function CadastroEmpresaMinima() {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow rounded-lg">
+  <div className="bg-white dark:bg-transparent py-8 px-6 shadow rounded-lg">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa *</label>

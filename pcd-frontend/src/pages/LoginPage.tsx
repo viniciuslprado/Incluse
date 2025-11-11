@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
 
 type UserType = 'candidato' | 'empresa' | 'administrador';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [userType, setUserType] = useState<UserType>('candidato');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // email or CPF/CNPJ
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -14,22 +16,49 @@ export default function LoginPage() {
     e.preventDefault();
     setErro(null);
 
-    if (!email.trim() || !senha.trim()) {
+    if (!identifier.trim() || !senha.trim()) {
       setErro('Preencha todos os campos.');
       return;
     }
 
+    // Validação básica: se contém @, considera e-mail; caso contrário CPF/CNPJ dependendo do tipo
+    const isEmail = identifier.includes('@');
+    if (isEmail) {
+      // validação simples de e-mail
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(identifier)) {
+        setErro('E-mail inválido.');
+        return;
+      }
+    } else {
+      const onlyDigits = identifier.replace(/\D/g, '');
+      if (userType === 'candidato' && onlyDigits.length !== 11) {
+        setErro('CPF inválido. Deve ter 11 dígitos.');
+        return;
+      }
+      if (userType === 'empresa' && onlyDigits.length !== 14) {
+        setErro('CNPJ inválido. Deve ter 14 dígitos.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      // Aqui será implementada a lógica de login
-      console.log('Login:', { userType, email, senha });
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Por enquanto, apenas um alert de sucesso
-      alert(`Login realizado como ${userType}!`);
-    } catch {
-      setErro('Erro ao fazer login. Verifique suas credenciais.');
+      // Chamar backend
+  const res = await api.login(identifier, senha, userType) as { token?: string; user?: Record<string, unknown>; userType?: string };
+      // res expected { token, user, userType }
+      const token = res && res.token;
+      if (token) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('userType', userType);
+        // redirecionar para a home (ou dashboard futuro)
+        navigate('/');
+        return;
+      }
+      setErro('Erro ao fazer login. Resposta inválida.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setErro(message || 'Erro ao fazer login. Verifique suas credenciais.');
     } finally {
       setLoading(false);
     }
@@ -123,20 +152,20 @@ export default function LoginPage() {
           {/* Formulário de login */}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                E-mail
+                <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {userType === 'candidato' ? 'E-mail ou CPF' : userType === 'empresa' ? 'E-mail Corporativo ou CNPJ' : 'E-mail'}
               </label>
               <div className="mt-1">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="identifier"
+                  name="identifier"
+                  type="text"
+                  autoComplete={userType === 'empresa' ? 'organization' : 'email'}
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
-                  placeholder="seu@email.com"
+                  placeholder={userType === 'candidato' ? 'seu@email.com ou 000.000.000-00' : userType === 'empresa' ? 'contato@empresa.com ou 00.000.000/0000-00' : 'seu@email.com'}
                   disabled={loading}
                 />
               </div>

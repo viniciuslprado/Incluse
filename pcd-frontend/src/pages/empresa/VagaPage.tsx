@@ -39,7 +39,7 @@ export default function VagasPage() {
   if (erro) {
     return (
       <div className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+  <div className="bg-white dark:bg-transparent rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Vagas da Empresa
           </h1>
@@ -69,7 +69,7 @@ export default function VagasPage() {
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+  <div className="bg-white dark:bg-transparent rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Gestão de Vagas
         </h1>

@@ -2,17 +2,13 @@ import React, { createContext, useState, useEffect } from "react";
 
 export type FontSize = "normal" | "large" | "extra-large";
 export type FontFamily = "default" | "readable" | "serif";
-export type Theme = "light" | "dark" | "high-contrast";
+export type Theme = "light" | "dark";
 export type MotionPreference = "normal" | "reduced";
 
 interface AccessibilitySettings {
   fontSize: FontSize;
   fontFamily: FontFamily;
   theme: Theme;
-  reducedMotion: boolean;
-  highContrast: boolean;
-  focusIndicators: boolean;
-  screenReaderOptimized: boolean;
 }
 
 interface AccessibilityContextType {
@@ -21,10 +17,6 @@ interface AccessibilityContextType {
   setFontFamily: (family: FontFamily) => void;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
-  toggleReducedMotion: () => void;
-  toggleHighContrast: () => void;
-  toggleFocusIndicators: () => void;
-  toggleScreenReaderOptimized: () => void;
   resetSettings: () => void;
 }
 
@@ -32,10 +24,6 @@ const defaultSettings: AccessibilitySettings = {
   fontSize: "normal",
   fontFamily: "default", 
   theme: "light",
-  reducedMotion: false,
-  highContrast: false,
-  focusIndicators: true,
-  screenReaderOptimized: false,
 };
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
@@ -66,8 +54,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     const root = document.documentElement;
     console.log('Aplicando configurações de acessibilidade:', settings);
     
-    // Limpar classes anteriores
-    root.classList.remove('reduce-motion', 'high-contrast', 'focus-indicators', 'screen-reader-optimized');
+  // Limpar classes anteriores
     
     // Aplicar tamanho da fonte
     switch (settings.fontSize) {
@@ -95,88 +82,11 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         break;
     }
 
-    // Aplicar tema
-    root.classList.remove('light', 'dark', 'high-contrast');
-    root.classList.add(settings.theme);
+  // Aplicar tema
+  root.classList.remove('light', 'dark');
+  root.classList.add(settings.theme);
     
-    // Aplicar motion preference usando classes Tailwind dinâmicas
-    if (settings.reducedMotion) {
-      // Desabilitar animações Tailwind
-      const animatedElements = document.querySelectorAll('.animate-bounce, .animate-spin, .animate-pulse, .animate-ping');
-      animatedElements.forEach(el => {
-        el.classList.add('!animate-none');
-      });
-      // Adicionar classe para controle via CSS
-      root.setAttribute('data-reduce-motion', 'true');
-    } else {
-      const animatedElements = document.querySelectorAll('.animate-bounce, .animate-spin, .animate-pulse, .animate-ping');
-      animatedElements.forEach(el => {
-        el.classList.remove('!animate-none');
-      });
-      root.removeAttribute('data-reduce-motion');
-    }
-    
-    // Aplicar alto contraste usando CSS filters
-    if (settings.highContrast) {
-      root.style.filter = 'contrast(150%) brightness(110%)';
-      root.setAttribute('data-high-contrast', 'true');
-      
-      // Aplicar bordas mais visíveis usando classes Tailwind
-      const interactiveElements = document.querySelectorAll('button, a, input, select, textarea');
-      interactiveElements.forEach(el => {
-        el.classList.add('!border-2', '!border-black');
-      });
-    } else {
-      root.style.filter = '';
-      root.removeAttribute('data-high-contrast');
-      
-      const interactiveElements = document.querySelectorAll('button, a, input, select, textarea');
-      interactiveElements.forEach(el => {
-        el.classList.remove('!border-2', '!border-black');
-      });
-    }
-    
-    // Aplicar focus indicators melhorados
-    if (settings.focusIndicators) {
-      root.setAttribute('data-enhanced-focus', 'true');
-      
-      // Adicionar event listeners para focus melhorado
-      const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]');
-      focusableElements.forEach(el => {
-        el.addEventListener('focus', () => {
-          el.classList.add('!ring-4', '!ring-orange-500', '!ring-offset-4', '!scale-105', '!transition-transform');
-        });
-        el.addEventListener('blur', () => {
-          el.classList.remove('!ring-4', '!ring-orange-500', '!ring-offset-4', '!scale-105', '!transition-transform');
-        });
-      });
-    } else {
-      root.removeAttribute('data-enhanced-focus');
-      
-      // Remover event listeners existentes (simplificado)
-      const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]');
-      focusableElements.forEach(el => {
-        el.classList.remove('!ring-4', '!ring-orange-500', '!ring-offset-4', '!scale-105', '!transition-transform');
-      });
-    }
-    
-    // Aplicar otimização para leitores de tela
-    if (settings.screenReaderOptimized) {
-      root.setAttribute('data-screen-reader-optimized', 'true');
-      
-      // Aumentar áreas de clique usando Tailwind
-      const clickableElements = document.querySelectorAll('button, a');
-      clickableElements.forEach(el => {
-        el.classList.add('!min-h-[44px]', '!min-w-[44px]', '!p-3');
-      });
-    } else {
-      root.removeAttribute('data-screen-reader-optimized');
-      
-      const clickableElements = document.querySelectorAll('button, a');
-      clickableElements.forEach(el => {
-        el.classList.remove('!min-h-[44px]', '!min-w-[44px]', '!p-3');
-      });
-    }
+    // Removidas configurações de motion/alto-contraste/indicadores de foco
     
     console.log('Classes aplicadas:', root.className);
   };
@@ -196,25 +106,10 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   const toggleTheme = () => {
     setSettings(prev => ({ 
       ...prev, 
-      theme: prev.theme === 'light' ? 'dark' : prev.theme === 'dark' ? 'high-contrast' : 'light'
+      theme: prev.theme === 'light' ? 'dark' : 'light'
     }));
   };
-
-  const toggleReducedMotion = () => {
-    setSettings(prev => ({ ...prev, reducedMotion: !prev.reducedMotion }));
-  };
-
-  const toggleHighContrast = () => {
-    setSettings(prev => ({ ...prev, highContrast: !prev.highContrast }));
-  };
-
-  const toggleFocusIndicators = () => {
-    setSettings(prev => ({ ...prev, focusIndicators: !prev.focusIndicators }));
-  };
-
-  const toggleScreenReaderOptimized = () => {
-    setSettings(prev => ({ ...prev, screenReaderOptimized: !prev.screenReaderOptimized }));
-  };
+  
 
   const resetSettings = () => {
     setSettings(defaultSettings);
@@ -227,11 +122,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         setFontSize,
         setFontFamily, 
         setTheme,
-        toggleTheme,
-        toggleReducedMotion,
-        toggleHighContrast,
-        toggleFocusIndicators,
-        toggleScreenReaderOptimized,
+  toggleTheme,
         resetSettings,
       }}
     >

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { api } from '../lib/api';
-import type { TipoComSubtipos } from '../types';
+import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../../lib/api';
+import type { TipoComSubtipos } from '../../types';
 
 export default function CadastroCandidatoPage() {
   const [formData, setFormData] = useState({
@@ -126,19 +126,25 @@ export default function CadastroCandidatoPage() {
 
     setLoading(true);
     try {
-      // Aqui será implementada a lógica de cadastro
-      console.log('Cadastro candidato:', formData, checkboxes);
-      
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      alert('Cadastro realizado com sucesso! Verifique seu e-mail.');
-    } catch (error) {
-      setErro('Erro ao realizar cadastro. Tente novamente.');
+      const payload = {
+        nome: formData.nomeCompleto,
+        cpf: formData.cpf,
+        telefone: formData.telefone,
+        email: formData.email,
+        escolaridade: formData.tipoDeficiencia || formData.outraDeficiencia || 'Não informado',
+        senha: formData.senha,
+      };
+      await api.registerCandidato(payload);
+      navigate('/login');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErro(msg || 'Erro ao realizar cadastro. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">

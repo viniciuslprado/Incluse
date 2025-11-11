@@ -1,5 +1,5 @@
 //react chama a API do backend para consumir
-import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga } from "../types";
+import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga, Candidato } from "../types";
 
 // Define a URL base da API. Primeiro tenta pegar do arquivo .env (VITE_API_URL),
 // caso não exista, usa "http://localhost:3000" como padrão.
@@ -11,10 +11,12 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
   // Faz a requisição para BASE_URL + path
   //fetch é a busca ou envio dados para um servidor
   //path parametro que foi passado no metodo
+  // attach auth token when present
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers = { "Content-Type": "application/json", ...(init?.headers || {}) } as Record<string,string>;
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${BASE_URL}${path}`, { // linha 6 vai no backend e trás
-    // Adiciona headers padrão "Content-Type: application/json"
-    // e permite sobrescrever ou adicionar outros headers via init
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    headers,
     ...init,
   });
   if (!res.ok) {
@@ -72,6 +74,9 @@ export const api = {
   },
   listarSubtipos(): Promise<SubtipoDeficiencia[]> {
     return http("/subtipos");
+  },
+  obterSubtipo(id: number) {
+    return http(`/subtipos/${id}`);
   },
   vincularBarreirasASubtipo(subtipoId: number, barreiraIds: number[]) {
     return http(`/vinculos/subtipos/${subtipoId}/barreiras`, {
@@ -133,8 +138,69 @@ export const api = {
       body: JSON.stringify({ acessibilidadeIds }),
     });
   },
+  listarAcessibilidadesPossiveis(vagaId: number) {
+    return http<Acessibilidade[]>(`/vagas/${vagaId}/acessibilidades-disponiveis`);
+  },
   obterVaga(vagaId: number): Promise<Vaga> {
     return http(`/vagas/${vagaId}`);
+  },
+  obterVagaComSubtipos(vagaId: number): Promise<Vaga> {
+    return http(`/vagas/${vagaId}`);
+  },
+
+  // --- Candidatos
+  getCandidato(id: number) {
+    return http<Candidato>(`/candidatos/${id}`);
+  },
+
+  // registrar candidato (POST /candidatos)
+  registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) {
+    return http(`/candidatos`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // registrar empresa (POST /empresas)
+  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) {
+    return http(`/empresas`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // login (POST /auth/login) -> { identifier, senha, userType }
+  login(identifier: string, senha: string, userType: string) {
+    return http(`/auth/login`, {
+      method: 'POST',
+      body: JSON.stringify({ identifier, senha, userType }),
+    });
+  },
+
+  // retorna apenas os subtipos vinculados ao candidato
+  listarSubtiposCandidato(id: number) {
+    return http<SubtipoDeficiencia[]>(`/candidatos/${id}/subtipos`);
+  },
+
+  // retorna barreiras (achatadas) para um subtipo
+  listarBarreirasPorSubtipo(subtipoId: number) {
+    return http<Barreira[]>(`/subtipos/${subtipoId}/barreiras`);
+  },
+
+  // vincular subtipos ao candidato
+  vincularSubtiposACandidato(candidatoId: number, subtipoIds: number[]) {
+    return http(`/candidatos/${candidatoId}/subtipos`, {
+      method: "POST",
+      body: JSON.stringify({ subtipoIds }),
+    });
+  },
+
+  // vincular barreiras (apenas para um subtipo específico) ao candidato
+  vincularBarreirasACandidato(candidatoId: number, subtipoId: number, barreiraIds: number[]) {
+    return http(`/candidatos/${candidatoId}/subtipos/${subtipoId}/barreiras`, {
+      method: "POST",
+      body: JSON.stringify({ barreiraIds }),
+    });
   },
 
 
