@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,155 +7,140 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//define o modelo de dados Empresa
-
 model Empresa {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   nome      String
-  cnpj      String? @unique
-  email     String? @unique
+  email     String?  @unique
+  cnpj      String?  @unique
+  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
   senhaHash String?
   vagas     Vaga[]
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  avaliacoes Avaliacao[]
 }
-
-
-//define o tipo da deficiência do usuario
-//o tipo de deficiencia é o nome do tipo, como por exemplo: "visual
 
 model TipoDeficiencia {
-  id        Int                   @id @default(autoincrement())
-  nome      String                @unique
+  id        Int                  @id @default(autoincrement())
+  nome      String               @unique
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
   subtipos  SubtipoDeficiencia[]
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
 }
-
-//chave estrangeira para armazenar o tipo de deficiencia do usuario
-//o tipo de deficiencia é o nome do tipo, como por exemplo: "visual"
-// o subtipo de deficiencia é o nome do subtipo, como por exemplo: "baixa visão"
 
 model SubtipoDeficiencia {
-  id         Int                  @id @default(autoincrement())
-  nome       String
-  tipoId     Int
-  tipo       TipoDeficiencia      @relation(fields: [tipoId], references: [id], onDelete: Cascade)
-  barreiras  SubtipoBarreira[]
-  // associações com candidatos
-  candidatoSubtipos CandidatoSubtipo[]
+  id                 Int                        @id @default(autoincrement())
+  nome               String
+  tipoId             Int
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  candidatoSubtipos  CandidatoSubtipo[]
   candidatoBarreiras CandidatoSubtipoBarreira[]
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
+  barreiras          SubtipoBarreira[]
+  tipo               TipoDeficiencia            @relation(fields: [tipoId], references: [id], onDelete: Cascade)
+  VagaSubtipo        VagaSubtipo[]
 
-  @@unique([tipoId, nome]) // evita subtipo duplicado dentro do mesmo tipo
-  VagaSubtipo VagaSubtipo[]
+  @@unique([tipoId, nome])
 }
-
-// define o modelo de dados Barreira
-// a barreira é o nome da barreira, como por exemplo: "escada"
 
 model Barreira {
-  id               Int                      @id @default(autoincrement())
-  descricao        String                   @unique
-  subtipos         SubtipoBarreira[]
-  acessibilidades  BarreiraAcessibilidade[]
-  // associações com candidatos
+  id                 Int                        @id @default(autoincrement())
+  descricao          String                     @unique
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  acessibilidades    BarreiraAcessibilidade[]
   candidatoBarreiras CandidatoSubtipoBarreira[]
-  createdAt        DateTime                 @default(now())
-  updatedAt        DateTime                 @updatedAt
+  subtipos           SubtipoBarreira[]
 }
 
-// define o modelo de dados Acessibilidade
-// a acessibilidade é o nome da acessibilidade, como por exemplo: "rampa"
-
 model Acessibilidade {
-  id               Int                      @id @default(autoincrement())
-  descricao        String                   @unique
-  barreiras        BarreiraAcessibilidade[]
-  createdAt        DateTime                 @default(now())
-  updatedAt        DateTime                 @updatedAt
-
+  id                 Int                      @id @default(autoincrement())
+  descricao          String                   @unique
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  barreiras          BarreiraAcessibilidade[]
   VagaAcessibilidade VagaAcessibilidade[]
 }
 
-// tabelas de junção explícitas (para fácil evolução)
-// chave estrangeira de subtipo de deficiencia e da barreira
 model SubtipoBarreira {
   subtipoId  Int
   barreiraId Int
-  subtipo    SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
   barreira   Barreira           @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
+  subtipo    SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
 
   @@id([subtipoId, barreiraId])
   @@index([barreiraId])
 }
-// pega chav estranfeira de barreira e acessibilidade
+
 model BarreiraAcessibilidade {
   barreiraId       Int
   acessibilidadeId Int
-  barreira         Barreira        @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
-  acessibilidade   Acessibilidade  @relation(fields: [acessibilidadeId], references: [id], onDelete: Cascade)
+  acessibilidade   Acessibilidade @relation(fields: [acessibilidadeId], references: [id], onDelete: Cascade)
+  barreira         Barreira       @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
 
   @@id([barreiraId, acessibilidadeId])
   @@index([acessibilidadeId])
 }
 
 model Vaga {
-  id              Int                   @id @default(autoincrement())
+  id              Int                  @id @default(autoincrement())
   empresaId       Int
-  empresa         Empresa               @relation(fields: [empresaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  titulo          String?               @default("Vaga") // <- título da vaga (ex: "Desenvolvedor Frontend React/TypeScript")
-  descricao       String                // <- descrição completa com detalhes
-  escolaridade    String                // <- adicionado (ou troque por enum se quiser)
-  cidade          String?               @default("A definir") // <- cidade da vaga
-  estado          String?               @default("A definir") // <- estado da vaga
-  subtiposAceitos VagaSubtipo[]
+  descricao       String
+  escolaridade    String
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  cidade          String?              @default("A definir")
+  estado          String?              @default("A definir")
+  titulo          String?              @default("Vaga")
+  empresa         Empresa              @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   acessibilidades VagaAcessibilidade[]
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  subtiposAceitos VagaSubtipo[]
+  vagasSalvas     VagaSalva[]
+  candidaturas    Candidatura[]
 }
 
 model VagaSubtipo {
   vagaId    Int
   subtipoId Int
-  vaga      Vaga               @relation(fields: [vagaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  subtipo   SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subtipo   SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
+  vaga      Vaga               @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+
   @@id([vagaId, subtipoId])
   @@index([subtipoId])
 }
+
 model VagaAcessibilidade {
   vagaId           Int
   acessibilidadeId Int
-  vaga             Vaga           @relation(fields: [vagaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  acessibilidade   Acessibilidade @relation(fields: [acessibilidadeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  acessibilidade   Acessibilidade @relation(fields: [acessibilidadeId], references: [id], onDelete: Cascade)
+  vaga             Vaga           @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+
   @@id([vagaId, acessibilidadeId])
   @@index([acessibilidadeId])
 }
 
-// Candidatos e suas associações com subtipos e barreiras
 model Candidato {
-  id         Int                 @id @default(autoincrement())
-  cpf        String?             @unique
-  nome       String
-  email      String?             @unique
-  telefone   String?
-  senhaHash  String?
+  id           Int                        @id @default(autoincrement())
+  nome         String
+  email        String?                    @unique
+  telefone     String?
   escolaridade String
-  subtipos   CandidatoSubtipo[]
-  // barreiras escolhidas por subtipo
-  barras     CandidatoSubtipoBarreira[]
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  cpf          String?                    @unique
+  senhaHash    String?
+  subtipos     CandidatoSubtipo[]
+  barras       CandidatoSubtipoBarreira[]
+  vagasSalvas  VagaSalva[]
+  candidaturas Candidatura[]
 }
 
 model CandidatoSubtipo {
   candidatoId Int
   subtipoId   Int
-  candidato   Candidato           @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
-  subtipo     SubtipoDeficiencia  @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
+  candidato   Candidato          @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  subtipo     SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
 
   @@id([candidatoId, subtipoId])
   @@index([subtipoId])
@@ -171,11 +150,45 @@ model CandidatoSubtipoBarreira {
   candidatoId Int
   subtipoId   Int
   barreiraId  Int
+  barreira    Barreira           @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
   candidato   Candidato          @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
   subtipo     SubtipoDeficiencia @relation(fields: [subtipoId], references: [id], onDelete: Cascade)
-  barreira    Barreira           @relation(fields: [barreiraId], references: [id], onDelete: Cascade)
 
   @@id([candidatoId, subtipoId, barreiraId])
   @@index([subtipoId])
   @@index([barreiraId])
+}
+
+
+// Avaliações, vagas salvas e candidaturas
+model Avaliacao {
+  id         Int      @id @default(autoincrement())
+  empresaId  Int
+  nota       Int
+  comentario String?
+  anonimato  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  empresa    Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+}
+
+model VagaSalva {
+  candidatoId Int
+  vagaId      Int
+  createdAt   DateTime @default(now())
+
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  vaga        Vaga      @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+
+  @@id([candidatoId, vagaId])
+}
+
+model Candidatura {
+  id          Int      @id @default(autoincrement())
+  vagaId      Int
+  candidatoId Int
+  createdAt   DateTime @default(now())
+
+  vaga        Vaga     @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
 }

@@ -226,6 +226,30 @@ async function main() {
   console.log(`http://localhost:5173/empresa/${empresa1.id}/vagas`);
   console.log(`http://localhost:5173/empresa/${empresa2.id}/vagas`);
   console.log(`http://localhost:5173/empresa/${empresa3.id}/vagas`);
+
+  // --- Candidato de teste (para verificar match)
+  const candidato1 = await prisma.candidato.create({
+    data: {
+      nome: "João Teste",
+      cpf: "111.222.333-44",
+      telefone: "(11) 99999-0000",
+      escolaridade: "Ensino Médio Completo",
+    },
+  });
+
+  // vincula subtipo motora ao candidato
+  await prisma.candidatoSubtipo.create({ data: { candidatoId: candidato1.id, subtipoId: sub_motora1.id } });
+
+  // vincula barreiras enfrentadas pelo candidato para esse subtipo (ex.: escadas e degrausAltos)
+  await prisma.candidatoSubtipoBarreira.createMany({
+    data: [
+      { candidatoId: candidato1.id, subtipoId: sub_motora1.id, barreiraId: escadas.id },
+      { candidatoId: candidato1.id, subtipoId: sub_motora1.id, barreiraId: degrausAltos.id },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log(`\nCandidato de teste criado: ${candidato1.nome} (ID: ${candidato1.id})`);
 }
 
 main()

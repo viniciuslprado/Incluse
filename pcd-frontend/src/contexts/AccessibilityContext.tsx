@@ -86,8 +86,6 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   root.classList.remove('light', 'dark');
   root.classList.add(settings.theme);
     
-    // Removidas configurações de motion/alto-contraste/indicadores de foco
-    
     console.log('Classes aplicadas:', root.className);
   };
 

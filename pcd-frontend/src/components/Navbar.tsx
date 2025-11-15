@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Do not render the global navbar inside candidate dashboard routes
+  if (location.pathname.startsWith('/candidato')) return null;
 
   const navigation = [
     { name: 'Início', href: '/' },
+    { name: 'Quem Somos', href: '/quem-somos' },
     { name: 'Vagas', href: '/vagas' },
     { name: 'Empresas', href: '/empresas' },
-    { name: 'FAQ', href: '/faq' }
+    { name: 'Contato', href: '/contato' }
   ];
 
   return (

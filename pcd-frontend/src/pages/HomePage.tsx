@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { useToast } from "../components/ui/Toast";
 import type { Vaga, Empresa } from "../types";
 import Loading from "../components/Loading";
 import VagaModal from "../components/VagaModal";
-import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AccessibilityTest from "../components/AccessibilityTest";
 
@@ -200,9 +200,9 @@ export default function HomePage() {
   const [erro, setErro] = useState<string | null>(null);
   const [modalVagaId, setModalVagaId] = useState<number | null>(null);
 
+  const { addToast } = useToast();
   const abrirChat = () => {
-    // Aqui futuramente implementaremos a abertura do chat
-    alert('Chat de suporte será implementado em breve! 💬\n\nEm breve você poderá:\n• Falar com nossa equipe de suporte\n• Tirar dúvidas sobre acessibilidade\n• Receber ajuda para usar a plataforma');
+    addToast({ type: 'info', message: 'Chat de suporte será implementado em breve! Em breve você poderá: • Falar com nossa equipe • Tirar dúvidas • Receber ajuda' });
   };
 
   useEffect(() => {
@@ -224,15 +224,15 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Navigation */}
-      <Navbar />
-      
       {/* Hero Section */}
       <main id="main-content" role="main">
         <Hero />
 
       {/* Stats Section */}
       <Stats onAbrirChat={abrirChat} />
+
+      {/* Como Funciona */}
+      <ComoFunciona />
 
       {/* Vagas em Destaque */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -313,5 +313,35 @@ export default function HomePage() {
       {/* Teste de Acessibilidade - Remover em produção */}
       <AccessibilityTest />
     </div>
+  );
+}
+
+function ComoFunciona() {
+  const steps = [
+    { title: '1. Crie uma conta', desc: 'Crie sua conta grátis' },
+    { title: '2. Cadastre seu currículo', desc: 'Adicione informações pessoais e profissionais' },
+    { title: '3. Busque vagas', desc: 'Encontre vagas compatíveis com seu perfil' },
+    { title: '4. Envie seu currículo', desc: 'Candidate-se online e acompanhe o status' },
+  ];
+
+  return (
+    <section className="bg-white dark:bg-gray-800 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-3xl font-bold mb-4">Como funciona?</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">Para enviar seu currículo para as vagas é muito simples. Siga estes passos:</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {steps.map((s) => (
+            <div key={s.title} className="p-6 bg-incluse-bg-neutral dark:bg-gray-700 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">{s.title}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-10 flex justify-center gap-6">
+          <Link to="/cadastro/candidato" className="px-8 py-3 bg-incluse-primary text-white rounded-full">Cadastrar meu currículo</Link>
+          <Link to="/cadastro/empresa" className="px-8 py-3 border-2 border-incluse-primary rounded-full">Anunciar vaga gratuitamente</Link>
+        </div>
+      </div>
+    </section>
   );
 }

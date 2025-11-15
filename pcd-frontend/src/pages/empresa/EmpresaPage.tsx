@@ -39,17 +39,13 @@ export default function EmpresaPage() {
         <h3 className="font-bold text-xl">
           
         </h3>
-        <nav className="space-x-4">
-          <NavLink
-            to={`/empresa/${empresa.id}/vagas`}
-            className={({ isActive }) =>
-              isActive
-                ? "font-semibold underline"
-                : "hover:underline text-blue-100"
-            }
-          >
-            Minhas Vagas
-          </NavLink>
+        <nav className="flex gap-3 overflow-x-auto whitespace-nowrap">
+          <NavLink to={`/empresa/${empresa.id}/anunciar`} className={({ isActive }) => isActive ? 'inline-block font-semibold underline px-2 py-1' : 'inline-block hover:underline text-blue-100 px-2 py-1'}>Anunciar Vaga</NavLink>
+          <NavLink to={`/empresa/${empresa.id}/vagas`} className={({ isActive }) => isActive ? 'inline-block font-semibold underline px-2 py-1' : 'inline-block hover:underline text-blue-100 px-2 py-1'}>Vagas Anunciadas</NavLink>
+          <NavLink to={`/empresa/${empresa.id}/candidatos`} className={({ isActive }) => isActive ? 'inline-block font-semibold underline px-2 py-1' : 'inline-block hover:underline text-blue-100 px-2 py-1'}>Candidatos por Vaga</NavLink>
+          <NavLink to={`/empresa/${empresa.id}/seguidores`} className={({ isActive }) => isActive ? 'inline-block font-semibold underline px-2 py-1' : 'inline-block hover:underline text-blue-100 px-2 py-1'}>Seguidores</NavLink>
+          <NavLink to={`/empresa/${empresa.id}/estatisticas`} className={({ isActive }) => isActive ? 'inline-block font-semibold underline px-2 py-1' : 'inline-block hover:underline text-blue-100 px-2 py-1'}>Estatísticas</NavLink>
+          <NavLink to={`/empresa/${empresa.id}/minha-conta`} className={({ isActive }) => isActive ? 'inline-block font-semibold underline px-2 py-1' : 'inline-block hover:underline text-blue-100 px-2 py-1'}>Minha Conta</NavLink>
         </nav>
         
       </header>

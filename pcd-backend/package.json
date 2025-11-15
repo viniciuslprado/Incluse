@@ -2,9 +2,7 @@
   "name": "pcd-backend",
   "version": "1.0.0",
   "main": "index.js",
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
+
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "seed": "npx prisma db seed"
@@ -22,6 +20,7 @@
     "tsx": "^4.20.3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",

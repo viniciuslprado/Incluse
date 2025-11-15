@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, NavLink } from "react-router-dom";
 import { api } from "../../lib/api";
 import type { Candidato, CandidatoSubtipo } from "../../types";
 import CandidatoSubtiposForm from "../../components/candidato/CandidatoSubtiposForm";
@@ -40,7 +40,15 @@ export default function CandidatoPage() {
           <p className="text-sm text-red-700 dark:text-red-300">{erro}</p>
         </div>
       )}
-      <h1 className="text-2xl font-bold mb-4">Perfil de {candidato.nome}</h1>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Perfil de {candidato.nome}</h1>
+        <nav className="space-x-4 mb-4">
+          <NavLink to={`/candidato/${candidatoId}`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Subtipos e Barreiras</NavLink>
+          <NavLink to={`/candidato/${candidatoId}/vagas`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Minhas Vagas</NavLink>
+          <NavLink to={`/candidato/${candidatoId}/saved`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Vagas Salvas</NavLink>
+          <NavLink to={`/candidato/${candidatoId}/empresas`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Empresas Favoritas</NavLink>
+        </nav>
+      </header>
 
       <CandidatoSubtiposForm candidatoId={candidatoId} onUpdated={carregar} />
 

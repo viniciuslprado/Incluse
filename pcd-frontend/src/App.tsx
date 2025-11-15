@@ -7,7 +7,10 @@ import CadastroCandidatoPage from "./pages/Cadastro/CadastroCandidatoPage";
 import CadastroEmpresaPage from "./pages/Cadastro/CadastroEmpresaPage";
 import CadastroEmpresaMinima from "./pages/Cadastro/CadastroEmpresaMinima";
 import FAQPage from "./pages/FAQPage";
+import FaqModal from "./components/FaqModal";
 import PoliticaPrivacidadePage from "./pages/PoliticaPrivacidadePage";
+import QuemSomosPage from "./pages/QuemSomosPage";
+import AcessibilidadePage from "./pages/AcessibilidadePage";
 import EmpresasParceirasPage from "./pages/empresa/EmpresasParceirasPage";
 import AccessibilityTestPage from "./pages/AccessibilityTestPage";
 import { ColorPaletteDemo } from "./components/ColorPaletteDemo";
@@ -19,25 +22,51 @@ import AcessibilidadesPage from "./pages/admin/AcessibilidadesPage";
 import VagaPage from "./pages/empresa/VagaPage";
 import VagaDetalhePage from "./pages/empresa/VagaDetalhePage";
 import EmpresaPage from "./pages/empresa/EmpresaPage";
+import AnunciarVagaPage from "./pages/empresa/AnunciarVagaPage";
+import CandidatosPorVagaPage from "./pages/empresa/CandidatosPorVagaPage";
+import AvaliarEmpresaPage from "./pages/empresa/AvaliarEmpresaPage";
 import CandidatoPage from "./pages/Candidato/CandidatoPage";
+import InicioPage from "./pages/Candidato/InicioPage";
+import CandidatoVagasPage from "./pages/Candidato/CandidatoVagasPage";
+import VagasSalvasPage from "./pages/Candidato/VagasSalvasPage";
+import EmpresasPage from "./pages/Candidato/EmpresasPage";
+import NotificacoesPage from "./pages/Candidato/NotificacoesPage";
+import PerfilPage from "./pages/Perfilmenu/PerfilPage";
+import EmpresasFavoritasPage from "./pages/Candidato/EmpresasFavoritasPage";
+import CurriculosEnviadosPage from "./pages/Candidato/CurriculosEnviadosPage";
+import BuscarVagasPage from "./pages/Candidato/BuscarVagasPage";
+import ConfiguracoesPage from "./pages/Candidato/ConfiguracoesPage";
+import DashboardLayout from "./pages/Candidato/DashboardLayout";
+import MeuCurriculoPage from "./pages/Candidato/MeuCurriculoPage";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
+import { ToastProvider } from "./components/ui/Toast";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import SkipLinks from "./components/SkipLinks";
+import FaqFloating from "./components/FaqFloating";
+import ContatoPage from "./pages/ContatoPage";
+import Navbar from "./components/Navbar";
 
 export default function App() {
   return (
     <AccessibilityProvider>
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+      <ToastProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
         <SkipLinks />
         <AccessibilityMenu />
           
           <BrowserRouter>
+            <Navbar />
+            <FaqFloating />
+            <FaqModal />
             <Routes>
               {/* Páginas Públicas - Para candidatos PCDs */}
               <Route path="/" element={<HomePage />} />
               <Route path="/vagas" element={<VagasPage />} />
               <Route path="/empresas" element={<EmpresasParceirasPage />} />
-              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/quem-somos" element={<QuemSomosPage />} />
+              <Route path="/acessibilidade" element={<AcessibilidadePage />} />
+              <Route path="/contato" element={<ContatoPage />} />
+              {/* Public FAQ is available via floating modal on desktop; remove public route */}
               <Route path="/politica-privacidade" element={<PoliticaPrivacidadePage />} />
               <Route path="/teste-acessibilidade" element={<AccessibilityTestPage />} />
               <Route path="/cores" element={<ColorPaletteDemo />} />
@@ -63,11 +92,29 @@ export default function App() {
               {/* Área Empresas - Gerenciar vagas */}
               <Route path="/empresa/:id" element={<EmpresaPage />}>
                 <Route path="vagas" element={<VagaPage />} />
+                <Route path="faq" element={<FAQPage />} />
+                <Route path="anunciar" element={<AnunciarVagaPage />} />
+                <Route path="avaliar" element={<AvaliarEmpresaPage />} />
+                <Route path="vagas/:vagaId/candidatos" element={<CandidatosPorVagaPage />} />
                 <Route path="vagas/:vagaId" element={<VagaDetalhePage />} />
               </Route>
 
               {/* 404 */}
-              <Route path="/candidato/:id" element={<CandidatoPage />} />
+              <Route path="/candidato/:id" element={<DashboardLayout />}>
+                <Route index element={<InicioPage />} />
+                <Route path="faq" element={<FAQPage />} />
+                <Route path="vagas" element={<CandidatoVagasPage />} />
+                <Route path="curriculo" element={<MeuCurriculoPage />} />
+                <Route path="salvas" element={<VagasSalvasPage />} />
+                <Route path="empresas" element={<EmpresasPage />} />
+                <Route path="notificacoes" element={<NotificacoesPage />} />
+                <Route path="historico" element={<CurriculosEnviadosPage />} />
+                <Route path="buscar" element={<BuscarVagasPage />} />
+                <Route path="perfil" element={<PerfilPage />} />
+                <Route path="favoritas" element={<EmpresasFavoritasPage />} />
+                <Route path="configuracoes" element={<ConfiguracoesPage />} />
+              </Route>
+              {/* Floating FAQ (link) - aparece em todas as páginas públicas */}
               <Route path="*" element={
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="text-center">
@@ -79,6 +126,7 @@ export default function App() {
             </Routes>
           </BrowserRouter>
       </div>
+      </ToastProvider>
     </AccessibilityProvider>
   );
 }

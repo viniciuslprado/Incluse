@@ -72,9 +72,9 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link to="/faq" className="text-base text-gray-300 hover:text-incluse-accent transition-colors duration-300">
-                      FAQ
-                    </Link>
+                    <button onClick={() => window.dispatchEvent(new CustomEvent('openFaq'))} className="text-base text-gray-300 hover:text-incluse-accent transition-colors duration-300 bg-transparent p-0">
+                        FAQ
+                      </button>
                   </li>
                 </ul>
               </div>
@@ -130,14 +130,14 @@ export default function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <Link to="/faq" className="text-base text-gray-300 hover:text-incluse-accent transition-colors duration-300">
-                      Perguntas Frequentes
-                    </Link>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('openFaq'))} className="text-base text-gray-300 hover:text-incluse-accent transition-colors duration-300 bg-transparent p-0">
+                        Perguntas Frequentes
+                      </button>
                   </li>
                   <li>
-                    <a href="mailto:suporte@incluse.com.br" className="text-base text-gray-300 hover:text-incluse-secondary transition-colors duration-300">
+                    <Link to="/contato" className="text-base text-gray-300 hover:text-incluse-secondary transition-colors duration-300">
                       Contato
-                    </a>
+                    </Link>
                   </li>
                   <li>
                     <Link to="/politica-privacidade" className="text-base text-gray-300 hover:text-incluse-accent transition-colors duration-300">
@@ -153,14 +153,14 @@ export default function Footer() {
         {/* Bottom footer */}
         <div className="mt-12 border-t border-gray-700 pt-8">
           <div className="md:flex md:items-center md:justify-between">
-            <div className="flex space-x-6 md:order-2">
-              <Link to="/politica-privacidade" className="text-gray-400 hover:text-incluse-primary text-sm transition-colors duration-300">
-                Política de Privacidade
-              </Link>
-              <Link to="/faq" className="text-gray-400 hover:text-incluse-secondary text-sm transition-colors duration-300">
-                FAQ
-              </Link>
-            </div>
+              <div className="flex space-x-6 md:order-2">
+                <Link to="/politica-privacidade" className="text-gray-400 hover:text-incluse-accent text-sm transition-colors duration-300">
+                  Política de Privacidade
+                </Link>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('openFaq'))} className="text-gray-400 hover:text-incluse-accent text-sm transition-colors duration-300 bg-transparent p-0">
+                    FAQ
+                  </button>
+              </div>
             <p className="mt-8 text-base text-gray-400 md:mt-0 md:order-1">
               © 2025 Incluse. Todos os direitos reservados. Plataforma de inclusão profissional.
             </p>

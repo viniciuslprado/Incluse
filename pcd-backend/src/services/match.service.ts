@@ -1,14 +1,21 @@
 import { MatchRepo } from "../repositories/match.repo";
 
+const MATCH_THRESHOLD = (() => {
+  const v = process.env.MATCH_THRESHOLD ?? "1.0";
+  const n = Number.parseFloat(v);
+  if (Number.isFinite(n) && n >= 0) return Math.min(1, Math.max(0, n));
+  return 1.0;
+})();
+
 export const MatchService = {
-  // strict criteria: all candidate barriers for a subtipo must be resolved by at least one acessibilidade offered by the vaga
+  // returns an array of vagas with compatibility percentage and breakdown per subtipo
   async matchVagasForCandidato(candidatoId: number) {
     const { candidato, candidatoBarreiras } = await MatchRepo.getCandidatoProfile(candidatoId);
     if (!candidato) throw Object.assign(new Error("Candidato não encontrado"), { status: 404 });
 
     const vagas = await MatchRepo.listVagasWithRelations();
 
-    // build a map of candidate barriers grouped by subtipoId
+    // group candidate barriers by subtipoId
     const barreirasPorSubtipo = new Map<number, Array<{ barreiraId: number; descricao?: string }>>();
     for (const cb of candidatoBarreiras) {
       const arr = barreirasPorSubtipo.get(cb.subtipoId) ?? [];
@@ -16,12 +23,9 @@ export const MatchService = {
       barreirasPorSubtipo.set(cb.subtipoId, arr);
     }
 
-    // collect all distinct barrier ids we need to check
     const allBarrierIds = Array.from(new Set(candidatoBarreiras.map((b) => b.barreiraId)));
 
-    // fetch barrier->acessibilidade mappings for the barriers the candidate faces
     const mappings = await MatchRepo.listBarreiraAcessibilidadesForBarreiras(allBarrierIds);
-    // build map: barreiraId -> Set(acessibilidadeId)
     const barreiraToAcess = new Map<number, Set<number>>();
     for (const m of mappings) {
       const s = barreiraToAcess.get(m.barreiraId) ?? new Set<number>();
@@ -29,64 +33,66 @@ export const MatchService = {
       barreiraToAcess.set(m.barreiraId, s);
     }
 
-    const matches: any[] = [];
+    const results: any[] = [];
 
-    // for each vaga, check candidate subtipos
     for (const vaga of vagas) {
-      // build set of acessibilidade ids offered by vaga
-      const vagaAcessIds = new Set<number>(vaga.acessibilidades.map((a: any) => a.acessibilidadeId ?? a.acessibilidade?.id));
+      const vagaAcessIds = new Set<number>(
+        (vaga.acessibilidades ?? []).map((a: any) => a.acessibilidadeId ?? a.acessibilidade?.id).filter(Boolean)
+      );
 
-      let vagaMatches: any[] = [];
+      const subtipoBreakdowns: any[] = [];
 
       for (const csub of candidato.subtipos ?? []) {
-    const subtipoId = csub.subtipoId ?? csub.subtipo?.id;
+        const subtipoId = csub.subtipoId ?? csub.subtipo?.id;
+        if (!subtipoId) continue;
 
-        // is this subtipo accepted by the vaga?
+        // check if vaga accepts this subtipo
         const aceita = (vaga.subtiposAceitos ?? []).some((vs: any) => {
           const sId = vs.subtipoId ?? vs.subtipo?.id ?? vs.id;
           return sId === subtipoId;
         });
         if (!aceita) continue;
 
-        // barriers candidate faces for this subtipo
         const bList = barreirasPorSubtipo.get(subtipoId) ?? [];
-        if (!bList.length) continue; // candidate does not report barriers for this subtipo
+        if (!bList.length) continue;
 
-        const matchedBarreiras: any[] = [];
-        const missingBarreiras: any[] = [];
+        const covered: any[] = [];
+        const uncovered: any[] = [];
 
         for (const b of bList) {
-          // which acessibilities resolve this barrier?
           const aSet = barreiraToAcess.get(b.barreiraId) ?? new Set<number>();
-
-          // check intersection between aSet and vagaAcessIds
           const resolved = Array.from(aSet).some((aid) => vagaAcessIds.has(aid));
-          if (resolved) matchedBarreiras.push(b);
-          else missingBarreiras.push(b);
+          if (resolved) covered.push(b);
+          else uncovered.push(b);
         }
 
-        const allResolved = matchedBarreiras.length > 0 && missingBarreiras.length === 0;
+        const percent = bList.length ? covered.length / bList.length : 0;
 
-        vagaMatches.push({
+        subtipoBreakdowns.push({
           subtipoId,
           subtipoName: csub.subtipo?.nome ?? null,
-          matchedBarreiras,
-          missingBarreiras,
-          allResolved,
+          totalBarreiras: bList.length,
+          coveredBarreiras: covered,
+          uncoveredBarreiras: uncovered,
+          percent,
         });
       }
 
-      // if at least one subtipo for this vaga is fully resolved, consider vaga compatible
-      const hasFull = vagaMatches.some((vm) => vm.allResolved);
-      if (hasFull) {
-        matches.push({
+      if (!subtipoBreakdowns.length) continue;
+
+      // the vaga compatibility is the maximum percent among subtipos (candidate can match by at least one subtipo)
+      const vagaPercent = Math.max(...subtipoBreakdowns.map((s) => s.percent));
+
+      if (vagaPercent >= MATCH_THRESHOLD) {
+        results.push({
           vagaId: vaga.id,
           vagaTitulo: vaga.titulo,
-          matches: vagaMatches.filter((vm) => vm.allResolved),
+          compatibility: vagaPercent,
+          subtipoBreakdowns,
         });
       }
     }
 
-    return matches;
+    return results;
   },
 };

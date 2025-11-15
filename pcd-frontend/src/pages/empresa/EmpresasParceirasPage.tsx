@@ -321,12 +321,7 @@ export default function EmpresasParceirasPage() {
                   >
                     Ver Vagas
                   </Link>
-                  <a
-                    href={`mailto:${empresa.email}`}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Contatar
-                  </a>
+                  {/* Contato direto com a empresa removido do card conforme solicitado */}
                 </div>
               </div>
             </div>
@@ -355,28 +350,27 @@ export default function EmpresasParceirasPage() {
           </div>
         )}
 
-        {/* Call to Action para empresas */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">
+        {/* Call to Action padrão (mesmo estilo do FAQ) */}
+        <div className="bg-gradient-to-br from-incluse-primary/10 via-incluse-accent/10 to-incluse-secondary/10 border border-incluse-accent/30 rounded-lg p-8 text-center shadow-sm">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-incluse-primary to-incluse-secondary bg-clip-text text-transparent mb-4">
             Sua empresa quer fazer parte?
           </h2>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Junte-se às empresas que estão construindo um futuro mais inclusivo. 
-            Cadastre sua empresa e tenha acesso aos melhores talentos PCD do Brasil.
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            Junte-se às empresas que estão construindo um futuro mais inclusivo. Cadastre sua empresa e tenha acesso aos melhores talentos PCD do Brasil.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/cadastro/empresa"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-incluse-primary to-incluse-accent hover:from-incluse-primary-dark hover:to-incluse-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-incluse-primary transition-all duration-300 transform hover:scale-105"
             >
               Cadastrar Empresa
             </Link>
-            <Link
-              to="/faq"
-              className="inline-flex items-center px-6 py-3 border-2 border-white text-base font-medium rounded-md text-white hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('openFaq'))}
+              className="inline-flex items-center px-6 py-3 border border-incluse-secondary text-base font-medium rounded-md text-incluse-secondary bg-white hover:bg-incluse-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-incluse-secondary transition-all duration-300 transform hover:scale-105"
             >
               Saiba Mais
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -395,12 +389,9 @@ export default function EmpresasParceirasPage() {
             >
               Ver Todas as Vagas
             </Link>
-            <Link 
-              to="/faq" 
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-            >
+            <button onClick={() => window.dispatchEvent(new CustomEvent('openFaq'))} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Perguntas Frequentes
-            </Link>
+            </button>
           </div>
         </div>
       </div>

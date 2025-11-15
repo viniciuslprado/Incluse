@@ -153,6 +153,55 @@ export const api = {
     return http<Candidato>(`/candidatos/${id}`);
   },
 
+  // listar vagas compatíveis para um candidato (GET /match/:candidatoId)
+  listarVagasCompativeis(candidatoId: number) {
+    return http<Vaga[]>(`/match/${candidatoId}`);
+  },
+
+  // Avaliar empresa (POST /empresas/:id/avaliacoes)
+  avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimato?: boolean) {
+    return http(`/empresas/${empresaId}/avaliacoes`, {
+      method: 'POST',
+      body: JSON.stringify({ nota, comentario, anonimato }),
+    });
+  },
+
+  // Vagas salvas (favoritas)
+  listarVagasSalvas(candidatoId: number) {
+    return http<Vaga[]>(`/candidatos/${candidatoId}/salvas`);
+  },
+
+  salvarVaga(candidatoId: number, vagaId: number) {
+    return http(`/candidatos/${candidatoId}/salvas/${vagaId}`, { method: 'POST' });
+  },
+
+  removerVagaSalva(candidatoId: number, vagaId: number) {
+    return http(`/candidatos/${candidatoId}/salvas/${vagaId}`, { method: 'DELETE' });
+  },
+
+  // candidatar em uma vaga (POST /vagas/:id/candidatar { candidatoId })
+  candidatarVaga(vagaId: number, candidatoId: number) {
+    return http(`/vagas/${vagaId}/candidatar`, { method: 'POST', body: JSON.stringify({ candidatoId }) });
+  },
+
+  // Anunciar vaga (empresa)
+  anunciarVaga(data: { empresaId: number; titulo?: string; descricao: string; escolaridade: string; cidade?: string; estado?: string }) {
+    return http(`/vagas`, { method: 'POST', body: JSON.stringify(data) });
+  },
+
+  // Listar candidatos inscritos por vaga
+  listarCandidatosPorVaga(vagaId: number) {
+    return http(`/vagas/${vagaId}/candidatos`);
+  },
+
+  // Conteúdo estático / CMS-like
+  getQuemSomos() {
+    return http(`/conteudo/quem-somos`);
+  },
+  listarFAQ() {
+    return http(`/faq/list`);
+  },
+
   // registrar candidato (POST /candidatos)
   registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) {
     return http(`/candidatos`, {

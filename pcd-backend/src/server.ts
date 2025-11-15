@@ -1,6 +1,5 @@
 // src/server.ts
 import express from "express";
-import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 
 // importa suas rotas
@@ -13,9 +12,9 @@ import empresasRoutes from "./routes/empresas.routes";
 import vagasRoutes from "./routes/vagas.routes";
 import candidatosRoutes from "./routes/candidatos.routes";
 import authRoutes from "./routes/auth.routes";
+import matchRoutes from "./routes/match.routes";
 
 const app = express();
-const prisma = new PrismaClient();
 app.use(cors({ origin: true })); // antes das rotas
 app.use(express.json());
 
@@ -30,6 +29,7 @@ app.use("/empresas", empresasRoutes);
 app.use("/vagas", vagasRoutes);
 app.use("/candidatos", candidatosRoutes);
 app.use("/auth", authRoutes);
+app.use("/match", matchRoutes);
 
 
 // middleware de erro genérico

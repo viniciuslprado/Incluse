@@ -279,12 +279,9 @@ export default function PoliticaPrivacidadePage() {
             >
               ← Voltar à página inicial
             </Link>
-            <Link 
-              to="/faq" 
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-            >
+            <button onClick={() => window.dispatchEvent(new CustomEvent('openFaq'))} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               Perguntas Frequentes
-            </Link>
+            </button>
             <Link 
               to="/vagas" 
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"

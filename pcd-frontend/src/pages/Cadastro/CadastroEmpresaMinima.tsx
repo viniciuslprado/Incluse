@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useToast } from '../../components/ui/Toast';
 
 export default function CadastroEmpresaMinima() {
   const [nomeEmpresa, setNomeEmpresa] = useState('');
@@ -9,6 +10,7 @@ export default function CadastroEmpresaMinima() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const formatCNPJ = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -33,7 +35,7 @@ export default function CadastroEmpresaMinima() {
       // TODO: chamar API de cadastro de empresa
       console.log('Cadastro mínima empresa', { nomeEmpresa, cnpj, email, senha });
       await new Promise((r) => setTimeout(r, 1000));
-      alert('Cadastro enviado para análise. Verifique seu e-mail.');
+      addToast({ type: 'success', message: 'Cadastro enviado para análise. Verifique seu e-mail.' });
       navigate('/login');
     } catch {
       setErro('Erro ao criar conta. Tente novamente.');

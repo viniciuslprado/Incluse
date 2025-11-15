@@ -38,7 +38,7 @@ export default function AccessibilityMenu() {
       <button
         id="accessibility-menu"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         title="Menu de Acessibilidade"
         aria-label="Abrir menu de acessibilidade"
         aria-expanded={isOpen}
@@ -50,7 +50,7 @@ export default function AccessibilityMenu() {
 
       {/* Menu de acessibilidade */}
       {isOpen && (
-        <div className="fixed bottom-20 right-6 z-40 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-6 w-80 max-h-[70vh] overflow-y-auto">
+        <div className="fixed right-24 top-1/2 transform -translate-y-1/2 z-40 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-6 w-80 max-h-[70vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Acessibilidade
