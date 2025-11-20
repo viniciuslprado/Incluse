@@ -28,6 +28,12 @@ export const SubtiposService = {
     };
   },
 
+  async listBarreiras(id: number) {
+    const subtipo = await SubtiposRepo.findDeepById(id);
+    if (!subtipo) throw Object.assign(new Error('Subtipo não encontrado'), { status: 404 });
+    return subtipo.barreiras.map((sb) => ({ id: sb.barreira.id, descricao: sb.barreira.descricao }));
+  },
+
   async create(nome: string, tipoId: number) {
     const final = (nome ?? "").trim();
     if (!final) throw Object.assign(new Error("Campos 'nome' e 'tipoId' são obrigatórios"), { status: 400 });

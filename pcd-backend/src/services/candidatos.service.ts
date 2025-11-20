@@ -59,17 +59,22 @@ export const CandidatosService = {
     const { nome, cpf, email, senha, telefone, escolaridade } = data;
     if (!nome?.trim()) throw Object.assign(new Error('Nome é obrigatório'), { status: 400 });
     if (!senha || senha.length < 6) throw Object.assign(new Error('Senha inválida (mínimo 6 caracteres)'), { status: 400 });
+    // normaliza e valida
+    const normalizedEmail = email?.trim().toLowerCase() ?? null;
+    const normalizedCpf = cpf ? cpf.replace(/\D/g, '') : null;
+    if (normalizedCpf && normalizedCpf.length !== 11) throw Object.assign(new Error('CPF inválido (deve conter 11 dígitos)'), { status: 400 });
+
     // verifica duplicados
-    if (email) {
-      const e = await CandidatosRepo.findByEmail(email);
+    if (normalizedEmail) {
+      const e = await CandidatosRepo.findByEmail(normalizedEmail);
       if (e) throw Object.assign(new Error('E-mail já cadastrado'), { status: 400 });
     }
-    if (cpf) {
-      const c = await CandidatosRepo.findByCpf(cpf);
+    if (normalizedCpf) {
+      const c = await CandidatosRepo.findByCpf(normalizedCpf);
       if (c) throw Object.assign(new Error('CPF já cadastrado'), { status: 400 });
     }
   const senhaHash = (bcrypt as any).hashSync(senha, 8);
-    const created = await CandidatosRepo.create({ nome: nome.trim(), cpf: cpf?.trim(), email: email?.trim(), telefone, escolaridade: escolaridade ?? 'Não informado', senhaHash });
+    const created = await CandidatosRepo.create({ nome: nome.trim(), cpf: normalizedCpf, email: normalizedEmail, telefone, escolaridade: escolaridade ?? 'Não informado', senhaHash });
     // don't return senhaHash to caller
     if (created) {
       const c: any = created;

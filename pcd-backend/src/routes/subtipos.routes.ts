@@ -3,6 +3,7 @@ import { SubtiposController } from "../controllers/subtipos.controller";
 const router = Router();
 
 router.get("/:id", SubtiposController.getOne); // /subtipos/:id
+router.get("/:id/barreiras", SubtiposController.listBarreiras); // /subtipos/:id/barreiras
 router.get("/", SubtiposController.list) // /subtipo
 router.post("/", SubtiposController.create);   // /subtipos
 

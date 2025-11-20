@@ -11,6 +11,11 @@ export const SubtiposController = {
     const data = await SubtiposService.findDeep(id);
     res.json(data);
   },
+  async listBarreiras(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    const data = await SubtiposService.listBarreiras(id);
+    res.json(data);
+  },
   async create(req: Request, res: Response) {
     const { nome, tipoId } = req.body ?? {};
     const created = await SubtiposService.create(nome, Number(tipoId));

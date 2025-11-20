@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CandidatoSubtiposForm from '../../components/candidato/CandidatoSubtiposForm';
 import CandidatoBarreirasForm from '../../components/candidato/CandidatoBarreirasForm';
+import { api } from '../../lib/api';
 
 type Props = {
   candidateSubtipos: any[];
@@ -18,6 +19,35 @@ export default function Acessibilidade({ candidateSubtipos, setCandidateSubtipos
   const [openLaudo, setOpenLaudo] = useState(true);
   const [openTipo, setOpenTipo] = useState(true);
   const [openBarreiras, setOpenBarreiras] = useState(true);
+  const [tiposComSubtipos, setTiposComSubtipos] = useState<any[]>([]);
+  const [selectedTipoIds, setSelectedTipoIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    api.listarTiposComSubtipos().then((r) => setTiposComSubtipos(r)).catch(() => setTiposComSubtipos([]));
+  }, []);
+
+  function toggleTipo(tipoId: number) {
+    const tipo = tiposComSubtipos.find((t) => t.id === tipoId);
+    if (!tipo) return;
+    const subtipoIdsOfTipo: number[] = (tipo.subtipos || []).map((s: any) => s.id);
+    const currentIds = candidateSubtipos?.map((s: any) => (typeof s === 'number' ? s : s.id)) ?? [];
+
+    let newIds: number[];
+    if (selectedTipoIds.includes(tipoId)) {
+      // uncheck: remove subtipo ids of this tipo
+      newIds = currentIds.filter((id) => !subtipoIdsOfTipo.includes(id));
+      setSelectedTipoIds((prev) => prev.filter((x) => x !== tipoId));
+    } else {
+      // check: add subtipo ids
+      newIds = Array.from(new Set([...currentIds, ...subtipoIdsOfTipo]));
+      setSelectedTipoIds((prev) => [...prev, tipoId]);
+    }
+
+    // build selected objects from tiposComSubtipos
+    const allSubtipos = tiposComSubtipos.flatMap((t) => t.subtipos || []);
+    const selectedObjects = allSubtipos.filter((s: any) => newIds.includes(s.id));
+    setCandidateSubtipos(selectedObjects);
+  }
 
   return (
     <section id="acessibilidade" className="space-y-6">
@@ -61,10 +91,22 @@ export default function Acessibilidade({ candidateSubtipos, setCandidateSubtipos
           {openTipo && (
             <div className="mt-3">
               <p className="text-sm text-gray-500 mb-2">Selecione os tipos que se aplicam ao seu cadastro.</p>
+              {/* Tipos (ex.: Motora, Mental) — selecionar um tipo seleciona seus subtipos */}
+              {tiposComSubtipos.length > 0 && (
+                <div className="mb-3 space-y-2">
+                  {tiposComSubtipos.map((t) => (
+                    <label key={t.id} className="flex items-center space-x-2">
+                      <input type="checkbox" checked={selectedTipoIds.includes(t.id)} onChange={() => toggleTipo(t.id)} />
+                      <span className="font-medium">{t.nome}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
               <CandidatoSubtiposForm
                 candidatoId={Number(window.location.pathname.split('/')[2])}
                 disableActions={true}
-                initialSelected={candidateSubtipos?.map((s: any) => s.id) ?? []}
+                initialSelected={candidateSubtipos?.map((s: any) => (typeof s === 'number' ? s : s.id)) ?? []}
                 onChange={(sel) => setCandidateSubtipos(sel)}
               />
             </div>
@@ -73,14 +115,13 @@ export default function Acessibilidade({ candidateSubtipos, setCandidateSubtipos
 
         {/* 2.3 Barreiras / Necessidades */}
         <div>
-          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={() => setOpenBarreiras(!openBarreiras)} aria-expanded={openBarreiras} className="w-8 h-8 flex items-center justify-center rounded border text-sm">
                 {openBarreiras ? '−' : '+'}
               </button>
               <h4 className="font-medium">Barreiras / Necessidades <span className="text-red-600">*</span></h4>
             </div>
-            <div className="text-sm font-semibold text-sky-600">Essencial para cálculo do MATCH</div>
           </div>
           {openBarreiras && (
             <div className="mt-3">
@@ -92,23 +133,26 @@ export default function Acessibilidade({ candidateSubtipos, setCandidateSubtipos
 
               {candidateSubtipos && candidateSubtipos.length > 0 && (
                 <div className="mt-2 space-y-4">
-                  {candidateSubtipos.map((s: any) => (
-                    <CandidatoBarreirasForm
-                      key={s.id}
-                      candidatoId={Number(window.location.pathname.split('/')[2])}
-                      subtipo={s}
-                      disableActions={true}
-                      initialSelecionadas={candidateBarreiras?.[s.id]?.selecionadas ?? []}
-                      initialNiveis={candidateBarreiras?.[s.id]?.niveis ?? {}}
-                      barreirasOverride={barreirasBySubtipo ? barreirasBySubtipo[s.id] : undefined}
-                      onChange={(selecionadas, niveis) => {
-                        setCandidateBarreiras((prev: any) => ({
-                          ...(prev || {}),
-                          [s.id]: { selecionadas, niveis },
-                        }));
-                      }}
-                    />
-                  ))}
+                  {candidateSubtipos.map((s: any) => {
+                    const subtipoObj = typeof s === 'number' ? { id: s, nome: `Subtipo ${s}` } : s;
+                    return (
+                      <CandidatoBarreirasForm
+                        key={subtipoObj.id}
+                        candidatoId={Number(window.location.pathname.split('/')[2])}
+                        subtipo={subtipoObj}
+                        disableActions={true}
+                        initialSelecionadas={candidateBarreiras?.[subtipoObj.id]?.selecionadas ?? []}
+                        initialNiveis={candidateBarreiras?.[subtipoObj.id]?.niveis ?? {}}
+                        barreirasOverride={barreirasBySubtipo ? barreirasBySubtipo[subtipoObj.id] : undefined}
+                        onChange={(selecionadas, niveis) => {
+                          setCandidateBarreiras((prev: any) => ({
+                            ...(prev || {}),
+                            [subtipoObj.id]: { selecionadas, niveis },
+                          }));
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

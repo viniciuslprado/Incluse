@@ -25,6 +25,12 @@ import EmpresaPage from "./pages/empresa/EmpresaPage";
 import AnunciarVagaPage from "./pages/empresa/AnunciarVagaPage";
 import CandidatosPorVagaPage from "./pages/empresa/CandidatosPorVagaPage";
 import AvaliarEmpresaPage from "./pages/empresa/AvaliarEmpresaPage";
+import DashboardPage from "./pages/empresa/DashboardPage";
+import EstatisticasPage from "./pages/empresa/EstatisticasPage";
+import MinhaContaPage from "./pages/empresa/MinhaContaPage";
+import DadosEmpresaPage from "./pages/empresa/DadosEmpresaPage";
+import SeguidoresPage from "./pages/empresa/SeguidoresPage";
+import ServicoPage from "./pages/empresa/ServicoPage";
 import CandidatoPage from "./pages/Candidato/CandidatoPage";
 import InicioPage from "./pages/Candidato/InicioPage";
 import CandidatoVagasPage from "./pages/Candidato/CandidatoVagasPage";
@@ -91,12 +97,19 @@ export default function App() {
 
               {/* Área Empresas - Gerenciar vagas */}
               <Route path="/empresa/:id" element={<EmpresaPage />}>
+                <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="vagas" element={<VagaPage />} />
                 <Route path="faq" element={<FAQPage />} />
                 <Route path="anunciar" element={<AnunciarVagaPage />} />
+                <Route path="candidatos" element={<CandidatosPorVagaPage />} />
                 <Route path="avaliar" element={<AvaliarEmpresaPage />} />
                 <Route path="vagas/:vagaId/candidatos" element={<CandidatosPorVagaPage />} />
                 <Route path="vagas/:vagaId" element={<VagaDetalhePage />} />
+                <Route path="seguidores" element={<SeguidoresPage />} />
+                <Route path="estatisticas" element={<EstatisticasPage />} />
+                <Route path="minha-conta" element={<MinhaContaPage />} />
+                <Route path="dados" element={<DadosEmpresaPage />} />
+                <Route path="servico" element={<ServicoPage />} />
               </Route>
 
               {/* 404 */}

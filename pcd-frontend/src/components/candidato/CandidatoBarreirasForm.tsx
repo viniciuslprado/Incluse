@@ -12,7 +12,7 @@ type Props = {
   barreirasOverride?: Barreira[];
 };
 
-export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableActions, onChange, initialSelecionadas, initialNiveis }: Props) {
+export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableActions, onChange, initialSelecionadas, initialNiveis, barreirasOverride }: Props) {
   const [barreiras, setBarreiras] = useState<Barreira[]>([]);
   const [selecionadas, setSelecionadas] = useState<number[]>([]);
   const [niveis, setNiveis] = useState<Record<number, string>>({});
@@ -30,11 +30,16 @@ export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableAc
       setBarreiras(barreirasOverride);
       return;
     }
+    setErro(null);
     api
       .listarBarreirasPorSubtipo(subtipo.id)
       .then((b) => setBarreiras(b))
-      .catch((e) => setErro(e.message));
-  }, [subtipo.id, barreirasOverride]);
+      .catch((e) => {
+        console.error('Erro ao carregar barreiras por subtipo', subtipo.id, e);
+        setBarreiras([]);
+        setErro('Não foi possível carregar as barreiras para este subtipo.');
+      });
+  }, [subtipo?.id, barreirasOverride]);
 
   useEffect(() => {
     if (initialSelecionadas && initialSelecionadas.length) setSelecionadas(initialSelecionadas);
@@ -91,32 +96,76 @@ export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableAc
       <div>
         <h4 className="font-semibold">Barreiras para {subtipo.nome}</h4>
         <div className="max-h-60 overflow-y-auto space-y-2">
-          {barreiras.map((b) => (
-            <div key={b.id} className="flex items-center space-x-2">
-              <label className="flex items-center space-x-2 flex-1">
-                <input type="checkbox" checked={selecionadas.includes(b.id)} onChange={() => toggle(b.id)} />
-                <span>{b.descricao}</span>
-              </label>
-              {selecionadas.includes(b.id) && (
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-600">Nível:</label>
-                  <select
-                    value={niveis[b.id] ?? "Moderado"}
-                    onChange={(e) => setNivel(b.id, e.target.value)}
-                    className="text-sm border rounded p-1"
-                  >
-                    <option value="Leve">Leve</option>
-                    <option value="Moderado">Moderado</option>
-                    <option value="Grave">Grave</option>
-                  </select>
+          {barreiras.length === 0 ? (
+            <div className="text-sm text-gray-500">
+              {erro ? (
+                <div>
+                  <div>{erro}</div>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      className="px-2 py-1 border rounded text-sm"
+                      onClick={() => {
+                        setErro(null);
+                        setLoading(true);
+                        api
+                          .listarBarreirasPorSubtipo(subtipo.id)
+                          .then((r) => setBarreiras(r))
+                          .catch((e) => setErro('Não foi possível carregar as barreiras.'))
+                          .finally(() => setLoading(false));
+                      }}
+                    >
+                      Tentar novamente
+                    </button>
+                    <button
+                      type="button"
+                      className="px-2 py-1 border rounded text-sm"
+                      onClick={() => {
+                        setErro(null);
+                        setLoading(true);
+                        api
+                          .listarBarreiras()
+                          .then((r) => setBarreiras(r))
+                          .catch((e) => setErro('Não foi possível carregar todas as barreiras.'))
+                          .finally(() => setLoading(false));
+                      }}
+                    >
+                      Mostrar todas as barreiras
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <div>Não há barreiras cadastradas para este subtipo.</div>
               )}
             </div>
-          ))}
+          ) : (
+            barreiras.map((b) => (
+              <div key={b.id} className="flex items-center space-x-2">
+                <label className="flex items-center space-x-2 flex-1">
+                  <input type="checkbox" checked={selecionadas.includes(b.id)} onChange={() => toggle(b.id)} />
+                  <span>{b.descricao}</span>
+                </label>
+                {selecionadas.includes(b.id) && (
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-gray-600">Nível:</label>
+                    <select
+                      value={niveis[b.id] ?? "Moderado"}
+                      onChange={(e) => setNivel(b.id, e.target.value)}
+                      className="text-sm border rounded p-1"
+                    >
+                      <option value="Leve">Leve</option>
+                      <option value="Moderado">Moderado</option>
+                      <option value="Grave">Grave</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {erro && <p className="error">{erro}</p>}
+      {/* erro já é exibida dentro do bloco de barreiras com botões de retry; evitar duplicação */}
 
       {!disableActions ? (
         <div className="flex justify-end">

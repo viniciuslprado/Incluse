@@ -1,264 +1,124 @@
-//react chama a API do backend para consumir
+// Axios-based API client with auth interceptors
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga, Candidato } from "../types";
 
-// Define a URL base da API. Primeiro tenta pegar do arquivo .env (VITE_API_URL),
-// caso não exista, usa "http://localhost:3000" como padrão.
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-// Função genérica http<T>, que faz uma requisição HTTP usando fetch
-// e retorna o resultado já convertido em JSON do tipo T.
-async function http<T>(path: string, init?: RequestInit): Promise<T> {
-  // Faz a requisição para BASE_URL + path
-  //fetch é a busca ou envio dados para um servidor
-  //path parametro que foi passado no metodo
-  // attach auth token when present
-  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-  const headers = { "Content-Type": "application/json", ...(init?.headers || {}) } as Record<string,string>;
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${BASE_URL}${path}`, { // linha 6 vai no backend e trás
-    headers,
-    ...init,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    let msg = text || res.statusText || "Erro na requisição";
+function createInstance(): AxiosInstance {
+  const instance = axios.create({ baseURL: BASE_URL, headers: { 'Content-Type': 'application/json' } });
+
+  // Request interceptor: attach token
+  instance.interceptors.request.use((config) => {
     try {
-      const j = JSON.parse(text);
-      msg = j.error || msg;
-    } catch {
-      // Ignora erro de parsing do JSON, usa msg original
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+      if (token && config.headers) config.headers['Authorization'] = `Bearer ${token}`;
+    } catch (e) {
+      // ignore
     }
-    throw new Error(msg);
-  }
-  return res.json() as Promise<T>;
+    return config;
+  });
+
+  // Response interceptor: handle 401 -> try refresh
+  instance.interceptors.response.use(
+    (res) => res,
+    async (error: AxiosError) => {
+      const original = error.config as any;
+      if (error.response && error.response.status === 401 && !original._retry) {
+        original._retry = true;
+        try {
+          const refreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+          if (!refreshToken) throw new Error('No refresh token');
+          // Attempt refresh — backend must implement /auth/refresh
+          const resp = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+          const { token: newToken, refreshToken: newRefresh } = resp.data || {};
+          if (newToken) {
+            localStorage.setItem('token', newToken);
+            if (newRefresh) localStorage.setItem('refreshToken', newRefresh);
+            if (original.headers) original.headers['Authorization'] = `Bearer ${newToken}`;
+            return axios(original);
+          }
+        } catch (refreshErr) {
+          // refresh failed — clear tokens and fallthrough to reject
+          try { localStorage.removeItem('token'); localStorage.removeItem('refreshToken'); } catch (e) {}
+        }
+      }
+      return Promise.reject(mapAxiosError(error));
+    }
+  );
+
+  return instance;
 }
 
-// Objeto api que organiza as funções para acessar o backend
+function mapAxiosError(err: AxiosError) {
+  if (!err || !err.response) return err;
+  const data = (err.response.data as any) || {};
+  const message = data.error || data.message || err.message || 'Erro na requisição';
+  const e = new Error(message) as Error & { status?: number };
+  e.status = err.response.status;
+  return e;
+}
+
+const axiosInstance = createInstance();
+
 export const api = {
-  // Método para listar todos os tipos de deficiência
-  listarTipos() {
-    // Chama o endpoint GET /tipos e retorna uma lista de TipoDeficiencia[]
-    console.log(http<TipoDeficiencia[]>("/tipos"))
-    return http<TipoDeficiencia[]>("/tipos");
-  },
-  // Método para criar um novo tipo de deficiência
-  criarTipo(nome: string) {
-    // Faz um POST para /tipos com o body em JSON { nome }
-    return http<TipoDeficiencia>("/tipos", {
-      method: "POST",
-      body: JSON.stringify({ nome }),
-    });
+  // Tipos/Subtipos/Barreiras
+  listarTipos() { return axiosInstance.get<TipoDeficiencia[]>('/tipos').then(r => r.data); },
+  criarTipo(nome: string) { return axiosInstance.post<TipoDeficiencia>('/tipos', { nome }).then(r => r.data); },
+  listarTiposComSubtipos() { return axiosInstance.get<TipoComSubtipos[]>('/tipos/com-subtipos').then(r => r.data); },
+  criarSubtipo(nome: string, tipoId: number) { return axiosInstance.post<SubtipoDeficiencia>('/subtipos', { nome, tipoId }).then(r => r.data); },
+  listarBarreiras() { return axiosInstance.get<Barreira[]>('/barreiras').then(r => r.data); },
+  criarBarreira(descricao: string) { return axiosInstance.post<Barreira>('/barreiras', { descricao }).then(r => r.data); },
+  listarSubtipos() { return axiosInstance.get<SubtipoDeficiencia[]>('/subtipos').then(r => r.data); },
+  obterSubtipo(id: number) { return axiosInstance.get(`/subtipos/${id}`).then(r => r.data); },
+  vincularBarreirasASubtipo(subtipoId: number, barreiraIds: number[]) { return axiosInstance.post(`/vinculos/subtipos/${subtipoId}/barreiras`, { barreiraIds }).then(r => r.data); },
 
-  },
-  // novos:
-  // GET /subtipos → seu backend retorna Tipos com seus subtipos
-  listarTiposComSubtipos(): Promise<TipoComSubtipos[]> {
-    return http("/tipos/com-subtipos");
-  },
-
-  // POST /subtipos { nome, tipoId }
-  criarSubtipo(nome: string, tipoId: number): Promise<SubtipoDeficiencia> {
-    return http("/subtipos", {
-      method: "POST",
-      body: JSON.stringify({ nome, tipoId }),
-    });
-  },
-  listarBarreiras(): Promise<Barreira[]> {
-    return http("/barreiras");
-  },
-  criarBarreira(descricao: string): Promise<Barreira> {
-    return http("/barreiras", {
-      method: "POST",
-      body: JSON.stringify({ descricao }),
-    });
-  },
-  listarSubtipos(): Promise<SubtipoDeficiencia[]> {
-    return http("/subtipos");
-  },
-  obterSubtipo(id: number) {
-    return http(`/subtipos/${id}`);
-  },
-  vincularBarreirasASubtipo(subtipoId: number, barreiraIds: number[]) {
-    return http(`/vinculos/subtipos/${subtipoId}/barreiras`, {
-      method: "POST",
-      body: JSON.stringify({ barreiraIds }),
-    });
-  },
-  async listarEmpresas() {
-    const res = await fetch("http://localhost:3000/empresas");
-    if (!res.ok) throw new Error("Erro ao listar empresas");
-    return res.json();
-  },
-  async buscarEmpresa(id: number) {
-    const res = await fetch(`http://localhost:3000/empresas/${id}`);
-    if (!res.ok) throw new Error("Erro ao buscar empresa");
-    return res.json();
-  },
-  async listarVagas(empresaId: number) {
-    const res = await fetch(`http://localhost:3000/vagas/empresa/${empresaId}`);
-    if (!res.ok) throw new Error("Erro ao listar vagas");
-    return res.json();
-  },
-  async criarVaga(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade?: string, estado?: string) {
-    const res = await fetch("http://localhost:3000/vagas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ empresaId, titulo, descricao, escolaridade, cidade, estado }),
-    });
-    if (!res.ok) throw new Error("Erro ao criar vaga");
-    return res.json();
+  // Empresas / Vagas
+  listarEmpresas() { return axiosInstance.get('/empresas').then(r => r.data); },
+  buscarEmpresa(id: number) { return axiosInstance.get(`/empresas/${id}`).then(r => r.data); },
+  listarVagas(empresaId: number) { return axiosInstance.get(`/vagas/empresa/${empresaId}`).then(r => r.data); },
+  criarVaga(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade?: string, estado?: string) {
+    return axiosInstance.post('/vagas', { empresaId, titulo, descricao, escolaridade, cidade, estado }).then(r => r.data);
   },
 
   // Acessibilidades
-  listarAcessibilidades(): Promise<Acessibilidade[]> {
-    return http("/acessibilidades");
-  },
-  criarAcessibilidade(descricao: string): Promise<Acessibilidade> {
-    return http("/acessibilidades", {
-      method: "POST",
-      body: JSON.stringify({ descricao }),
-    });
-  },
-  vincularAcessibilidadesABarreira(barreiraId: number, acessibilidadeIds: number[]) {
-    return http(`/barreiras/${barreiraId}/acessibilidades`, {
-      method: "POST",
-      body: JSON.stringify({ acessibilidadeIds }),
-    });
-  },
-  
-  vincularSubtiposAVaga(vagaId: number, subtipoIds: number[]) {
-    return http(`/vagas/${vagaId}/subtipos`, {
-      method: "POST",
-      body: JSON.stringify({ subtipoIds }),
-    });
-  },
-  vincularAcessibilidadesAVaga(vagaId: number, acessibilidadeIds: number[]) {
-    return http(`/vagas/${vagaId}/acessibilidades`, {
-      method: "POST",
-      body: JSON.stringify({ acessibilidadeIds }),
-    });
-  },
-  listarAcessibilidadesPossiveis(vagaId: number) {
-    return http<Acessibilidade[]>(`/vagas/${vagaId}/acessibilidades-disponiveis`);
-  },
-  obterVaga(vagaId: number): Promise<Vaga> {
-    return http(`/vagas/${vagaId}`);
-  },
-  obterVagaComSubtipos(vagaId: number): Promise<Vaga> {
-    return http(`/vagas/${vagaId}`);
-  },
+  listarAcessibilidades() { return axiosInstance.get<Acessibilidade[]>('/acessibilidades').then(r => r.data); },
+  criarAcessibilidade(descricao: string) { return axiosInstance.post<Acessibilidade>('/acessibilidades', { descricao }).then(r => r.data); },
+  vincularAcessibilidadesABarreira(barreiraId: number, acessibilidadeIds: number[]) { return axiosInstance.post(`/barreiras/${barreiraId}/acessibilidades`, { acessibilidadeIds }).then(r => r.data); },
+  vincularSubtiposAVaga(vagaId: number, subtipoIds: number[]) { return axiosInstance.post(`/vagas/${vagaId}/subtipos`, { subtipoIds }).then(r => r.data); },
+  vincularAcessibilidadesAVaga(vagaId: number, acessibilidadeIds: number[]) { return axiosInstance.post(`/vagas/${vagaId}/acessibilidades`, { acessibilidadeIds }).then(r => r.data); },
+  listarAcessibilidadesPossiveis(vagaId: number) { return axiosInstance.get<Acessibilidade[]>(`/vagas/${vagaId}/acessibilidades-disponiveis`).then(r => r.data); },
+  obterVaga(vagaId: number) { return axiosInstance.get<Vaga>(`/vagas/${vagaId}`).then(r => r.data); },
 
-  // --- Candidatos
-  getCandidato(id: number) {
-    return http<Candidato>(`/candidatos/${id}`);
-  },
+  // Candidatos
+  getCandidato(id: number) { return axiosInstance.get<Candidato>(`/candidatos/${id}`).then(r => r.data); },
+  listarVagasCompativeis(candidatoId: number) { return axiosInstance.get<Vaga[]>(`/match/${candidatoId}`).then(r => r.data); },
 
-  // listar vagas compatíveis para um candidato (GET /match/:candidatoId)
-  listarVagasCompativeis(candidatoId: number) {
-    return http<Vaga[]>(`/match/${candidatoId}`);
-  },
+  avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimato?: boolean) { return axiosInstance.post(`/empresas/${empresaId}/avaliacoes`, { nota, comentario, anonimato }).then(r => r.data); },
 
-  // Avaliar empresa (POST /empresas/:id/avaliacoes)
-  avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimato?: boolean) {
-    return http(`/empresas/${empresaId}/avaliacoes`, {
-      method: 'POST',
-      body: JSON.stringify({ nota, comentario, anonimato }),
-    });
-  },
+  // Vagas salvas
+  listarVagasSalvas(candidatoId: number) { return axiosInstance.get<Vaga[]>(`/candidatos/${candidatoId}/salvas`).then(r => r.data); },
+  salvarVaga(candidatoId: number, vagaId: number) { return axiosInstance.post(`/candidatos/${candidatoId}/salvas/${vagaId}`).then(r => r.data); },
+  removerVagaSalva(candidatoId: number, vagaId: number) { return axiosInstance.delete(`/candidatos/${candidatoId}/salvas/${vagaId}`).then(r => r.data); },
 
-  // Vagas salvas (favoritas)
-  listarVagasSalvas(candidatoId: number) {
-    return http<Vaga[]>(`/candidatos/${candidatoId}/salvas`);
-  },
+  candidatarVaga(vagaId: number, candidatoId: number) { return axiosInstance.post(`/vagas/${vagaId}/candidatar`, { candidatoId }).then(r => r.data); },
 
-  salvarVaga(candidatoId: number, vagaId: number) {
-    return http(`/candidatos/${candidatoId}/salvas/${vagaId}`, { method: 'POST' });
-  },
-
-  removerVagaSalva(candidatoId: number, vagaId: number) {
-    return http(`/candidatos/${candidatoId}/salvas/${vagaId}`, { method: 'DELETE' });
-  },
-
-  // candidatar em uma vaga (POST /vagas/:id/candidatar { candidatoId })
-  candidatarVaga(vagaId: number, candidatoId: number) {
-    return http(`/vagas/${vagaId}/candidatar`, { method: 'POST', body: JSON.stringify({ candidatoId }) });
-  },
-
-  // Anunciar vaga (empresa)
+  // Anunciar vaga
   anunciarVaga(data: { empresaId: number; titulo?: string; descricao: string; escolaridade: string; cidade?: string; estado?: string }) {
-    return http(`/vagas`, { method: 'POST', body: JSON.stringify(data) });
+    return axiosInstance.post('/vagas', data).then(r => r.data);
   },
 
-  // Listar candidatos inscritos por vaga
-  listarCandidatosPorVaga(vagaId: number) {
-    return http(`/vagas/${vagaId}/candidatos`);
-  },
+  listarCandidatosPorVaga(vagaId: number) { return axiosInstance.get(`/vagas/${vagaId}/candidatos`).then(r => r.data); },
 
-  // Conteúdo estático / CMS-like
-  getQuemSomos() {
-    return http(`/conteudo/quem-somos`);
-  },
-  listarFAQ() {
-    return http(`/faq/list`);
-  },
+  getQuemSomos() { return axiosInstance.get(`/conteudo/quem-somos`).then(r => r.data); },
+  listarFAQ() { return axiosInstance.get(`/faq/list`).then(r => r.data); },
 
-  // registrar candidato (POST /candidatos)
-  registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) {
-    return http(`/candidatos`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
+  registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) { return axiosInstance.post(`/candidatos`, data).then(r => r.data); },
+  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) { return axiosInstance.post(`/empresas`, data).then(r => r.data); },
+  login(identifier: string, senha: string, userType: string) { return axiosInstance.post(`/auth/login`, { identifier, senha, userType }).then(r => r.data); },
 
-  // registrar empresa (POST /empresas)
-  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) {
-    return http(`/empresas`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // login (POST /auth/login) -> { identifier, senha, userType }
-  login(identifier: string, senha: string, userType: string) {
-    return http(`/auth/login`, {
-      method: 'POST',
-      body: JSON.stringify({ identifier, senha, userType }),
-    });
-  },
-
-  // retorna apenas os subtipos vinculados ao candidato
-  listarSubtiposCandidato(id: number) {
-    return http<SubtipoDeficiencia[]>(`/candidatos/${id}/subtipos`);
-  },
-
-  // retorna barreiras (achatadas) para um subtipo
-  listarBarreirasPorSubtipo(subtipoId: number) {
-    return http<Barreira[]>(`/subtipos/${subtipoId}/barreiras`);
-  },
-
-  // vincular subtipos ao candidato
-  vincularSubtiposACandidato(candidatoId: number, subtipoIds: number[]) {
-    return http(`/candidatos/${candidatoId}/subtipos`, {
-      method: "POST",
-      body: JSON.stringify({ subtipoIds }),
-    });
-  },
-
-  // vincular barreiras (apenas para um subtipo específico) ao candidato
-  vincularBarreirasACandidato(candidatoId: number, subtipoId: number, barreiraIds: number[]) {
-    return http(`/candidatos/${candidatoId}/subtipos/${subtipoId}/barreiras`, {
-      method: "POST",
-      body: JSON.stringify({ barreiraIds }),
-    });
-  },
-
+  listarSubtiposCandidato(id: number) { return axiosInstance.get<SubtipoDeficiencia[]>(`/candidatos/${id}/subtipos`).then(r => r.data); },
+  listarBarreirasPorSubtipo(subtipoId: number) { return axiosInstance.get<Barreira[]>(`/subtipos/${subtipoId}/barreiras`).then(r => r.data); },
+  vincularSubtiposACandidato(candidatoId: number, subtipoIds: number[]) { return axiosInstance.post(`/candidatos/${candidatoId}/subtipos`, { subtipoIds }).then(r => r.data); },
+  vincularBarreirasACandidato(candidatoId: number, subtipoId: number, barreiraIds: number[]) { return axiosInstance.post(`/candidatos/${candidatoId}/subtipos/${subtipoId}/barreiras`, { barreiraIds }).then(r => r.data); },
 
 };
-
-/* GET → buscar dados.
-
-POST → enviar dados.
-
-PUT/PATCH → atualizar dados.
-
-DELETE → remover dados. */
