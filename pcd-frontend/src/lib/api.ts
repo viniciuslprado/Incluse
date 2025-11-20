@@ -1,5 +1,6 @@
 // Axios-based API client with auth interceptors
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
+import type { AxiosInstance } from 'axios';
 import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga, Candidato } from "../types";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';

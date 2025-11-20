@@ -7,7 +7,7 @@ export class SalvasController {
     if (!candidatoId) return res.status(400).json({ error: "Candidato inválido" });
     const itens = await prisma.vagaSalva.findMany({ where: { candidatoId } });
     // Retorna formato simples [{ id: vagaId }, ...] para manter compatibilidade com frontend
-    return res.json(itens.map((i) => ({ id: i.vagaId })));
+    return res.json(itens.map((i: any) => ({ id: i.vagaId })));
   }
 
   static async salvar(req: Request, res: Response) {

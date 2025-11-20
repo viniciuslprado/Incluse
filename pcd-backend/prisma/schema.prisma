@@ -8,16 +8,16 @@ datasource db {
 }
 
 model Empresa {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String?  @unique
-  cnpj      String?  @unique
-  createdAt DateTime @default(now())
-  isActive  Boolean  @default(true)
-  updatedAt DateTime @updatedAt
-  senhaHash String?
-  vagas     Vaga[]
+  id         Int         @id @default(autoincrement())
+  nome       String
+  email      String?     @unique
+  cnpj       String?     @unique
+  createdAt  DateTime    @default(now())
+  isActive   Boolean     @default(true)
+  updatedAt  DateTime    @updatedAt
+  senhaHash  String?
   avaliacoes Avaliacao[]
+  vagas      Vaga[]
 }
 
 model TipoDeficiencia {
@@ -93,11 +93,11 @@ model Vaga {
   cidade          String?              @default("A definir")
   estado          String?              @default("A definir")
   titulo          String?              @default("Vaga")
+  candidaturas    Candidatura[]
   empresa         Empresa              @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   acessibilidades VagaAcessibilidade[]
-  subtiposAceitos VagaSubtipo[]
   vagasSalvas     VagaSalva[]
-  candidaturas    Candidatura[]
+  subtiposAceitos VagaSubtipo[]
 }
 
 model VagaSubtipo {
@@ -132,8 +132,8 @@ model Candidato {
   senhaHash    String?
   subtipos     CandidatoSubtipo[]
   barras       CandidatoSubtipoBarreira[]
-  vagasSalvas  VagaSalva[]
   candidaturas Candidatura[]
+  vagasSalvas  VagaSalva[]
 }
 
 model CandidatoSubtipo {
@@ -159,8 +159,6 @@ model CandidatoSubtipoBarreira {
   @@index([barreiraId])
 }
 
-
-// Avaliações, vagas salvas e candidaturas
 model Avaliacao {
   id         Int      @id @default(autoincrement())
   empresaId  Int
@@ -168,15 +166,13 @@ model Avaliacao {
   comentario String?
   anonimato  Boolean  @default(false)
   createdAt  DateTime @default(now())
-
   empresa    Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
 }
 
 model VagaSalva {
   candidatoId Int
   vagaId      Int
-  createdAt   DateTime @default(now())
-
+  createdAt   DateTime  @default(now())
   candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
   vaga        Vaga      @relation(fields: [vagaId], references: [id], onDelete: Cascade)
 
@@ -184,11 +180,10 @@ model VagaSalva {
 }
 
 model Candidatura {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   vagaId      Int
   candidatoId Int
-  createdAt   DateTime @default(now())
-
-  vaga        Vaga     @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
   candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  vaga        Vaga      @relation(fields: [vagaId], references: [id], onDelete: Cascade)
 }

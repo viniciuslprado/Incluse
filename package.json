@@ -1,0 +1,15 @@
+{
+  "name": "pcd-project",
+  "scripts": {
+    "dev": "concurrently \"cd pcd-backend && npm run dev\" \"cd pcd-frontend && npm run dev\"",
+    "install-all": "npm install && cd pcd-backend && npm install && cd ../pcd-frontend && npm install",
+    "backend": "cd pcd-backend && npm run dev",
+    "frontend": "cd pcd-frontend && npm run dev"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

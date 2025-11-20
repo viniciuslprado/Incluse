@@ -60,8 +60,8 @@ export const CandidatosService = {
     if (!nome?.trim()) throw Object.assign(new Error('Nome é obrigatório'), { status: 400 });
     if (!senha || senha.length < 6) throw Object.assign(new Error('Senha inválida (mínimo 6 caracteres)'), { status: 400 });
     // normaliza e valida
-    const normalizedEmail = email?.trim().toLowerCase() ?? null;
-    const normalizedCpf = cpf ? cpf.replace(/\D/g, '') : null;
+    const normalizedEmail = email?.trim().toLowerCase() ?? undefined;
+    const normalizedCpf = cpf ? cpf.replace(/\D/g, '') : undefined;
     if (normalizedCpf && normalizedCpf.length !== 11) throw Object.assign(new Error('CPF inválido (deve conter 11 dígitos)'), { status: 400 });
 
     // verifica duplicados
@@ -74,7 +74,7 @@ export const CandidatosService = {
       if (c) throw Object.assign(new Error('CPF já cadastrado'), { status: 400 });
     }
   const senhaHash = (bcrypt as any).hashSync(senha, 8);
-    const created = await CandidatosRepo.create({ nome: nome.trim(), cpf: normalizedCpf, email: normalizedEmail, telefone, escolaridade: escolaridade ?? 'Não informado', senhaHash });
+  const created = await CandidatosRepo.create({ nome: nome.trim(), cpf: normalizedCpf, email: normalizedEmail, telefone, escolaridade: escolaridade ?? 'Não informado', senhaHash });
     // don't return senhaHash to caller
     if (created) {
       const c: any = created;
