@@ -15,6 +15,9 @@ export default function CadastroCandidatoPage() {
     confirmarSenha: '',
   });
 
+  const [fileCurriculo, setFileCurriculo] = useState<File | null>(null);
+  const [fileLaudo, setFileLaudo] = useState<File | null>(null);
+
   const [checkboxes, setCheckboxes] = useState({
     declaracaoPCD: false,
     politicaPrivacidade: false,
@@ -138,15 +141,23 @@ export default function CadastroCandidatoPage() {
     }
     setLoading(true);
     try {
-      const payload = {
-        nome: formData.nomeCompleto,
-        cpf: formData.cpf,
-        telefone: formData.telefone,
-        email: formData.email,
-        escolaridade: 'Não informado',
-        senha: formData.senha,
-      };
-      const created: any = await api.registerCandidato(payload);
+      // build FormData to include optional files
+      const fd = new FormData();
+      fd.append('nome', formData.nomeCompleto.trim());
+      fd.append('cpf', formData.cpf);
+      fd.append('telefone', formData.telefone);
+      fd.append('email', formData.email);
+      fd.append('escolaridade', 'Não informado');
+      fd.append('senha', formData.senha);
+      if (fileCurriculo) fd.append('file', fileCurriculo);
+      if (fileLaudo) fd.append('laudo', fileLaudo);
+
+      // debug: log FormData entries to browser console to inspect what will be sent
+      for (const entry of Array.from(fd.entries())) {
+        console.debug('[CadastroCandidato] formData entry:', entry[0], entry[1]);
+      }
+
+      const created: any = await api.registerCandidatoWithFiles(fd);
       const candidatoId = created?.id;
       if (!candidatoId) throw new Error('Resposta inválida do servidor');
       // vincular subtipo
@@ -240,6 +251,16 @@ export default function CadastroCandidatoPage() {
               </div>
 
               {erro && (<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"><div className="flex items-center"><div className="flex-shrink-0"><svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg></div><div className="ml-3"><p className="text-sm text-red-700 dark:text-red-300">{erro}</p></div></div></div>)}
+
+              {/* Arquivos opcionais: Currículo e Laudo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Currículo (PDF) - opcional</label>
+                <input type="file" accept="application/pdf" onChange={(e) => setFileCurriculo(e.target.files?.[0] ?? null)} className="mt-1 block w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Laudo (PDF) - opcional</label>
+                <input type="file" accept="application/pdf" onChange={(e) => setFileLaudo(e.target.files?.[0] ?? null)} className="mt-1 block w-full" />
+              </div>
 
               <div className="flex justify-between">
                 <button type="button" onClick={() => navigate('/')} className="py-2 px-4 text-sm text-gray-700 dark:text-gray-200">Cancelar</button>
