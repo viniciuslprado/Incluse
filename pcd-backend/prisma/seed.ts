@@ -5,6 +5,10 @@ async function main() {
   // limpa dados (apenas para desenvolvimento)
   await prisma.vaga.deleteMany();
   await prisma.empresa.deleteMany();
+  // limpar tabelas relacionadas a candidatos (evita erro de unique cpf)
+  await prisma.candidatoSubtipoBarreira.deleteMany();
+  await prisma.candidatoSubtipo.deleteMany();
+  await prisma.candidato.deleteMany();
   await prisma.subtipoBarreira.deleteMany();
   await prisma.barreiraAcessibilidade.deleteMany();
   await prisma.acessibilidade.deleteMany();
@@ -19,6 +23,7 @@ async function main() {
   await prisma.$executeRaw`ALTER SEQUENCE "Acessibilidade_id_seq" RESTART WITH 1`;
   await prisma.$executeRaw`ALTER SEQUENCE "Empresa_id_seq" RESTART WITH 1`;
   await prisma.$executeRaw`ALTER SEQUENCE "Vaga_id_seq" RESTART WITH 1`;
+  await prisma.$executeRaw`ALTER SEQUENCE "Candidato_id_seq" RESTART WITH 1`;
   
   console.log("🗑️ Dados limpos e contadores resetados");
 

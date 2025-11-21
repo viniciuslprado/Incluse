@@ -114,6 +114,12 @@ export const api = {
   listarFAQ() { return axiosInstance.get(`/faq/list`).then(r => r.data); },
 
   registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) { return axiosInstance.post(`/candidatos`, data).then(r => r.data); },
+  // Register candidate with optional files (curriculo, laudo) using multipart/form-data
+  registerCandidatoWithFiles(formData: FormData) {
+    // Use plain axios here (not axiosInstance) so we don't send the instance default
+    // 'application/json' content-type header; let the browser set the multipart boundary.
+    return axios.post(`${BASE_URL}/candidatos`, formData).then(r => r.data);
+  },
   registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) { return axiosInstance.post(`/empresas`, data).then(r => r.data); },
   login(identifier: string, senha: string, userType: string) { return axiosInstance.post(`/auth/login`, { identifier, senha, userType }).then(r => r.data); },
 

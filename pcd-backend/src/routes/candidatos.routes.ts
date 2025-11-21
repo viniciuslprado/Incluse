@@ -1,10 +1,16 @@
 import { Router } from "express";
+import multer from "multer";
+import multerConfig from "../config/multer";
 import { CandidatosController } from "../controllers/candidatos.controller";
 import { SalvasController } from "../controllers/salvas.controller";
 const router = Router();
+const upload = multer(multerConfig.upload("tmp")).fields([
+	{ name: "file", maxCount: 1 },
+	{ name: "laudo", maxCount: 1 },
+]);
 
-// POST /candidatos → criar candidato
-router.post("/", CandidatosController.criar);
+// POST /candidatos → criar candidato (aceita arquivos opcionais 'file' e 'laudo')
+router.post("/", upload, CandidatosController.criar);
 
 // GET /candidatos/:id
 router.get("/:id", CandidatosController.getCandidato);

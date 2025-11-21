@@ -123,6 +123,8 @@ model VagaAcessibilidade {
 model Candidato {
   id           Int                        @id @default(autoincrement())
   nome         String
+  curriculo    String?
+  laudo        String?
   email        String?                    @unique
   telefone     String?
   escolaridade String
