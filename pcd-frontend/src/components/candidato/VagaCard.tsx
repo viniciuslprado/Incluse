@@ -1,120 +1,161 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import type { Vaga } from '../../types';
-import { FiEye, FiSend } from 'react-icons/fi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
+import { api } from '../../lib/api';
+import { useParams } from 'react-router-dom';
+
 
 type Props = {
   vaga: Vaga | any;
   onView?: () => void;
-  onApply?: () => void;
+  onApply?: () => Promise<boolean> | boolean;
   onToggleSave?: () => void;
   isCompanyFavorited?: boolean;
   onToggleCompanyFavorite?: () => void;
+  candidatoId?: number;
+  showStatus?: boolean;
 };
 
-export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited, onToggleCompanyFavorite }: Props) {
-  const match = vaga?.matchPercent ?? vaga?.compatibility ?? 0;
+export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited: _isCompanyFavorited, onToggleCompanyFavorite: _onToggleCompanyFavorite, candidatoId }: Props) {
+  const { id } = useParams();
+  const currentCandidatoId = candidatoId || Number(id);
+  const [compatibilityData, setCompatibilityData] = useState<any>(null);
+  const [loadingCompatibility, setLoadingCompatibility] = useState(false);
+  const [isApplied, setIsApplied] = useState(false);
+  const [checkingApplication, setCheckingApplication] = useState(false);
+  
+  // Buscar compatibilidade se não estiver disponível
+  useEffect(() => {
+    const hasCompatibility = vaga?.matchPercent !== undefined || vaga?.compatibility !== undefined;
+    if (!hasCompatibility && currentCandidatoId && vaga?.id) {
+      setLoadingCompatibility(true);
+      api.calcularCompatibilidade(currentCandidatoId, vaga.id)
+        .then(data => setCompatibilityData(data))
+        .catch(err => console.error('Erro ao calcular compatibilidade:', err))
+        .finally(() => setLoadingCompatibility(false));
+    }
+  }, [currentCandidatoId, vaga?.id, vaga?.matchPercent, vaga?.compatibility]);
+  
+  // Verificar se já se candidatou
+  useEffect(() => {
+    if (currentCandidatoId && vaga?.id) {
+      setCheckingApplication(true);
+      api.verificarCandidatura(vaga.id, currentCandidatoId)
+        .then(applied => {
+          setIsApplied(applied);
+          // Estado já sincronizado com backend
+        })
+        .catch(() => setIsApplied(false))
+        .finally(() => setCheckingApplication(false));
+    }
+  }, [currentCandidatoId, vaga?.id]);
+  
+  const matchValue = vaga?.matchPercent ?? vaga?.compatibility ?? (compatibilityData?.total || 0);
+  const match = matchValue <= 1 ? matchValue * 100 : matchValue;
   const isSaved = Boolean(vaga?.salvo || vaga?.isSaved || vaga?.saved);
+  const applied = vaga?.applied ?? isApplied;
 
   return (
-    <article className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-      {vaga?.saved && (
-        <div className="absolute top-3 right-3 inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs font-semibold bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300" aria-hidden>
-          <AiFillStar className="w-3 h-3" />
-          <span>Salvo</span>
-        </div>
-      )}
-      {(
-        vaga?.indisponivel || vaga?.unavailable || vaga?.expired || vaga?.closed
-      ) && (
-        <div className="absolute top-3 left-3 inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs font-semibold bg-gray-200 text-gray-700 dark:bg-gray-700/80 dark:text-gray-200" aria-hidden>
-          <span>Indisponível</span>
-        </div>
-      )}
-      <div className="flex items-start gap-4">
-        <div
-          className="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-sm font-semibold text-gray-600"
-          aria-hidden
-        >
+    <article className="relative bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer">
+      {/* Ícone de favorito no canto superior direito */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onToggleSave && onToggleSave(); }}
+        className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label={isSaved ? 'Remover dos favoritos' : 'Favoritar vaga'}
+      >
+        {isSaved ? <AiFillStar className="text-yellow-500 w-5 h-5" /> : <AiOutlineStar className="w-5 h-5 text-gray-400" />}
+      </button>
+
+
+
+      <div className="flex gap-4" onClick={() => onView && onView()}>
+        {/* Logo da empresa */}
+        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-lg font-semibold text-gray-600 shrink-0">
           {vaga.empresa?.nome?.charAt(0) ?? 'E'}
         </div>
+
+        {/* Conteúdo principal */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">{vaga.titulo ?? vaga.descricao}</h3>
-          <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span>{vaga.empresa?.nome}</span>
-              {onToggleCompanyFavorite && (
-                <button
-                  type="button"
-                  onClick={onToggleCompanyFavorite}
-                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                  aria-label={isCompanyFavorited ? 'Desfavoritar empresa' : 'Favoritar empresa'}
-                  title={isCompanyFavorited ? 'Desfavoritar' : 'Favoritar'}
-                >
-                  {isCompanyFavorited ? <AiFillStar className="text-yellow-500 w-4 h-4" aria-hidden /> : <AiOutlineStar className="w-4 h-4" aria-hidden />}
-                </button>
-              )}
-            </div>
-            <span aria-hidden>•</span>
-            <span>{vaga.cidade ?? '—'}</span>
-            <span aria-hidden>•</span>
-            <span>{vaga.tipoContrato ?? vaga.escolaridade ?? '—'}</span>
+          {/* Título da vaga */}
+          <div className="flex items-center justify-between mb-2 pr-8">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {vaga.titulo ?? vaga.descricao ?? 'Vaga'}
+            </h3>
+            {vaga?.status && (
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                vaga.status === 'pendente' ? 'bg-blue-100 text-blue-800' :
+                vaga.status === 'em_analise' ? 'bg-yellow-100 text-yellow-800' :
+                vaga.status === 'pre_selecionado' ? 'bg-green-100 text-green-800' :
+                vaga.status === 'entrevista_marcada' ? 'bg-purple-100 text-purple-800' :
+                vaga.status === 'nao_selecionado' ? 'bg-gray-100 text-gray-600' :
+                'bg-blue-100 text-blue-800'
+              }`}>
+                {vaga.status === 'pendente' ? 'Pendente' :
+                 vaga.status === 'em_analise' ? 'Em Análise' :
+                 vaga.status === 'pre_selecionado' ? 'Pré-selecionado' :
+                 vaga.status === 'entrevista_marcada' ? 'Entrevista' :
+                 vaga.status === 'nao_selecionado' ? 'Dispensado' :
+                 vaga.status === 'aprovado' ? 'Aprovado' : vaga.status}
+              </span>
+            )}
           </div>
 
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-28 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden" aria-hidden>
-                <div style={{ width: `${Math.min(100, Math.max(0, match))}%` }} className="h-2 bg-green-500" />
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">{match}% compatibilidade</div>
-            </div>
+          {/* Empresa + localização + escolaridade */}
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+            <span className="font-medium">{vaga.empresa?.nome ?? 'Empresa'}</span>
+            <span>•</span>
+            <span>{vaga.cidade ?? 'Localização'}</span>
+            <span>•</span>
+            <span>{vaga.escolaridade ?? vaga.tipoContratacao ?? 'Requisitos'}</span>
+          </div>
 
-            <div className="flex items-center gap-2">
+          {/* Barra de compatibilidade */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 max-w-32 bg-gray-200 rounded-full overflow-hidden h-3">
+              <div 
+                style={{ width: `${Math.min(100, Math.max(0, match))}%` }} 
+                className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300"
+              />
+            </div>
+            <span className="text-sm font-medium text-gray-700">
+              {loadingCompatibility ? 'Calculando...' : `${Math.round(match)}% de compatibilidade`}
+            </span>
+          </div>
+
+          {/* Ações */}
+          <div className="flex items-center gap-2 justify-end">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onView && onView(); }}
+              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Ver
+            </button>
+
+            {!vaga?.indisponivel && !vaga?.unavailable && !vaga?.expired && !vaga?.closed && (
               <button
                 type="button"
-                onClick={onView}
-                className="flex items-center gap-2 px-3 py-1 text-sm rounded bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                aria-label="Ver detalhes da vaga"
+                onClick={async (e) => { 
+                  e.stopPropagation(); 
+                  if (onApply) {
+                    const success = await onApply();
+                    if (success) {
+                      // Atualizar estado local após candidatura bem-sucedida
+                      setIsApplied(!applied);
+                    }
+                  }
+                }}
+                disabled={checkingApplication}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  applied 
+                    ? 'bg-red-600 text-white hover:bg-red-700' 
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
               >
-                <FiEye aria-hidden />
-                <span className="sr-only">Ver detalhes</span>
-                <span className="hidden sm:inline">Ver</span>
+                {checkingApplication ? 'Verificando...' : (applied ? 'Remover' : 'Candidatar-se')}
               </button>
-
-              {vaga?.applied ? (
-                <div className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded bg-gray-200 text-gray-700" aria-label="Vaga já candidatada">
-                  <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>Já candidatado</span>
-                </div>
-              ) : (
-                ((vaga?.indisponivel || vaga?.unavailable || vaga?.expired || vaga?.closed) ? (
-                  <div className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded bg-gray-100 text-gray-600">Indisponível</div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={onApply}
-                    className="flex items-center gap-2 px-3 py-1 text-sm rounded bg-green-600 text-white"
-                    aria-label="Candidatar-se a vaga"
-                  >
-                    <FiSend aria-hidden />
-                    <span className="sr-only">Candidatar-se</span>
-                  </button>
-                ))
-              )}
-
-              <button
-                type="button"
-                onClick={onToggleSave}
-                className="p-2 text-sm rounded border hover:bg-gray-50 dark:hover:bg-gray-700"
-                aria-pressed={isSaved}
-                aria-label={isSaved ? 'Remover dos salvos' : 'Salvar vaga'}
-                title={isSaved ? 'Remover dos salvos' : 'Salvar vaga'}
-              >
-                {isSaved ? <AiFillStar className="text-yellow-500" aria-hidden /> : <AiOutlineStar aria-hidden />}
-              </button>
-            </div>
+            )}
           </div>
         </div>
       </div>

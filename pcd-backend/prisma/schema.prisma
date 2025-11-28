@@ -1,3 +1,12 @@
+model Administrador {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  email      String   @unique
+  senhaHash  String
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  isActive   Boolean  @default(true)
+}
 generator client {
   provider = "prisma-client-js"
 }
@@ -83,21 +92,81 @@ model BarreiraAcessibilidade {
 }
 
 model Vaga {
-  id              Int                  @id @default(autoincrement())
-  empresaId       Int
-  descricao       String
-  escolaridade    String
-  isActive        Boolean              @default(true)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  cidade          String?              @default("A definir")
-  estado          String?              @default("A definir")
-  titulo          String?              @default("Vaga")
-  candidaturas    Candidatura[]
-  empresa         Empresa              @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  acessibilidades VagaAcessibilidade[]
-  vagasSalvas     VagaSalva[]
-  subtiposAceitos VagaSubtipo[]
+  id                 Int                     @id @default(autoincrement())
+  empresaId          Int
+  titulo             String                  @default("Vaga")
+  tipoContratacao    String?                 // CLT, PJ, Estágio, etc
+  modeloTrabalho     String?                 // Remoto, Presencial, Híbrido
+  localizacao        String?                 // Texto livre ou estruturado
+  area               String?                 // TI, RH, Marketing, etc
+  exigeMudanca       Boolean?                @default(false) // Necessita mudança de cidade
+  exigeViagens       Boolean?                @default(false) // Viagens frequentes
+  status             String                  @default("ativa") // ativa, pausada, encerrada
+  escolaridade       String?
+  cidade             String?                 @default("A definir")
+  estado             String?                 @default("A definir")
+  isActive           Boolean                 @default(true)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  
+  // Relacionamentos
+  empresa            Empresa                 @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  descricaoVaga      VagaDescricao?
+  requisitos         VagaRequisitos?
+  beneficios         VagaBeneficio[]
+  processos          VagaProcesso[]
+  candidaturas       Candidatura[]
+  acessibilidades    VagaAcessibilidade[]
+  vagasSalvas        VagaSalva[]
+  subtiposAceitos    VagaSubtipo[]
+  favoritos          CandidatoVagaFavorita[]
+  notificacoes       Notificacao[]
+
+  @@index([empresaId])
+  @@index([status])
+}
+
+model VagaDescricao {
+  vagaId      Int     @id
+  resumo      String?
+  atividades  String?
+  jornada     String?
+  salarioMin  Float?
+  salarioMax  Float?
+  
+  vaga        Vaga    @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+}
+
+model VagaRequisitos {
+  vagaId               Int     @id
+  formacao             String?
+  experiencia          String?
+  competencias         String? // JSON ou texto separado
+  habilidadesTecnicas  String? // JSON ou texto separado
+  
+  vaga                 Vaga    @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+}
+
+model VagaBeneficio {
+  id        Int    @id @default(autoincrement())
+  vagaId    Int
+  descricao String
+  
+  vaga      Vaga   @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  
+  @@index([vagaId])
+}
+
+model VagaProcesso {
+  id     Int    @id @default(autoincrement())
+  vagaId Int
+  etapa  String
+  ordem  Int    @default(0)
+  
+  vaga   Vaga   @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  
+  @@index([vagaId])
+  @@unique([vagaId, ordem])
 }
 
 model VagaSubtipo {
@@ -123,19 +192,37 @@ model VagaAcessibilidade {
 model Candidato {
   id           Int                        @id @default(autoincrement())
   nome         String
-  curriculo    String?
-  laudo        String?
   email        String?                    @unique
   telefone     String?
   escolaridade String
+  curso        String?                    // Para ensino superior+
+  situacao     String?                    // cursando, concluído
+  cidade       String?                    // Obrigatória para perfil completo (validada em app)
+  estado       String?                    // Obrigatória para perfil completo (validada em app)
+  disponibilidadeGeografica String?       // Ex: Apenas na cidade, Estado, Brasil, Remoto
+  aceitaMudanca          Boolean?         @default(false)
+  aceitaViajar           Boolean?         @default(false)
+  pretensaoSalarialMin   Int?             // Valor mínimo desejado (opcional)
   createdAt    DateTime                   @default(now())
   updatedAt    DateTime                   @updatedAt
   cpf          String?                    @unique
   senhaHash    String?
+  curriculo    String?                    // PDF
+  laudo        String?
+  isActive     Boolean                    @default(true)
   subtipos     CandidatoSubtipo[]
   barras       CandidatoSubtipoBarreira[]
   candidaturas Candidatura[]
   vagasSalvas  VagaSalva[]
+  favoritos    CandidatoVagaFavorita[]
+  configuracoes CandidatoConfig?
+  notificacoes Notificacao[]
+  experiencias CandidatoExperiencia[]
+  formacoes    CandidatoFormacao[]
+  cursos       CandidatoCurso[]
+  competencias CandidatoCompetencia[]
+  idiomas      CandidatoIdioma[]
+  areasFormacao CandidatoAreaFormacao[]
 }
 
 model CandidatoSubtipo {
@@ -175,17 +262,205 @@ model VagaSalva {
   candidatoId Int
   vagaId      Int
   createdAt   DateTime  @default(now())
+  isActive    Boolean   @default(true)
   candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
   vaga        Vaga      @relation(fields: [vagaId], references: [id], onDelete: Cascade)
 
   @@id([candidatoId, vagaId])
 }
 
+model CandidatoVagaFavorita {
+  candidatoId Int
+  vagaId      Int
+  createdAt   DateTime  @default(now())
+  isActive    Boolean   @default(true)
+  
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  vaga        Vaga      @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  
+  @@id([candidatoId, vagaId])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  acao      String
+  userId    Int?
+  userType  String?
+  detalhes  String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  @@index([acao])
+  @@index([userId])
+}
+
+model CandidatoConfig {
+  candidatoId           Int       @id
+  
+  // Notificações por E-mail
+  emailNovasVagas       Boolean   @default(true)
+  emailAtualizacoes     Boolean   @default(true)
+  emailMensagens        Boolean   @default(true)
+  emailCurriculoIncompleto Boolean @default(true)
+  emailVagasExpiradas   Boolean   @default(true)
+  
+  // Notificações no Aplicativo
+  appNovasVagas         Boolean   @default(true)
+  appAtualizacoes       Boolean   @default(true)
+  appMensagens          Boolean   @default(true)
+  appCurriculoIncompleto Boolean  @default(true)
+  appVagasExpiradas     Boolean   @default(true)
+  
+  // Privacidade
+  curriculoVisivel      Boolean   @default(true)
+  
+  // Idioma
+  idioma                String    @default("pt-BR")
+  
+  // Segurança e Termos
+  termosAceitos         Boolean   @default(false)
+  termosAceitosEm       DateTime?
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  candidato             Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+}
+
+model Notificacao {
+  id          Int      @id @default(autoincrement())
+  candidatoId Int
+  tipo        String   // nova_vaga, atualizacao_candidatura, vaga_expirada
+  titulo      String
+  mensagem    String
+  lida        Boolean  @default(false)
+  vagaId      Int?
+  createdAt   DateTime @default(now())
+  
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  vaga        Vaga?     @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  
+  @@index([candidatoId])
+  @@index([lida])
+}
+
+model CandidatoExperiencia {
+  id          Int       @id @default(autoincrement())
+  candidatoId Int
+  cargo       String
+  empresa     String
+  dataInicio  DateTime
+  dataFim     DateTime?
+  atual       Boolean   @default(false)
+  descricao   String?
+  
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  
+  @@index([candidatoId])
+}
+
+model CandidatoFormacao {
+  id           Int       @id @default(autoincrement())
+  candidatoId  Int
+  escolaridade String
+  instituicao  String?
+  curso        String?
+  situacao     String?   // concluido, cursando
+  dataInicio   DateTime?
+  dataFim      DateTime?
+  
+  candidato    Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  
+  @@index([candidatoId])
+}
+
+model CandidatoCurso {
+  id           Int       @id @default(autoincrement())
+  candidatoId  Int
+  nome         String
+  instituicao  String
+  cargaHoraria Int?
+  certificado  String?   // URL do arquivo
+  
+  candidato    Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  
+  @@index([candidatoId])
+}
+
+model CandidatoCompetencia {
+  id          Int       @id @default(autoincrement())
+  candidatoId Int
+  tipo        String    // hard_skill, soft_skill
+  nome        String
+  nivel       String    // basico, intermediario, avancado
+  
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  
+  @@index([candidatoId])
+}
+
+model CandidatoIdioma {
+  id          Int       @id @default(autoincrement())
+  candidatoId Int
+  idioma      String
+  nivel       String    // A1, A2, B1, B2, C1, C2 ou basico, intermediario, avancado, fluente
+  certificado String?   // URL do arquivo
+  
+  candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  
+  @@index([candidatoId])
+}
+
+model AreaFormacao {
+  id        Int                      @id @default(autoincrement())
+  nome      String                   @unique
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+  
+  candidatos CandidatoAreaFormacao[]
+}
+
+model CandidatoAreaFormacao {
+  id          Int       @id @default(autoincrement())
+  candidatoId Int
+  areaId      Int
+  createdAt   DateTime  @default(now())
+  
+  candidato   Candidato    @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  area        AreaFormacao @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  
+  @@unique([candidatoId, areaId])
+  @@index([candidatoId])
+  @@index([areaId])
+}
+
 model Candidatura {
   id          Int       @id @default(autoincrement())
   vagaId      Int
   candidatoId Int
+  status      String    @default("pendente") // pendente, em_analise, aprovado, rejeitado, dispensado
+  anotacoes   String?
+  isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
   candidato   Candidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
   vaga        Vaga      @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+  
+  @@index([vagaId])
+  @@index([candidatoId])
+  @@unique([vagaId, candidatoId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  userType  String   // 'candidato' | 'empresa' | 'administrador'
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([userId, userType])
+  @@index([token])
 }

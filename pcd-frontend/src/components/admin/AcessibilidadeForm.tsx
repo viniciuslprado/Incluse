@@ -14,7 +14,7 @@ export default function AcessibilidadeForm({ onCreated }: Props) {
     }
     setLoading(true);
     try {
-      await api.criarAcessibilidade(descricao.trim());
+      await api.criarAcessibilidade(descricao.trim()); // agora envia como nome
       setDescricao("");
       onCreated();
     } catch (e) {

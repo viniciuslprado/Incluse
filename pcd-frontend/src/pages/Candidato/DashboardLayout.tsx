@@ -1,8 +1,9 @@
 import { NavLink, Outlet, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
+import { CandidateProvider } from "../../contexts/CandidateContext";
 import DashboardBottomNav from "../../components/DashboardBottomNav";
-import { FiMenu, FiLogOut, FiUser, FiHome, FiSearch, FiBookmark, FiBriefcase, FiBell, FiFileText, FiHeart, FiSettings } from 'react-icons/fi';
+import { FiMenu, FiUser, FiHome, FiBookmark, FiBriefcase, FiBell, FiFileText, FiSettings } from 'react-icons/fi';
 
 export default function DashboardLayout() {
   const { id } = useParams();
@@ -14,8 +15,17 @@ export default function DashboardLayout() {
 
   useEffect(() => {
     if (!candidatoId || candidatoId <= 0) return;
-    api.getCandidato(candidatoId).then((c: any) => setNome(c?.nome ?? null)).catch(() => setNome(null));
-  }, [candidatoId]);
+    api.getCandidato(candidatoId)
+      .then((c: any) => setNome(c?.nome ?? null))
+      .catch((err: any) => {
+        setNome(null);
+        // Se candidato não existe, redirecionar para home
+        if (err?.status === 404) {
+          localStorage.clear();
+          navigate('/');
+        }
+      });
+  }, [candidatoId, navigate]);
 
   useEffect(() => {
     function avatarChanged(e: Event) {
@@ -40,9 +50,9 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-sky-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 p-2 md:p-6">
+      <div className="flex max-w-[1600px] mx-auto">
         {/* Mobile top bar */}
-        <div className="md:hidden col-span-12 mb-1 flex items-center justify-between py-1">
+        <div className="md:hidden w-full mb-1 flex items-center justify-between py-1 px-2">
           <div>
             <div className="text-xs text-gray-600">Olá,</div>
             <div className="font-medium text-sm">{nome ?? `Candidato ${candidatoId}`}</div>
@@ -62,14 +72,15 @@ export default function DashboardLayout() {
                 <div className="text-sm text-gray-600">Menu</div>
               </div>
               <nav className="space-y-2">
-                  <NavLink to={`/candidato/${candidatoId}`} end onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
-                  <NavLink to={`/candidato/${candidatoId}/empresas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBriefcase/> Empresas</NavLink>
-                  <NavLink to={`/candidato/${candidatoId}/faq`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> FAQ</NavLink>
-                  <NavLink to={`/candidato/${candidatoId}/notificacoes`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBell/> Notificações</NavLink>
-                  <NavLink to={`/candidato/${candidatoId}/curriculo`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> Meu currículo</NavLink>
-                  <NavLink to={`/candidato/${candidatoId}/favoritas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHeart/> Empresas favoritas</NavLink>
-                  <NavLink to={`/candidato/${candidatoId}/configuracoes`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiSettings/> Configurações</NavLink>
-                </nav>
+                <NavLink to={`/candidato/${candidatoId}`} end onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/favoritas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBookmark/> Vagas Favoritas</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/minhas-candidaturas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBriefcase/> Minhas Candidaturas</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/curriculo`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> Meu Currículo</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/perfil`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiUser/> Perfil</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/notificacoes`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBell/> Notificações</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/faq`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> FAQ</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/configuracoes`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiSettings/> Configurações</NavLink>
+              </nav>
                 <div className="mt-4 border-t pt-3">
                   <button onClick={() => { setIsDrawerOpen(false); handleLogout(); }} className="w-full text-left px-3 py-2 rounded text-sm text-red-600">Sair</button>
                 </div>
@@ -77,8 +88,8 @@ export default function DashboardLayout() {
           </div>
         )}
 
-        <aside className="hidden md:block col-span-2 sticky top-6 self-start md:-ml-24">
-          <div className="p-4 border rounded-md bg-white shadow-sm">
+        <aside className="hidden md:flex md:flex-col md:w-64 md:min-h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 ml-2">
+          <div className="p-4 sticky top-0">
             <div className="mb-4 flex items-center gap-3">
                 <div>
                   <img src={avatarUrl ?? '/vite.svg'} alt="Avatar" className="w-20 h-20 rounded-full object-cover border" />
@@ -90,12 +101,12 @@ export default function DashboardLayout() {
               </div>
             <nav className="space-y-2">
               <NavLink to={`/candidato/${candidatoId}`} end className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
-              <NavLink to={`/candidato/${candidatoId}/buscar`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiSearch/> Fazer busca</NavLink>
-              <NavLink to={`/candidato/${candidatoId}/faq`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> FAQ</NavLink>
-              <NavLink to={`/candidato/${candidatoId}/notificacoes`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBell/> Notificações</NavLink>
+              <NavLink to={`/candidato/${candidatoId}/favoritas`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBookmark/> Vagas Favoritas</NavLink>
+              <NavLink to={`/candidato/${candidatoId}/minhas-candidaturas`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBriefcase/> Minhas Candidaturas</NavLink>
+              <NavLink to={`/candidato/${candidatoId}/curriculo`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> Meu Currículo</NavLink>
               <NavLink to={`/candidato/${candidatoId}/perfil`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiUser/> Perfil</NavLink>
-              <NavLink to={`/candidato/${candidatoId}/curriculo`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> Meu currículo</NavLink>
-              <NavLink to={`/candidato/${candidatoId}/favoritas`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHeart/> Empresas favoritas</NavLink>
+              <NavLink to={`/candidato/${candidatoId}/notificacoes`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBell/> Notificações</NavLink>
+              <NavLink to={`/candidato/${candidatoId}/faq`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> FAQ</NavLink>
               <NavLink to={`/candidato/${candidatoId}/configuracoes`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiSettings/> Configurações</NavLink>
             </nav>
             <div className="mt-4 border-t pt-3">
@@ -104,9 +115,11 @@ export default function DashboardLayout() {
           </div>
         </aside>
 
-        <main className="col-span-12 md:col-span-10 lg:col-span-10">
-          <div className="p-2 pb-20 md:p-4 md:pb-4">
-            <Outlet />
+        <main className="flex-1 overflow-auto">
+          <div className="p-4 md:p-6 pb-20 md:pb-6">
+            <CandidateProvider candidatoId={candidatoId}>
+              <Outlet />
+            </CandidateProvider>
           </div>
         </main>
       </div>

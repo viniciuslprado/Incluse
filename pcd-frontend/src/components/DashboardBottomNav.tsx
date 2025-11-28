@@ -1,5 +1,5 @@
 import { NavLink, useParams } from "react-router-dom";
-import { FiHome, FiBookmark, FiBell, FiUser, FiSearch } from 'react-icons/fi';
+import { FiHome, FiBookmark, FiBell, FiUser, FiBriefcase } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { getSavedIds, getNotificationsCount } from '../lib/localStorage';
 
@@ -7,10 +7,11 @@ export default function DashboardBottomNav() {
   const { id } = useParams();
   const cid = id ?? 'me';
 
+  // Versão enxuta: apenas 5 itens principais
   const items = [
     { name: 'Início', to: `/candidato/${cid}`, icon: <FiHome />, key: 'home' },
-    { name: 'Vagas Salvas', to: `/candidato/${cid}/salvas`, icon: <FiBookmark />, key: 'salvas' },
-    { name: 'Buscar', to: `/candidato/${cid}/buscar`, icon: <FiSearch />, key: 'buscar' },
+    { name: 'Favoritas', to: `/candidato/${cid}/favoritas`, icon: <FiBookmark />, key: 'favoritas' },
+    { name: 'Candidaturas', to: `/candidato/${cid}/minhas-candidaturas`, icon: <FiBriefcase />, key: 'candidaturas' },
     { name: 'Notificações', to: `/candidato/${cid}/notificacoes`, icon: <FiBell />, key: 'notificacoes' },
     { name: 'Perfil', to: `/candidato/${cid}/perfil`, icon: <FiUser />, key: 'perfil' },
   ];
@@ -51,7 +52,7 @@ export default function DashboardBottomNav() {
             </NavLink>
 
             {/* badges */}
-            {it.key === 'salvas' && savedCount > 0 && (
+            {it.key === 'favoritas' && savedCount > 0 && (
               <span className="absolute -top-0.5 right-6 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold leading-none text-white bg-incluse-accent rounded-full">{savedCount}</span>
             )}
             {it.key === 'notificacoes' && notifCount > 0 && (

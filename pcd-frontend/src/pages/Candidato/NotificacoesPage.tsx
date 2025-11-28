@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNotifications, markNotificationRead, markAllNotificationsRead } from '../../lib/localStorage';
-import { useToast } from '../../components/ui/Toast';
+import { api } from '../../lib/api';
+import { useToast } from '../../components/common/Toast';
 import { FiBell, FiExternalLink } from 'react-icons/fi';
 
-type Notificacao = { id: string | number; title?: string; message?: string; read?: boolean; link?: string; createdAt?: string };
+type Notificacao = { id: number; titulo: string; mensagem: string; lida: boolean; vagaId?: number; createdAt: string };
 
 export default function NotificacoesPage() {
   const { id } = useParams();
@@ -15,34 +15,57 @@ export default function NotificacoesPage() {
   const { addToast } = useToast();
 
   useEffect(() => {
-    if (!candidatoId) return;
-    setLoading(true);
-    const raw = getNotifications(candidatoId) as any[];
-    const normalized = (raw || []).map(n => ({ id: n.id, title: n.title ?? n.title ?? 'Notificação', message: n.message ?? n.body ?? '', read: Boolean(n.read), link: n.link, createdAt: n.createdAt || n.date }));
-    setItems(normalized);
-    setLoading(false);
+    let mounted = true;
+    async function carregar() {
+      if (!candidatoId) return;
+      try {
+        // Obter token se necessário
+        let token = localStorage.getItem('token');
+        if (!token) {
+          try {
+            const devAuth = await api.getDevToken(candidatoId);
+            localStorage.setItem('token', devAuth.token);
+          } catch (devErr) {
+            console.warn('Não foi possível obter token:', devErr);
+          }
+        }
+        
+        const data = await api.listarNotificacoes(candidatoId);
+        if (mounted) setItems(data.notificacoes || []);
+      } catch (err: any) {
+        console.error('Erro ao carregar notificações:', err);
+        if (mounted) setItems([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    carregar();
+    return () => { mounted = false };
   }, [candidatoId]);
 
-  function openNotification(n: Notificacao) {
+  async function openNotification(n: Notificacao) {
     if (!candidatoId) return;
-    if (!n.read) {
-      const ok = markNotificationRead(candidatoId, n.id);
-      if (ok) setItems(prev => prev.map(p => p.id === n.id ? { ...p, read: true } : p));
+    if (!n.lida) {
+      try {
+        await api.marcarNotificacaoLida(candidatoId, n.id);
+        setItems(prev => prev.map(p => p.id === n.id ? { ...p, lida: true } : p));
+      } catch (err) {
+        console.error('Erro ao marcar notificação:', err);
+      }
     }
-    if (n.link) {
-      if (n.link.startsWith('/')) navigate(n.link);
-      else window.open(n.link, '_blank');
+    if (n.vagaId) {
+      navigate(`/vagas/${n.vagaId}`);
     }
   }
 
-  function handleMarkAll() {
+  async function handleMarkAll() {
     if (!candidatoId) return;
-    const ok = markAllNotificationsRead(candidatoId);
-    if (ok) {
-      setItems(prev => prev.map(p => ({ ...p, read: true })));
+    try {
+      await api.marcarTodasNotificacoesLidas(candidatoId);
+      setItems(prev => prev.map(p => ({ ...p, lida: true })));
       addToast({ type: 'success', title: 'Notificações', message: 'Todas as notificações foram marcadas como lidas.' });
-    } else {
-      addToast({ type: 'error', title: 'Erro', message: 'Não foi possível marcar todas como lidas.' });
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Erro', message: err?.message ?? 'Não foi possível marcar todas como lidas.' });
     }
   }
 
@@ -65,9 +88,9 @@ export default function NotificacoesPage() {
       ) : (
         <ul className="space-y-2">
           {items.map(item => (
-            <li key={String(item.id)} className={`border rounded p-3 flex items-start gap-3 ${item.read ? 'bg-white' : 'bg-sky-50 border-sky-200'}`}>
+            <li key={item.id} className={`border rounded p-3 flex items-start gap-3 ${item.lida ? 'bg-white' : 'bg-sky-50 border-sky-200'}`}>
               <div className="pt-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.read ? 'bg-gray-100 text-gray-600' : 'bg-sky-600 text-white'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${item.lida ? 'bg-gray-100 text-gray-600' : 'bg-sky-600 text-white'}`}>
                   <FiBell />
                 </div>
               </div>
@@ -75,17 +98,17 @@ export default function NotificacoesPage() {
                 <button onClick={() => openNotification(item)} className="text-left w-full">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
-                      <div className={`font-semibold ${item.read ? 'text-gray-800' : 'text-gray-900'}`}>{item.title}</div>
-                      <div className="text-sm text-gray-600 truncate max-w-xl mt-1">{item.message}</div>
+                      <div className={`font-semibold ${item.lida ? 'text-gray-800' : 'text-gray-900'}`}>{item.titulo}</div>
+                      <div className="text-sm text-gray-600 truncate max-w-xl mt-1">{item.mensagem}</div>
                     </div>
-                    {item.link && (
+                    {item.vagaId && (
                       <div className="ml-2 text-gray-400" aria-hidden>
                         <FiExternalLink />
                       </div>
                     )}
                   </div>
                 </button>
-                <div className="text-xs text-gray-400 mt-2">{item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}</div>
+                <div className="text-xs text-gray-400 mt-2">{new Date(item.createdAt).toLocaleString()}</div>
               </div>
             </li>
           ))}

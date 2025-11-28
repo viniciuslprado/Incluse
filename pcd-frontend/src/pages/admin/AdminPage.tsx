@@ -10,39 +10,11 @@ export default function AdminPage() {
         <div className="container-page py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Admin</h1>
           <nav className="flex gap-2">
-            <NavLink
-              to="/admin/tipos"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : ""}`
-              }
-            >
-              Tipos
-            </NavLink>
-            <NavLink
-              to="/admin/subtipos"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : ""}`
-              }
-            >
-              Subtipos
-            </NavLink>
-            <NavLink
-  to="/admin/barreiras"
-  className={({ isActive }) =>
-    `${linkBase} ${isActive ? linkActive : ""}`
-  }
->
-  Barreiras
-</NavLink>
-            <NavLink
-              to="/admin/acessibilidades"
-              className={({ isActive }) =>
-                `${linkBase} ${isActive ? linkActive : ""}`
-              }
-            >
-              Acessibilidades
-            </NavLink>
-
+            <NavLink to="/admin/tipos" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>Tipos</NavLink>
+            <NavLink to="/admin/subtipos" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>Subtipos</NavLink>
+            <NavLink to="/admin/barreiras" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>Barreiras</NavLink>
+            <NavLink to="/admin/acessibilidades" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>Acessibilidades</NavLink>
+            <NavLink to="/admin/administradores" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}>Administradores</NavLink>
           </nav>
         </div>
       </header>

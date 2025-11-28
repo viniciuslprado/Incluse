@@ -5,15 +5,15 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
-  // Do not render the global navbar inside candidate dashboard routes
-  if (location.pathname.startsWith('/candidato')) return null;
+  // Do not render the global navbar inside candidate dashboard routes or empresa dashboard routes
+  // But allow it on public /empresas page
+  if (location.pathname.startsWith('/candidato') || (location.pathname.startsWith('/empresa/') && location.pathname !== '/empresas')) return null;
 
   const navigation = [
     { name: 'Início', href: '/' },
     { name: 'Quem Somos', href: '/quem-somos' },
     { name: 'Vagas', href: '/vagas' },
-    { name: 'Empresas', href: '/empresas' },
-    { name: 'Contato', href: '/contato' }
+    { name: 'Empresas', href: '/empresas' }
   ];
 
   return (

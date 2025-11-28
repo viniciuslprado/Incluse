@@ -2,12 +2,18 @@
   "name": "pcd-project",
   "scripts": {
     "dev": "concurrently \"cd pcd-backend && npm run dev\" \"cd pcd-frontend && npm run dev\"",
+    "dev:all": "npm run dev",
     "install-all": "npm install && cd pcd-backend && npm install && cd ../pcd-frontend && npm install",
     "backend": "cd pcd-backend && npm run dev",
     "frontend": "cd pcd-frontend && npm run dev"
   },
   "dependencies": {
-    "typescript": "^5.9.3"
+    "@prisma/client": "^7.0.1",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "express": "^5.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

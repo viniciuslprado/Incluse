@@ -69,12 +69,12 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
                     {barreiras.map((b) => (
                         <label key={b.id} className="flex items-center gap-2">
                             <input
-                                type="checkbox" //input de quadradinhos
-                                checked={barreiraIds.includes(b.id)}//insere no vetor se selecionado
-                                onChange={() => toggleBarreira(b.id)}//tira do vetor
+                                type="checkbox"
+                                checked={barreiraIds.includes(b.id)}
+                                onChange={() => toggleBarreira(b.id)}
                                 disabled={loading}
                             />
-                            {b.descricao}
+                            {b.nome}
                         </label>
                     ))}
                 </div>

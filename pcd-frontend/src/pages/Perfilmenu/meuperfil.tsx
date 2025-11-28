@@ -1,4 +1,4 @@
-import React from 'react';
+import { formatPhone } from '../../utils/formatters';
 
 type Props = {
   avatarPreview: string | null;
@@ -47,17 +47,70 @@ export default function MeuPerfil({ avatarPreview, candidato, fileRef, handleFil
         </div>
         <div>
           <label className="block text-sm font-medium">Celular <span className="text-red-600">*</span></label>
-          <input aria-required="true" value={form.telefone} onChange={e => handleInput('telefone', e.target.value)} placeholder="Telefone" className="p-3 border rounded w-full" />
+          <input 
+            aria-required="true" 
+            value={formatPhone(form.telefone || '')} 
+            onChange={e => {
+              const unformatted = e.target.value.replace(/\D/g, '');
+              handleInput('telefone', unformatted);
+            }}
+            placeholder="+55 (DD) 9XXXX-XXXX" 
+            className="p-3 border rounded w-full" 
+          />
+          <div className="text-xs text-gray-500 mt-1">Formato: +55 (DD) 9XXXX-XXXX</div>
           {errors.telefone && <div className="text-xs text-red-600 mt-1">{errors.telefone}</div>}
-        </div>
-        <div>
-          <label className="block text-sm font-medium">Nome social <span className="text-sm text-gray-500">(opcional)</span></label>
-          <input value={form.nomeSocial} onChange={e => handleInput('nomeSocial', e.target.value)} placeholder="Nome social (opcional)" className="p-3 border rounded w-full" />
         </div>
         <div>
           <label className="block text-sm font-medium">Nome de usuário <span className="text-sm text-gray-500">(opcional)</span></label>
           <input value={form.username} onChange={e => handleInput('username', e.target.value)} placeholder="@usuário (opcional)" className="p-3 border rounded w-full" />
         </div>
+        <div>
+          <label className="block text-sm font-medium">Escolaridade <span className="text-red-600">*</span></label>
+          <select 
+            aria-required="true" 
+            value={form.escolaridade || ''} 
+            onChange={e => handleInput('escolaridade', e.target.value)} 
+            className="p-3 border rounded w-full"
+          >
+            <option value="">Selecione sua escolaridade</option>
+            <option value="Ensino Fundamental Incompleto">Ensino Fundamental Incompleto</option>
+            <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
+            <option value="Ensino Médio Incompleto">Ensino Médio Incompleto</option>
+            <option value="Ensino Médio Completo">Ensino Médio Completo</option>
+            <option value="Ensino Superior Incompleto">Ensino Superior Incompleto</option>
+            <option value="Ensino Superior Completo">Ensino Superior Completo</option>
+            <option value="Pós-graduação">Pós-graduação</option>
+            <option value="Mestrado">Mestrado</option>
+            <option value="Doutorado">Doutorado</option>
+          </select>
+          {errors.escolaridade && <div className="text-xs text-red-600 mt-1">{errors.escolaridade}</div>}
+        </div>
+        {form.escolaridade && /superior|pós|mestrado|doutorado/i.test(form.escolaridade) && (
+          <div>
+            <label className="block text-sm font-medium mb-2">Área de formação <span className="text-red-600">*</span></label>
+            <p className="text-xs text-gray-500 mb-2">Selecione uma ou mais áreas relacionadas à sua formação</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded p-4 bg-gray-50">
+              {form.areasFormacaoDisponiveis?.sort((a: any, b: any) => a.nome.localeCompare(b.nome)).map((area: any) => (
+                <label key={area.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                  <input
+                    type="checkbox"
+                    checked={(form.areasFormacao || []).includes(area.id)}
+                    onChange={(e) => {
+                      const current = form.areasFormacao || [];
+                      const updated = e.target.checked 
+                        ? [...current, area.id]
+                        : current.filter((id: number) => id !== area.id);
+                      handleInput('areasFormacao', updated);
+                    }}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-sm">{area.nome}</span>
+                </label>
+              ))}
+            </div>
+            {errors.areasFormacao && <div className="text-xs text-red-600 mt-1">{errors.areasFormacao}</div>}
+          </div>
+        )}
       </section>
     </>
   );

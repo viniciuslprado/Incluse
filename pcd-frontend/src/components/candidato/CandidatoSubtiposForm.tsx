@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api } from "../../lib/api";
 import type { SubtipoDeficiencia } from "../../types";
 
@@ -8,15 +8,17 @@ type Props = {
   disableActions?: boolean;
   onChange?: (selecionados: SubtipoDeficiencia[]) => void;
   initialSelected?: number[];
+  autoSync?: boolean; // se true, sincroniza imediatamente a cada toggle
 };
 
-export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableActions, onChange, initialSelected }: Props) {
+export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableActions, onChange, initialSelected, autoSync }: Props) {
   const [subtipos, setSubtipos] = useState<SubtipoDeficiencia[]>([]);
   const [selecionados, setSelecionados] = useState<number[]>([]);
   const [filtro, setFiltro] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+  const previousSelecionadosRef = useRef<string>('');
 
   useEffect(() => {
     api.listarSubtipos().then(setSubtipos).catch((e) => setErro(e.message));
@@ -24,17 +26,50 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
 
   const visiveis = subtipos.filter((s) => s.nome.toLowerCase().includes(filtro.toLowerCase()));
 
-  // initialize selection from prop if provided
+  // initialize selection from prop if provided (only once)
   useEffect(() => {
-    if (initialSelected && initialSelected.length) setSelecionados(initialSelected);
-  }, [initialSelected]);
+    if (initialSelected && initialSelected.length && selecionados.length === 0) {
+      setSelecionados(initialSelected);
+    }
+  }, []);
+
+  // Notify parent when selection changes (evita loops comparando valor anterior)
+  useEffect(() => {
+    if (selecionados.length > 0 && subtipos.length > 0) {
+      const currentKey = selecionados.sort().join(',');
+      if (currentKey !== previousSelecionadosRef.current) {
+        previousSelecionadosRef.current = currentKey;
+        const selectedObjects = subtipos.filter((s) => selecionados.includes(s.id));
+        onChange?.(selectedObjects);
+      }
+    }
+  }, [selecionados, subtipos, onChange]);
+
+  async function sync(nextIds: number[]) {
+    try {
+      await api.vincularSubtiposACandidato(candidatoId, nextIds);
+      setOk(true);
+      onUpdated?.();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErro(msg || "Erro ao sincronizar subtipos");
+    }
+  }
 
   function toggle(id: number) {
     setSelecionados((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      // pass full subtipo objects to parent
-      const selectedObjects = subtipos.filter((s) => next.includes(s.id));
-      onChange?.(selectedObjects);
+      
+      // Validação: não permitir desmarcar o último subtipo
+      if (next.length === 0) {
+        setErro("Você deve ter pelo menos um tipo de deficiência selecionado.");
+        return prev; // mantém seleção anterior
+      }
+      
+      setErro(null);
+      if (autoSync && !disableActions) {
+        sync(next);
+      }
       return next;
     });
   }
@@ -48,16 +83,12 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
     setLoading(true);
     try {
       if (!disableActions) {
-        await api.vincularSubtiposACandidato(candidatoId, selecionados);
-        setOk(true);
-        onUpdated?.();
+        await sync(selecionados);
       } else {
-        // In readonly/edit-local mode we don't call the API; just mark ok
         setOk(true);
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErro(msg || "Erro ao vincular subtipos");
+    } catch (e) {
+      // erro já tratado em sync
     } finally {
       setLoading(false);
     }
@@ -67,11 +98,8 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
     <form className="card space-y-3" onSubmit={(e) => e.preventDefault()}>
       <div>
         <label className="label">Selecione seus subtipos</label>
-        <div className="flex gap-2 items-center mb-2">
-          <input placeholder="Filtrar por nome" value={filtro} onChange={(e) => setFiltro(e.target.value)} className="border rounded p-1 text-sm flex-1" />
-          <button type="button" className="px-2 py-1 border rounded text-sm" onClick={() => setSelecionados(visiveis.map((s) => s.id))}>
-            Selecionar visíveis
-          </button>
+        <div className="mb-2">
+          <input placeholder="Filtrar por nome" value={filtro} onChange={(e) => setFiltro(e.target.value)} className="border rounded p-2 text-sm w-full" />
         </div>
         <div className="max-h-60 overflow-y-auto space-y-2">
           {visiveis.length === 0 ? (
@@ -100,15 +128,13 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
 
       {erro && <p className="error">{erro}</p>}
 
-      {!disableActions ? (
+      {!disableActions && !autoSync ? (
         <div className="flex justify-end">
           <button disabled={loading} onClick={handleSalvar} className="btn btn-primary">
-            {loading ? "Salvando..." : "Vincular subtipos"}
+            {loading ? "Salvando..." : "Salvar subtipos"}
           </button>
         </div>
-      ) : (
-        <div className="text-sm text-gray-600">Alterações são salvas localmente no perfil.</div>
-      )}
+      ) : null}
 
       {ok && <p className="text-sm text-green-600">✅ Operação concluída</p>}
     </form>

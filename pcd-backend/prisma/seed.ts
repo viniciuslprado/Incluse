@@ -1,7 +1,24 @@
+import bcrypt from 'bcryptjs';
+
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+    // Seed do admin
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminName = process.env.ADMIN_NAME || 'Administrador';
+    if (adminEmail && adminPassword) {
+      const senhaHash = await bcrypt.hash(adminPassword, 10);
+      await prisma.administrador.upsert({
+        where: { email: adminEmail },
+        update: { senhaHash, nome: adminName, isActive: true },
+        create: { email: adminEmail, senhaHash, nome: adminName, isActive: true },
+      });
+      console.log('👑 Administrador inserido/atualizado:', adminEmail);
+    } else {
+      console.warn('⚠️ Variáveis ADMIN_EMAIL e ADMIN_PASSWORD não definidas no .env. Admin não criado.');
+    }
   // limpa dados (apenas para desenvolvimento)
   await prisma.vaga.deleteMany();
   await prisma.empresa.deleteMany();
@@ -111,115 +128,152 @@ async function main() {
     skipDuplicates: true,
   });
 
+  // Gere um hash de senha para usar nos testes (senha: 123456)
+  const senhaHash = await bcrypt.hash('123456', 8);
+
   // Empresas
   const empresa1 = await prisma.empresa.create({
     data: {
       nome: "TechInclusiva - Tecnologia Acessível",
-      cnpj: "12.345.678/0001-90",
+      cnpj: "12345678000190",
       email: "rh@techinclusiva.com.br",
+      senhaHash: senhaHash, // Adiciona a senha
     }
   });
 
   const empresa2 = await prisma.empresa.create({
     data: {
       nome: "InnovaCorps - Inovação Inclusiva",
-      cnpj: "98.765.432/0001-10",
+      cnpj: "98765432000110",
       email: "inclusao@innovacorps.com",
+      senhaHash: senhaHash, // Adiciona a senha
     }
   });
 
   const empresa3 = await prisma.empresa.create({
     data: {
       nome: "AcessoTotal Consultoria",
-      cnpj: "11.222.333/0001-44",
+      cnpj: "11222333000144",
       email: "vagas@acessototal.com.br",
+      senhaHash: senhaHash, // Adiciona a senha
     }
   });
 
   // Vagas com descrições mais detalhadas
-  await prisma.vaga.createMany({
-    data: [
-      // TechInclusiva - Vagas de tecnologia inclusiva
-      {
-        empresaId: empresa1.id,
-        descricao: "Desenvolvedor Frontend React/TypeScript - Trabalho remoto com foco em acessibilidade web. Desenvolvimento de interfaces inclusivas seguindo padrões WCAG. Conhecimentos em screen readers e navegação por teclado são um diferencial.",
-        escolaridade: "Ensino Superior Completo"
+  // Criar vagas com estrutura completa
+  const vaga1 = await prisma.vaga.create({
+    data: {
+      empresaId: empresa1.id,
+      titulo: "Desenvolvedor Frontend React/TypeScript",
+      tipoContratacao: "CLT",
+      modeloTrabalho: "Remoto",
+      localizacao: "São Paulo/SP",
+      area: "Tecnologia da Informação",
+      escolaridade: "Ensino Superior Completo",
+      cidade: "São Paulo",
+      estado: "SP",
+      status: "ativa",
+      descricaoVaga: {
+        create: {
+          resumo: "Desenvolvimento de interfaces acessíveis para plataforma web",
+          atividades: "Desenvolver componentes React, implementar acessibilidade, trabalhar com TypeScript",
+          jornada: "40 horas semanais",
+          salarioMin: 5000,
+          salarioMax: 8000
+        }
       },
-      {
-        empresaId: empresa1.id,
-        descricao: "Analista de Suporte Técnico - Atendimento especializado para pessoas com deficiência. Ambiente de trabalho adaptado com tecnologias assistivas. Horário flexível e possibilidade de home office.",
-        escolaridade: "Ensino Médio Completo"
+      requisitos: {
+        create: {
+          formacao: "Superior completo em TI ou áreas correlatas",
+          experiencia: "2 anos com React e TypeScript",
+          competencias: "Trabalho em equipe, Comunicação, Proatividade",
+          habilidadesTecnicas: "React, TypeScript, HTML, CSS, Git"
+        }
       },
-      {
-        empresaId: empresa1.id,
-        descricao: "Designer UX/UI Inclusivo - Criação de interfaces acessíveis e inclusivas. Conhecimento em design universal, contraste de cores, e usabilidade para pessoas com deficiência. Trabalho híbrido.",
-        escolaridade: "Ensino Superior Completo"
+      beneficios: {
+        createMany: {
+          data: [
+            { descricao: "Vale refeição" },
+            { descricao: "Vale transporte" },
+            { descricao: "Plano de saúde" },
+            { descricao: "Home office" }
+          ]
+        }
       },
-      {
-        empresaId: empresa1.id,
-        descricao: "Especialista em Testes de Acessibilidade - Responsável por garantir que nossos produtos sejam acessíveis. Experiência com ferramentas de teste de acessibilidade e conhecimento em WCAG 2.1.",
-        escolaridade: "Ensino Superior Completo"
-      },
-      {
-        empresaId: empresa1.id,
-        descricao: "Tradutor e Intérprete de Libras - Atuação em reuniões, treinamentos e eventos da empresa. Certificação em Libras é obrigatória. Ambiente colaborativo e inclusivo.",
-        escolaridade: "Ensino Superior Completo"
-      },
-
-      // InnovaCorps - Vagas corporativas inclusivas  
-      {
-        empresaId: empresa2.id,
-        descricao: "Atendimento ao Cliente - Remoto com Libras - Canal especializado para atendimento em Libras via videochamada. Conhecimento em Libras obrigatório. Treinamento completo fornecido pela empresa.",
-        escolaridade: "Ensino Médio Completo"
-      },
-      {
-        empresaId: empresa2.id,
-        descricao: "Auxiliar Administrativo - Escritório adaptado com elevador, rampas e banheiros acessíveis. Softwares com leitores de tela disponíveis. Horário flexível de 6h diárias.",
-        escolaridade: "Ensino Médio Completo"
-      },
-      {
-        empresaId: empresa2.id,
-        descricao: "Analista de Dados Júnior - Trabalho com Excel, Power BI e análise de métricas de inclusão. Ambiente 100% acessível com tecnologias assistivas. Mentoria especializada.",
-        escolaridade: "Ensino Superior Incompleto"
-      },
-      {
-        empresaId: empresa2.id,
-        descricao: "Coordenador de Diversidade e Inclusão - Desenvolvimento de políticas inclusivas, treinamentos de sensibilização e acompanhamento de colaboradores PcD. Experiência em RH desejável.",
-        escolaridade: "Ensino Superior Completo"
-      },
-      {
-        empresaId: empresa2.id,
-        descricao: "Operador de Telemarketing Adaptado - Call center com equipamentos adaptados, software de ampliação de tela e teclados especiais. Treinamento em comunicação inclusiva.",
-        escolaridade: "Ensino Médio Completo"
-      },
-      {
-        empresaId: empresa2.id,
-        descricao: "Assistente de Marketing Digital - Criação de conteúdo inclusivo para redes sociais, campanhas de conscientização sobre acessibilidade. Conhecimento em Canva e redes sociais.",
-        escolaridade: "Ensino Médio Completo"
-      },
-
-      // AcessoTotal - Consultoria especializada
-      {
-        empresaId: empresa3.id,
-        descricao: "Consultor em Acessibilidade Arquitetônica - Análise e adequação de espaços físicos conforme NBR 9050. Formação em Arquitetura ou Engenharia. Conhecimento em legislação de acessibilidade.",
-        escolaridade: "Ensino Superior Completo"
-      },
-      {
-        empresaId: empresa3.id,
-        descricao: "Instrutor de Libras - Ministrar cursos de Libras para empresas e instituições. Certificação Prolibras obrigatória. Experiência em ensino é um diferencial.",
-        escolaridade: "Ensino Superior Completo"
-      },
-      {
-        empresaId: empresa3.id,
-        descricao: "Terapeuta Ocupacional - Avaliação e adaptação de postos de trabalho. Prescrição de tecnologias assistivas. Acompanhamento de funcionários PcD em empresas clientes.",
-        escolaridade: "Ensino Superior Completo"
-      },
-      {
-        empresaId: empresa3.id,
-        descricao: "Assistente Administrativo - Apoio em projetos de consultoria, organização de documentos e agendamentos. Ambiente totalmente acessível com estação de trabalho adaptável.",
-        escolaridade: "Ensino Médio Completo"
+      processos: {
+        createMany: {
+          data: [
+            { etapa: "Triagem de currículos", ordem: 1 },
+            { etapa: "Entrevista com RH", ordem: 2 },
+            { etapa: "Teste técnico", ordem: 3 },
+            { etapa: "Entrevista técnica", ordem: 4 },
+            { etapa: "Proposta", ordem: 5 }
+          ]
+        }
       }
-    ]
+    }
+  });
+
+  const vaga2 = await prisma.vaga.create({
+    data: {
+      empresaId: empresa2.id,
+      titulo: "Assistente Administrativo",
+      tipoContratacao: "CLT",
+      modeloTrabalho: "Presencial",
+      localizacao: "São Paulo/SP",
+      area: "Administrativo",
+      escolaridade: "Ensino Médio Completo",
+      cidade: "São Paulo",
+      estado: "SP",
+      status: "ativa",
+      descricaoVaga: {
+        create: {
+          resumo: "Suporte administrativo geral",
+          atividades: "Atendimento telefônico, organização de documentos, apoio administrativo",
+          jornada: "44 horas semanais",
+          salarioMin: 2000,
+          salarioMax: 3000
+        }
+      },
+      beneficios: {
+        createMany: {
+          data: [
+            { descricao: "Vale refeição" },
+            { descricao: "Vale transporte" }
+          ]
+        }
+      }
+    }
+  });
+
+  // Vincular acessibilidades às vagas
+  await prisma.vagaAcessibilidade.createMany({
+    data: [
+      // Vaga 1 (Frontend Remoto) - Acessibilidades de comunicação
+      { vagaId: vaga1.id, acessibilidadeId: chatInterno.id },
+      
+      // Vaga 2 (Administrativo Presencial) - Acessibilidades físicas
+      { vagaId: vaga2.id, acessibilidadeId: rampa.id },
+      { vagaId: vaga2.id, acessibilidadeId: elevador.id },
+      { vagaId: vaga2.id, acessibilidadeId: pisoAntid.id },
+    ],
+    skipDuplicates: true,
+  });
+
+  // Vincular subtipos aceitos às vagas
+  await prisma.vagaSubtipo.createMany({
+    data: [
+      // Vaga 1 aceita todos os subtipos
+      { vagaId: vaga1.id, subtipoId: sub_motora1.id },
+      { vagaId: vaga1.id, subtipoId: sub_auditiva1.id },
+      { vagaId: vaga1.id, subtipoId: sub_visual1.id },
+      
+      // Vaga 2 aceita todos os subtipos
+      { vagaId: vaga2.id, subtipoId: sub_motora1.id },
+      { vagaId: vaga2.id, subtipoId: sub_auditiva1.id },
+      { vagaId: vaga2.id, subtipoId: sub_visual1.id },
+    ],
+    skipDuplicates: true,
   });
 
   console.log("Seed concluído ✅");
@@ -239,6 +293,8 @@ async function main() {
       cpf: "111.222.333-44",
       telefone: "(11) 99999-0000",
       escolaridade: "Ensino Médio Completo",
+      senhaHash: senhaHash, // Adiciona a senha
+      email: "joao@teste.com" // Adiciona email para login
     },
   });
 

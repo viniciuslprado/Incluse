@@ -3,9 +3,9 @@ import { extname, resolve } from 'path';
 import { mkdirSync } from 'fs';
 
 export default {
-  upload: (folder = 'tmp') => {
-    // ensure target directory exists
-    const dir = resolve(__dirname, '..', folder);
+  upload: (folder: string) => {
+    // ensure target directory exists (relative to project root, not src/)
+    const dir = resolve(__dirname, '..', '..', folder);
     try {
       mkdirSync(dir, { recursive: true });
     } catch (e) {

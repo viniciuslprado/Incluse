@@ -1,4 +1,3 @@
-import React from 'react';
 // Navbar is rendered globally by `App.tsx`
 import Footer from '../components/Footer';
 

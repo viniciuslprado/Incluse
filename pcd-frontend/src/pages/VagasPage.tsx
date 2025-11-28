@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Vaga, TipoDeficiencia, Acessibilidade, Empresa } from "../types";
 import Loading from "../components/Loading";
+import ResponsiveCardList from "../components/common/ResponsiveCardList";
 
 interface VagaPublica extends Vaga {
   empresa: Empresa;
@@ -29,12 +30,16 @@ function FiltrosPanel({
   empresas: Empresa[];
 }) {
   const escolaridades = [
-    "Ensino Fundamental Completo",
-    "Ensino Fundamental Incompleto",
-    "Ensino Médio Completo", 
-    "Ensino Médio Incompleto",
-    "Ensino Superior Completo",
-    "Ensino Superior Incompleto"
+    'Ensino Fundamental Completo',
+    'Ensino Fundamental Incompleto',
+    'Ensino Médio Completo',
+    'Ensino Médio Incompleto',
+    'Ensino Superior Completo',
+    'Ensino Superior Incompleto',
+    'Técnico',
+    'Pós-graduação',
+    'Mestrado',
+    'Doutorado'
   ];
 
   return (
@@ -303,10 +308,10 @@ export default function VagasPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Cabeçalho */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
           Oportunidades de Trabalho
         </h1>
-        <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
           Encontre vagas inclusivas em empresas comprometidas com a diversidade.
         </p>
       </div>
@@ -332,11 +337,32 @@ export default function VagasPage() {
           </div>
 
           {vagasFiltradas.length > 0 ? (
-            <div className="space-y-4">
-              {vagasFiltradas.map((vaga) => (
-                <VagaCard key={vaga.id} vaga={vaga} />
-              ))}
-            </div>
+            <>
+              {/* Desktop list */}
+              <div className="hidden md:block space-y-4">
+                {vagasFiltradas.map((vaga) => (
+                  <VagaCard key={vaga.id} vaga={vaga} />
+                ))}
+              </div>
+              {/* Mobile cards */}
+              <div className="md:hidden">
+                <ResponsiveCardList
+                  items={vagasFiltradas.map((vaga) => ({
+                    id: vaga.id,
+                    title: vaga.titulo || vaga.descricao,
+                    subtitle: vaga.empresa?.nome,
+                    meta: [
+                      { label: 'Escolaridade', value: vaga.escolaridade },
+                      ...(vaga.cidade || vaga.estado ? [{ label: 'Localização', value: vaga.cidade && vaga.estado ? `${vaga.cidade}, ${vaga.estado}` : (vaga.cidade || vaga.estado) }] : []),
+                      ...(vaga.empresa?.email ? [{ label: 'Contato', value: vaga.empresa.email }] : []),
+                    ],
+                    actions: [
+                      { label: 'Ver detalhes da vaga', to: `/vaga/${vaga.id}`, variant: 'blue', full: true },
+                    ],
+                  }))}
+                />
+              </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

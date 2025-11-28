@@ -1,15 +1,41 @@
 import { useEffect, useState } from "react";
-import { useParams, Outlet } from "react-router-dom";
+import { useParams, Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { api } from "../../lib/api";
 import type { Empresa } from "../../types";
-import SidebarEmpresa from "../../components/empresa/SidebarEmpresa";
-import HeaderEmpresa from "../../components/empresa/HeaderEmpresa";
+import { FiHome, FiUsers, FiSettings, FiFileText, FiMenu, FiPlusCircle, FiList, FiLogOut } from "react-icons/fi";
 
 export default function EmpresaPage() {
   const { id } = useParams();
   const empresaId = Number(id || 0);
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Verificar autenticação antes de carregar
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('userType');
+    const userId = localStorage.getItem('userId');
+
+    if (!token) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    if (userType !== 'empresa') {
+      alert('Acesso negado. Esta área é exclusiva para empresas.');
+      navigate('/', { replace: true });
+      return;
+    }
+
+    if (Number(userId) !== empresaId) {
+      alert('Acesso negado. Você não tem permissão para acessar esta empresa.');
+      navigate(`/empresa/${userId}/dashboard`, { replace: true });
+      return;
+    }
+  }, [empresaId, navigate]);
 
   useEffect(() => {
     async function carregar() {
@@ -18,12 +44,33 @@ export default function EmpresaPage() {
         if (!id) return;
         const data = await api.buscarEmpresa(Number(id));
         setEmpresa(data);
-      } catch {
+      } catch (error: any) {
+        if (error.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('userId');
+          navigate('/login', { replace: true });
+          return;
+        }
         setErro("Erro ao carregar dados da empresa");
       }
     }
     carregar();
-  }, [id]);
+  }, [id, navigate]);
+
+  // Redirecionar para dashboard se estiver na rota raiz da empresa
+  useEffect(() => {
+    if (location.pathname === `/empresa/${empresaId}`) {
+      navigate(`/empresa/${empresaId}/dashboard`, { replace: true });
+    }
+  }, [location.pathname, empresaId, navigate]);
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('userId');
+    navigate('/');
+  }
 
   if (erro) {
     return <div className="container-page py-8 text-red-600">{erro}</div>;
@@ -33,16 +80,120 @@ export default function EmpresaPage() {
     return <div className="container-page py-8">Carregando...</div>;
   }
 
+  const nome = empresa?.nome ?? 'Empresa';
+
+  const menuItems = [
+    { to: `/empresa/${empresaId}/dashboard`, icon: FiHome, label: 'Dashboard' },
+    { to: `/empresa/${empresaId}/anunciar`, icon: FiPlusCircle, label: 'Anunciar Vaga' },
+    { to: `/empresa/${empresaId}/gestao-vagas`, icon: FiList, label: 'Gestão de Vagas' },
+    { to: `/empresa/${empresaId}/candidatos`, icon: FiUsers, label: 'Candidatos' },
+    { to: `/empresa/${empresaId}/dados`, icon: FiFileText, label: 'Dados da Empresa' },
+    { to: `/empresa/${empresaId}/configuracoes`, icon: FiSettings, label: 'Configurações' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="md:flex">
-        <SidebarEmpresa empresaId={empresaId} />
-        <div className="flex-1 min-w-0">
-          <HeaderEmpresa nome={empresa.nome} />
-          <main className="p-6">
+    <div className="min-h-screen bg-sky-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="flex max-w-[1600px] mx-auto">
+        {/* Drawer (mobile) */}
+        {isDrawerOpen && (
+          <div className="md:hidden fixed inset-0 bg-black/40 z-50" onClick={() => setIsDrawerOpen(false)}>
+            <div className="w-72 bg-white dark:bg-gray-900 h-full p-3" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400">Menu</div>
+              </div>
+              <nav className="space-y-2">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={({isActive}) => 
+                        `flex items-center gap-2 px-3 py-2 rounded ${
+                          isActive 
+                            ? 'bg-blue-50 dark:bg-blue-900/30 font-semibold text-blue-700 dark:text-blue-400' 
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                        }`
+                      }
+                    >
+                      <Icon className="w-5 h-5" />
+                      {item.label}
+                    </NavLink>
+                  );
+                })}
+              </nav>
+              <div className="mt-4 border-t pt-3">
+                <button 
+                  onClick={() => { setIsDrawerOpen(false); handleLogout(); }} 
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <FiLogOut className="w-5 h-5" />
+                  Sair
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <aside className="hidden md:flex md:flex-col md:w-64 md:min-h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 ml-2">
+          <div className="p-4 sticky top-0">
+            <div className="mb-4 flex items-center gap-3">
+              <div>
+                <img src="/vite.svg" alt="Logo" className="w-20 h-20 rounded-full object-cover border" />
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Olá,</div>
+                <div className="text-lg font-semibold">{nome}</div>
+              </div>
+            </div>
+            <nav className="space-y-2">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({isActive}) => 
+                      `flex items-center gap-2 px-3 py-2 rounded ${
+                        isActive 
+                          ? 'bg-blue-50 dark:bg-blue-900/30 font-semibold text-blue-700 dark:text-blue-400' 
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`
+                    }
+                  >
+                    <Icon className="w-5 h-5" />
+                    {item.label}
+                  </NavLink>
+                );
+              })}
+            </nav>
+            <div className="mt-4 border-t pt-3">
+              <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <FiLogOut className="w-5 h-5" />
+                Sair
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex-1 overflow-auto">
+          {/* Botão de menu para mobile */}
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="md:hidden fixed bottom-4 right-4 z-40 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+            aria-label="Abrir menu"
+          >
+            <FiMenu className="w-6 h-6" />
+          </button>
+          
+          <div className="p-4 md:p-6">
             <Outlet />
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

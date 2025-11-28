@@ -31,7 +31,6 @@ const AccessibilityContext = createContext<AccessibilityContextType | undefined>
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
 
-  // Carregar configurações do localStorage na inicialização
   useEffect(() => {
     const saved = localStorage.getItem("accessibility-settings");
     if (saved) {
@@ -52,7 +51,6 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
   const applySettings = (settings: AccessibilitySettings) => {
     const root = document.documentElement;
-    console.log('Aplicando configurações de acessibilidade:', settings);
     
   // Limpar classes anteriores
     
@@ -85,8 +83,6 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   // Aplicar tema
   root.classList.remove('light', 'dark');
   root.classList.add(settings.theme);
-    
-    console.log('Classes aplicadas:', root.className);
   };
 
   const setFontSize = (fontSize: FontSize) => {
@@ -129,5 +125,5 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   );
 }
 
-// Hook movido para arquivo separado - hooks/useAccessibility.ts
+export { AccessibilityContext };
 export { AccessibilityContext };

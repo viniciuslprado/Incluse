@@ -3,7 +3,7 @@ type Candidatura = { id: number; titulo?: string; empresaNome?: string; appliedA
 import type { Vaga } from '../types';
 
 const keySaved = (candidatoId: number) => `incluse:saved:${candidatoId}`;
-const keyApplied = (candidatoId: number) => `incluse:applied:${candidatoId}`;
+const keyApplied = (candidatoId: number) => `incluse:candidaturas:${candidatoId}`;
 
 export function getSavedIds(candidatoId: number): number[] {
   try {
@@ -56,11 +56,48 @@ export function addCandidatura(candidatoId: number, vaga: any): boolean {
     const raw = localStorage.getItem(key);
     const arr: Candidatura[] = raw ? JSON.parse(raw) : [];
     if (arr.find(a => a.id === vaga.id)) return false;
-    const novo: Candidatura = { id: vaga.id, titulo: vaga.titulo, empresaNome: vaga.empresa?.nome, appliedAt: new Date().toISOString() };
+    const novo: Candidatura = { 
+      id: vaga.id, 
+      titulo: vaga.titulo, 
+      empresaNome: vaga.empresa?.nome,
+      appliedAt: new Date().toISOString()
+    };
     arr.unshift(novo);
     localStorage.setItem(key, JSON.stringify(arr));
+    
+    // Disparar evento para atualizar UI
+    window.dispatchEvent(new CustomEvent('candidaturaCreated'));
+    
     return true;
-  } catch (e) { return false; }
+  } catch (e) { 
+    console.error('Erro ao salvar candidatura:', e);
+    return false; 
+  }
+}
+
+export function removeCandidatura(candidatoId: number, vagaId: number): boolean {
+  const key = keyApplied(candidatoId);
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return false;
+    const arr: Candidatura[] = JSON.parse(raw);
+    const idx = arr.findIndex(a => a.id === vagaId);
+    if (idx < 0) return false;
+    arr.splice(idx, 1);
+    localStorage.setItem(key, JSON.stringify(arr));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function toggleCandidatura(candidatoId: number, vaga: any): { applied: boolean; changed: boolean } {
+  if (isVagaApplied(candidatoId, vaga.id)) {
+    const removed = removeCandidatura(candidatoId, vaga.id);
+    return { applied: !removed, changed: removed };
+  }
+  const added = addCandidatura(candidatoId, vaga);
+  return { applied: added, changed: added };
 }
 
 export function isVagaApplied(candidatoId: number, vagaId: number): boolean {
@@ -156,4 +193,19 @@ export function toggleFavoriteCompany(candidatoId: number, empresa: any): boolea
   current.unshift(nv);
   localStorage.setItem(key, JSON.stringify(current));
   return true;
+}
+
+// --- Favoritos de vagas => unificados com "salvas" (alias)
+// Manter assinaturas para retrocompatibilidade, mas usar mesma base (keySaved)
+export function getFavoritedVagas(candidatoId: number): { id: number; titulo?: string; empresaNome?: string; favoritedAt: string }[] {
+  return getSavedVagas(candidatoId).map(s => ({ id: s.id, titulo: s.titulo, empresaNome: s.empresaNome, favoritedAt: s.savedAt }));
+}
+
+export function isVagaFavorited(candidatoId: number, vagaId: number): boolean {
+  return isVagaSaved(candidatoId, vagaId);
+}
+
+export function toggleFavoriteVaga(candidatoId: number, vaga: any): boolean {
+  // Reutiliza toggleSaveVaga; mantém retorno (true = agora favorito/salvo)
+  return toggleSaveVaga(candidatoId, vaga);
 }

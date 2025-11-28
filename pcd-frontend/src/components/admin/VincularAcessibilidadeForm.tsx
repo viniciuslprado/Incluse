@@ -81,7 +81,7 @@ export default function VincularAcessibilidadeForm({ onLinked }: Props) {
           <option value="">Escolha uma barreira...</option>
           {barreiras.map(barreira => (
             <option key={barreira.id} value={barreira.id}>
-              {barreira.descricao}
+              {barreira.nome}
             </option>
           ))}
         </select>
@@ -102,7 +102,7 @@ export default function VincularAcessibilidadeForm({ onLinked }: Props) {
                   disabled={loading}
                   className="rounded"
                 />
-                <span className="text-sm">{acessibilidade.descricao}</span>
+                <span className="text-sm">{acessibilidade.nome}</span>
               </label>
             ))
           )}

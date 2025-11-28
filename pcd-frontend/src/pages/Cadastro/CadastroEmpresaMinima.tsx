@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useToast } from '../../components/ui/Toast';
+import { useToast } from '../../components/common/Toast';
+import { PasswordInput } from '../../components/PasswordInput';
 
 export default function CadastroEmpresaMinima() {
   const [nomeEmpresa, setNomeEmpresa] = useState('');
@@ -88,16 +89,17 @@ export default function CadastroEmpresaMinima() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Senha *</label>
-              <input
-                type="password"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="Mínimo 6 caracteres"
-              />
-            </div>
+            <PasswordInput
+              id="senha"
+              name="senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              label="Senha"
+              placeholder="Mínimo 6 caracteres"
+              required
+              autoComplete="new-password"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            />
 
             {erro && <p className="text-sm text-red-600">{erro}</p>}
 

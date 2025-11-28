@@ -49,7 +49,7 @@ export default function BarreirasPage() {
                     <ul className="divide-y">
                         {barreiras.map((b) => (
                             <li key={b.id} className="py-2 flex justify-between">
-                                <span>{b.descricao}</span>
+                                <span>{b.nome}</span>
                                 <span className="text-xs text-gray-400">#{b.id}</span>
                             </li>
                         ))}

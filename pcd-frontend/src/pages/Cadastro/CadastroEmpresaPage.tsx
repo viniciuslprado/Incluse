@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { PasswordInput } from '../../components/PasswordInput';
+import CepInput from '../../components/CepInput';
 
 export default function CadastroEmpresaPage() {
   const [formData, setFormData] = useState({
@@ -13,10 +15,18 @@ export default function CadastroEmpresaPage() {
     cargo: '',
     senha: '',
     confirmarSenha: '',
+    // Endereço
+    cep: '',
+    rua: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const opcoesQuantidadeFuncionarios = [
     { value: '1-10', label: '1 a 10 funcionários' },
@@ -29,6 +39,17 @@ export default function CadastroEmpresaPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddressFound = (address: { cidade: string; estado: string; bairro: string; logradouro: string; cep: string }) => {
+    setFormData(prev => ({
+      ...prev,
+      cep: address.cep,
+      cidade: address.cidade,
+      estado: address.estado,
+      bairro: address.bairro,
+      rua: address.logradouro
+    }));
   };
 
   const formatCNPJ = (value: string) => {
@@ -276,41 +297,130 @@ export default function CadastroEmpresaPage() {
               />
             </div>
 
-            {/* Senha */}
-            <div>
-              <label htmlFor="senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Senha *
-              </label>
-              <input
-                type="password"
-                name="senha"
-                id="senha"
-                required
-                value={formData.senha}
-                onChange={handleInputChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
-                placeholder="Mínimo 6 caracteres"
-                disabled={loading}
-              />
+            {/* Endereço */}
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                Endereço da Empresa (Opcional)
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* CEP */}
+                <div>
+                  <CepInput 
+                    onAddressFound={handleAddressFound}
+                    value={formData.cep}
+                    onChange={(value) => setFormData(prev => ({ ...prev, cep: value }))}
+                  />
+                </div>
+                
+                <div></div> {/* Espaço vazio */}
+                
+                {/* Rua */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Rua/Logradouro
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.rua}
+                    onChange={(e) => setFormData(prev => ({ ...prev, rua: e.target.value }))}
+                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                    placeholder="Nome da rua"
+                    disabled={loading}
+                  />
+                </div>
+                
+                {/* Número */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Número
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.numero}
+                    onChange={(e) => setFormData(prev => ({ ...prev, numero: e.target.value }))}
+                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                    placeholder="123"
+                    disabled={loading}
+                  />
+                </div>
+                
+                {/* Bairro */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Bairro
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bairro}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bairro: e.target.value }))}
+                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                    placeholder="Nome do bairro"
+                    disabled={loading}
+                  />
+                </div>
+                
+                {/* Cidade */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Cidade
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.cidade}
+                    onChange={(e) => setFormData(prev => ({ ...prev, cidade: e.target.value }))}
+                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                    placeholder="Nome da cidade"
+                    disabled={loading}
+                  />
+                </div>
+                
+                {/* Estado */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Estado
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.estado}
+                    onChange={(e) => setFormData(prev => ({ ...prev, estado: e.target.value }))}
+                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                    placeholder="SP, RJ, MG..."
+                    disabled={loading}
+                  />
+                </div>
+              </div>
             </div>
 
+            {/* Senha */}
+            <PasswordInput
+              id="senha"
+              name="senha"
+              value={formData.senha}
+              onChange={handleInputChange}
+              label="Senha *"
+              placeholder="Mínimo 6 caracteres"
+              required
+              autoComplete="new-password"
+              className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+              showPassword={showPassword}
+              onTogglePassword={() => setShowPassword(!showPassword)}
+            />
+
             {/* Confirmar Senha */}
-            <div>
-              <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Confirmar Senha *
-              </label>
-              <input
-                type="password"
-                name="confirmarSenha"
-                id="confirmarSenha"
-                required
-                value={formData.confirmarSenha}
-                onChange={handleInputChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
-                placeholder="Digite a senha novamente"
-                disabled={loading}
-              />
-            </div>
+            <PasswordInput
+              id="confirmarSenha"
+              name="confirmarSenha"
+              value={formData.confirmarSenha}
+              onChange={handleInputChange}
+              label="Confirmar Senha *"
+              placeholder="Digite a senha novamente"
+              required
+              autoComplete="new-password"
+              className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+              showPassword={showPassword}
+              onTogglePassword={() => setShowPassword(!showPassword)}
+            />
 
             {/* Informações importantes */}
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">

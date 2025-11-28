@@ -44,9 +44,9 @@ export default function CandidatoPage() {
         <h1 className="text-2xl font-bold mb-2">Perfil de {candidato.nome}</h1>
         <nav className="space-x-4 mb-4">
           <NavLink to={`/candidato/${candidatoId}`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Subtipos e Barreiras</NavLink>
-          <NavLink to={`/candidato/${candidatoId}/vagas`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Minhas Vagas</NavLink>
+          <NavLink to={`/candidato/${candidatoId}/candidaturas`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Minhas Candidaturas</NavLink>
           <NavLink to={`/candidato/${candidatoId}/saved`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Vagas Salvas</NavLink>
-          <NavLink to={`/candidato/${candidatoId}/empresas`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Empresas Favoritas</NavLink>
+          <NavLink to={`/candidato/${candidatoId}/favoritas`} className={({ isActive }) => isActive ? 'font-semibold underline' : 'hover:underline text-blue-600'}>Vagas Favoritas</NavLink>
         </nav>
       </header>
 

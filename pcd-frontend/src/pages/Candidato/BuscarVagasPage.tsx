@@ -3,8 +3,10 @@ import { FiTrash, FiSearch } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import VagaCardCandidate from '../../components/candidato/VagaCard';
-import { useToast } from '../../components/ui/Toast';
-import { toggleSaveVaga, isVagaSaved, addCandidatura, isVagaApplied, isCompanyFavorited, toggleFavoriteCompany } from '../../lib/localStorage';
+import { useToast } from '../../components/common/Toast';
+import { addCandidatura, isVagaApplied, isCompanyFavorited, toggleFavoriteCompany, isVagaFavorited, toggleFavoriteVaga, removeCandidatura } from '../../lib/localStorage';
+import PerfilIncompletoAlert from '../../components/candidato/PerfilIncompletoAlert';
+import { useCandidate } from '../../contexts/CandidateContext';
 
 type FilterState = {
   query: string;
@@ -24,6 +26,7 @@ export default function BuscarVagasPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>({ query: '', sortBy: 'relevancia' });
   const [visibleCount, setVisibleCount] = useState(8);
+  const cand = useCandidate();
 
   useEffect(() => {
     let mounted = true;
@@ -221,6 +224,8 @@ export default function BuscarVagasPage() {
 
         {/* Mobile collapsible panel removed — horizontal bar used instead */}
 
+        {!cand.perfilCompleto && <PerfilIncompletoAlert candidato={cand} />}
+
         <div className="mb-4 relative">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
           <input
@@ -294,16 +299,29 @@ export default function BuscarVagasPage() {
                         {companyVagas.map(v => (
                           <VagaCardCandidate
                             key={v.id}
-                            vaga={{ ...v, saved: isVagaSaved(candidatoId, v.id), applied: isVagaApplied(candidatoId, v.id) }}
+                            vaga={{ ...v, saved: isVagaFavorited(candidatoId, v.id), applied: isVagaApplied(candidatoId, v.id) }}
+                            candidatoId={candidatoId}
                             onView={() => navigate(`/vagas/${v.id}`)}
                             onApply={() => {
+                              const already = isVagaApplied(candidatoId, v.id);
+                              if (already) {
+                                const removed = removeCandidatura(candidatoId, v.id);
+                                if (removed) {
+                                  addToast({ type: 'info', title: 'Candidatura removida', message: 'Você removeu sua candidatura desta vaga.' });
+                                  return true;
+                                } else {
+                                  addToast({ type: 'error', title: 'Erro', message: 'Não foi possível remover.' });
+                                  return false;
+                                }
+                              }
                               const added = addCandidatura(candidatoId, v);
-                              if (!added) return addToast({ type: 'info', title: 'Você já se candidatou a esta vaga', message: 'Já existe uma candidatura registrada para esta vaga.' });
-                              addToast({ type: 'success', title: 'Candidatura enviada', message: 'Sua candidatura foi registrada localmente.' });
+                              if (!added) { addToast({ type: 'info', title: 'Já candidatado', message: 'Você já está candidatado a esta vaga.' }); return false; }
+                              addToast({ type: 'success', title: 'Candidatura enviada', message: 'Sua candidatura foi registrada com sucesso.' });
+                              return true;
                             }}
                             onToggleSave={() => {
-                              const now = toggleSaveVaga(candidatoId, v);
-                              addToast({ type: 'success', title: now ? 'Vaga salva' : 'Vaga removida dos salvos', message: now ? 'A vaga foi adicionada aos seus salvos.' : 'A vaga foi removida dos seus salvos.' });
+                              const now = toggleFavoriteVaga(candidatoId, v);
+                              addToast({ type: 'success', title: now ? 'Vaga favoritada' : 'Vaga removida dos favoritos', message: now ? 'A vaga foi adicionada aos seus favoritos.' : 'A vaga foi removida dos seus favoritos.' });
                             }}
                             isCompanyFavorited={Boolean(filters.empresaId && v.empresa?.id && (filters.empresaId === v.empresa?.id ? empresaFavoritada : isCompanyFavorited(candidatoId, v.empresa.id)))}
                             onToggleCompanyFavorite={filters.empresaId ? () => {
@@ -342,16 +360,43 @@ export default function BuscarVagasPage() {
                           {vagas.map(v => (
                             <VagaCardCandidate
                               key={v.id}
-                              vaga={{ ...v, saved: isVagaSaved(candidatoId, v.id), applied: isVagaApplied(candidatoId, v.id) }}
+                              vaga={{ ...v, saved: isVagaFavorited(candidatoId, v.id), applied: isVagaApplied(candidatoId, v.id) }}
+                              candidatoId={candidatoId}
                               onView={() => navigate(`/vagas/${v.id}`)}
-                              onApply={() => {
-                                const added = addCandidatura(candidatoId, v);
-                                if (!added) return addToast({ type: 'info', title: 'Você já se candidatou a esta vaga', message: 'Já existe uma candidatura registrada para esta vaga.' });
-                                addToast({ type: 'success', title: 'Candidatura enviada', message: 'Sua candidatura foi registrada localmente.' });
+                              onApply={async () => {
+                                try {
+                                  // Verificar estado atual no backend
+                                  const currentlyApplied = await api.verificarCandidatura(v.id, candidatoId);
+                                  
+                                  if (currentlyApplied) {
+                                    // Remover candidatura
+                                    await api.retirarCandidatura(v.id, candidatoId);
+                                    addToast({ type: 'info', title: 'Candidatura removida', message: 'Você removeu sua candidatura desta vaga.' });
+                                    return true;
+                                  } else {
+                                    // Garantir token antes de candidatar
+                                    let token = localStorage.getItem('token');
+                                    if (!token) {
+                                      const devAuth = await api.getDevToken(candidatoId);
+                                      localStorage.setItem('token', devAuth.token);
+                                    }
+                                    
+                                    // Criar candidatura
+                                    console.log('Chamando API candidatarVaga:', v.id, candidatoId);
+                                    const result = await api.candidatarVaga(v.id, candidatoId);
+                                    console.log('Resultado da API:', result);
+                                    addToast({ type: 'success', title: 'Candidatura enviada', message: 'Sua candidatura foi registrada com sucesso.' });
+                                    return true;
+                                  }
+                                } catch (err: any) {
+                                  console.error('Erro na candidatura:', err);
+                                  addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro na operação' });
+                                  return false;
+                                }
                               }}
                               onToggleSave={() => {
-                                const now = toggleSaveVaga(candidatoId, v);
-                                addToast({ type: 'success', title: now ? 'Vaga salva' : 'Vaga removida dos salvos', message: now ? 'A vaga foi adicionada aos seus salvos.' : 'A vaga foi removida dos seus salvos.' });
+                                const now = toggleFavoriteVaga(candidatoId, v);
+                                addToast({ type: 'success', title: now ? 'Vaga favoritada' : 'Vaga removida dos favoritos', message: now ? 'A vaga foi adicionada aos seus favoritos.' : 'A vaga foi removida dos seus favoritos.' });
                               }}
                               isCompanyFavorited={Boolean(filters.empresaId && v.empresa?.id && (filters.empresaId === v.empresa?.id ? empresaFavoritada : isCompanyFavorited(candidatoId, v.empresa.id)))}
                               onToggleCompanyFavorite={filters.empresaId ? () => {

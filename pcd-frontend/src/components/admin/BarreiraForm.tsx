@@ -15,9 +15,9 @@ export default function BarreiraForm({ onCreated }: Props) {
         }
         setLoading(true);
         try {
-            await api.criarBarreira(descricao.trim());
+            await api.criarBarreira(descricao.trim()); // agora envia como nome
             setDescricao("");
-            onCreated();//função definida no pai 
+            onCreated();
         } catch (e) {
             setErro(e instanceof Error ? e.message : "Erro ao criar barreira");
         } finally {
