@@ -30,7 +30,7 @@ export default function GestaoVagasPage() {
   async function carregarVagas() {
     try {
       setLoading(true);
-      const data = await api.listarVagas(empresaId);
+      const data = await api.listarVagas();
       
       // Carregar candidatos para cada vaga
       const vagasComCandidatos = await Promise.all(
@@ -285,7 +285,7 @@ export default function GestaoVagasPage() {
                   id: vaga.id,
                   title: vaga.titulo || 'Sem título',
                   description: vaga.descricao || 'Sem descrição',
-                  badge: { text: vaga.isActive ? 'Ativa' : 'Encerrada', color: vaga.isActive ? 'green' : 'gray' },
+                  badge: { text: vaga.status === 'ativa' ? 'Ativa' : 'Encerrada', color: vaga.status === 'ativa' ? 'green' : 'gray' },
                   meta: [
                     { label: 'Candidatos', value: `${vaga.totalCandidatos || 0}` },
                     { label: 'Criada em', value: new Date(vaga.createdAt).toLocaleDateString('pt-BR') },
@@ -294,9 +294,9 @@ export default function GestaoVagasPage() {
                     { label: 'Editar', onClick: () => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/editar`), variant: 'blue' },
                     { label: 'Ver candidatos', onClick: () => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/candidatos`), variant: 'purple' },
                     { label: 'Duplicar', onClick: () => duplicarVaga(vaga.id), variant: 'green', full: true },
-                    vaga.isActive
-                      ? { label: 'Arquivar', onClick: () => arquivarVaga(vaga.id), variant: 'yellow', full: true }
-                      : { label: 'Reativar', onClick: () => reativarVaga(vaga.id), variant: 'green', full: true },
+                    vaga.status === 'ativa'
+                      ? { label: 'Arquivar', onClick: () => alterarStatus(vaga.id, 'encerrada'), variant: 'yellow', full: true }
+                      : { label: 'Reativar', onClick: () => alterarStatus(vaga.id, 'ativa'), variant: 'green', full: true },
                   ],
                 }))}
               />
@@ -314,7 +314,7 @@ export default function GestaoVagasPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="text-sm text-gray-600 dark:text-gray-400">Vagas Ativas</div>
           <div className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-            {vagas.filter(v => v.isActive).length}
+            {vagas.filter(v => v.status === 'ativa').length}
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">

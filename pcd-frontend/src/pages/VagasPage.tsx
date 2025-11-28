@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Vaga, TipoDeficiencia, Acessibilidade, Empresa } from "../types";
-import Loading from "../components/Loading";
+// import Loading from "../components/Loading";
 import ResponsiveCardList from "../components/common/ResponsiveCardList";
 
 interface VagaPublica extends Vaga {
@@ -241,20 +241,11 @@ export default function VagasPage() {
         setEmpresas(empresasData);
 
         // Carregar vagas de todas as empresas
-        const todasVagas: VagaPublica[] = [];
-        for (const empresa of empresasData) {
-          try {
-            const vagasEmpresa = await api.listarVagas(empresa.id);
-            const vagasComEmpresa = vagasEmpresa.map((vaga: Vaga) => ({
-              ...vaga,
-              empresa: empresa
-            }));
-            todasVagas.push(...vagasComEmpresa);
-          } catch (error) {
-            console.warn(`Erro ao carregar vagas da empresa ${empresa.nome}:`, error);
-          }
-        }
-
+        const vagasAll = await api.listarVagas();
+        const todasVagas: VagaPublica[] = vagasAll.map((vaga: Vaga & { empresa: Empresa }) => ({
+          ...vaga,
+          empresa: vaga.empresa
+        }));
         setVagas(todasVagas);
       } catch (err) {
         setErro(err instanceof Error ? err.message : "Erro ao carregar dados");
@@ -277,7 +268,7 @@ export default function VagasPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Loading message="Carregando vagas..." />
+        <div className="p-6 text-center text-gray-500">Carregando vagas...</div>
       </div>
     );
   }

@@ -69,26 +69,26 @@ export default function MinhasCandidaturasPage() {
           localStorage.setItem('userType', 'candidato');
           localStorage.setItem('userId', String(candidatoId));
         } catch (devErr: any) {
-          if (import.meta.env.DEV) console.warn('Não foi possível obter token dev:', devErr);
+          if ((import.meta as any).env?.DEV) console.warn('Não foi possível obter token dev:', devErr);
           setLoading(false);
           return;
         }
       }
       
       const candidaturasData = await api.listarCandidaturas(candidatoId).catch(err => {
-        if (import.meta.env.DEV && err?.status !== 401 && err?.status !== 403) console.error('Erro ao listar candidaturas:', err);
+        if ((import.meta as any).env?.DEV && err?.status !== 401 && err?.status !== 403) console.error('Erro ao listar candidaturas:', err);
         return [];
       });
       
       const dashboardData = await api.obterDashboardCandidaturas(candidatoId).catch(err => {
-        if (import.meta.env.DEV && err?.status !== 401 && err?.status !== 403) console.error('Erro ao obter dashboard:', err);
+        if ((import.meta as any).env?.DEV && err?.status !== 401 && err?.status !== 403) console.error('Erro ao obter dashboard:', err);
         return { candidaturasEnviadas: 0, emAnalise: 0, preSelecionado: 0, entrevistaMarcada: 0 };
       });
       
       setCandidaturas(candidaturasData);
       setDashboard(dashboardData);
     } catch (err: any) {
-      if (import.meta.env.DEV) console.error('Erro geral ao carregar dados:', err);
+      if ((import.meta as any).env?.DEV) console.error('Erro geral ao carregar dados:', err);
       addToast({ type: 'error', message: err?.message ?? 'Erro ao carregar dados' });
     } finally {
       setLoading(false);

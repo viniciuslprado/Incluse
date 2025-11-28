@@ -1,7 +1,6 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+// ...existing code...
 import AdminLayout from '../../components/admin/panel/AdminLayout';
 
 export default function AdminPanelPage() {
-  return <AdminLayout><Outlet /></AdminLayout>;
+  return <AdminLayout />;
 }

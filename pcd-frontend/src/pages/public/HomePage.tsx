@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../lib/api";
-import { useToast } from "../components/common/Toast";
-import type { Vaga, Empresa } from "../types";
-import Loading from "../components/Loading";
-import ResponsiveCardList from "../components/common/ResponsiveCardList";
-import VagaModal from "../components/VagaModal";
-import Footer from "../components/Footer";
+import { api } from "../../lib/api";
+import { useToast } from "../../components/common/Toast";
+import type { Vaga, Empresa } from "../../types";
+// import Loading from "../../components/Loading";
+import ResponsiveCardList from "../../components/common/ResponsiveCardList";
+import VagaModal from "../../components/VagaModal";
+import Footer from "../../components/Footer";
 
-interface VagaPublica extends Vaga {
-  empresa: Empresa;
-}
+type VagaPublica = Vaga & { empresa: Empresa };
 
 function VagaCard({ vaga, onClick }: { vaga: VagaPublica; onClick?: () => void }) {
   return (
@@ -218,7 +216,7 @@ export default function HomePage() {
         const todasVagas: VagaPublica[] = [];
         for (const empresa of empresasData) {
           try {
-            const vagasEmpresa = await api.listarVagas(empresa.id);
+            const vagasEmpresa = await api.listarVagas();
             const vagasAtivas = vagasEmpresa.filter((v: any) => v.status === 'ativa');
             const vagasComEmpresa = vagasAtivas.map((vaga: any) => ({
               ...vaga,
@@ -266,7 +264,7 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <Loading message="Carregando vagas..." />
+          <div className="p-6 text-center text-gray-500">Carregando vagas...</div>
         ) : erro ? (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
             <div className="flex items-center space-x-3">

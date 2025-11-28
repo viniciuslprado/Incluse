@@ -23,7 +23,7 @@ export default function VagaPage() {
   useEffect(() => {
     async function carregarVagas() {
       try {
-        const result = await api.listarVagas(empresaId); // backend retorna { data, pagination }
+        const result = await api.listarVagas();
         const lista = Array.isArray(result?.data) ? result.data : Array.isArray(result) ? result : [];
         setVagas(lista as any);
       } catch (error) {
@@ -34,10 +34,8 @@ export default function VagaPage() {
       }
     }
 
-    if (empresaId) {
-      carregarVagas();
-    }
-  }, [empresaId]);
+    carregarVagas();
+  }, []);
 
   const handleToggleStatus = async (vagaId: number, currentStatus: boolean) => {
     try {

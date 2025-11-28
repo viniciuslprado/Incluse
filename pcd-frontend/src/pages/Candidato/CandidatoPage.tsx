@@ -15,7 +15,7 @@ export default function CandidatoPage() {
   const carregar = useCallback(async () => {
     setErro(null);
     try {
-      const data = await api.getCandidato(candidatoId);
+      const data = await api.getCandidato();
       setCandidato(data);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

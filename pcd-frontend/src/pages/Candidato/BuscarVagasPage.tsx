@@ -34,11 +34,11 @@ export default function BuscarVagasPage() {
       setLoading(true);
       try {
         if (candidatoId && candidatoId > 0) {
-          const res = await api.listarVagasCompativeis(candidatoId);
+          const res = await api.listarVagasCompativeis();
           if (mounted) setAllVagas(res || []);
         } else {
-          // fallback: try to fetch company 1 vagas as sample
-          const res = await api.listarVagas(1).catch(() => []);
+          // fallback: buscar todas as vagas
+          const res = await api.listarVagas().catch(() => []);
           if (mounted) setAllVagas(res || []);
         }
       } catch (e) {

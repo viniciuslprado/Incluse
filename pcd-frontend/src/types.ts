@@ -147,6 +147,7 @@ export type Candidato = {
   areasFormacao?: any[];
 };
 
+
 // Tipos para Currículo
 export type CandidatoExperiencia = {
   id?: number;
@@ -159,6 +160,7 @@ export type CandidatoExperiencia = {
   descricao?: string;
 };
 
+export type CandidatoFormacao = {
   id?: number;
   candidatoId?: number;
   escolaridade: Escolaridade;

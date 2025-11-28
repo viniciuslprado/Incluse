@@ -32,7 +32,7 @@ export default function CandidatosGeralPage() {
   async function carregarCandidatos() {
     try {
       setLoading(true);
-      const vagas = await api.listarVagas(empresaId);
+      const vagas = await api.listarVagas();
       
       const todosCandidatos: Candidato[] = [];
       for (const vaga of vagas) {

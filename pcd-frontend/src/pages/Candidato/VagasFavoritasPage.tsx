@@ -32,7 +32,7 @@ export default function VagasFavoritasPage() {
             console.warn('Não foi possível obter token dev:', devErr);
           }
         }
-        const backendFavoritos = await api.listarVagasFavoritas(candidatoId).catch(() => []);
+        const backendFavoritos = await api.listarVagasFavoritas().catch(() => []);
         // Buscar dados completos de cada vaga favorita
         const backendFormatadas = await Promise.all((backendFavoritos || []).map(async (item: any) => {
           try {
@@ -189,11 +189,11 @@ export default function VagasFavoritasPage() {
               onToggleSave={async () => {
                 const nowFav = toggleFavoriteVaga(candidatoId, v);
                 if (!nowFav) {
-                  try { await api.desfavoritarVaga(candidatoId, v.id); } catch {}
+                  try { await api.desfavoritarVaga(v.id); } catch {}
                   setVagas(prev => prev.filter(x => x.id !== v.id));
                   addToast({ type: 'success', title: 'Removida dos favoritos', message: 'A vaga foi removida dos seus favoritos.' });
                 } else {
-                  try { await api.favoritarVaga(candidatoId, v.id); } catch {}
+                  try { await api.favoritarVaga(v.id); } catch {}
                   addToast({ type: 'success', title: 'Vaga favoritada', message: 'A vaga foi adicionada aos seus favoritos.' });
                 }
               }}

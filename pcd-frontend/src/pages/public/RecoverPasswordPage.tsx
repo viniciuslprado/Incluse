@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { api } from '../lib/api';
-import { PasswordInput } from '../components/PasswordInput';
+import { api } from '../../lib/api';
+import { PasswordInput } from '../../components/PasswordInput';
 
 type Step = 'request' | 'reset';
 
@@ -35,7 +35,7 @@ export default function RecoverPasswordPage() {
     }
   }, [location]);
 
-  const handleRequestReset = async (e: React.FormEvent) => {
+  const handleRequestReset = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setMessage(null);
@@ -56,7 +56,7 @@ export default function RecoverPasswordPage() {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setMessage(null);

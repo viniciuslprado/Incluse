@@ -35,7 +35,7 @@ export default function InicioPage() {
       setLoading(false);
       return;
     }
-    api.listarVagasCompativeis(candidatoId)
+    api.listarVagasCompativeis()
       .then((res: any) => {
         if (!mounted) return;
         const data = (res || []).map((v: any) => ({ ...v, saved: isVagaFavorited(candidatoId, v.id), applied: isVagaApplied(candidatoId, v.id) }));
@@ -104,12 +104,12 @@ export default function InicioPage() {
     try {
       const isFavorited = isVagaFavorited(candidatoId, vaga.id);
       if (isFavorited) {
-        await api.desfavoritarVaga(candidatoId, vaga.id);
+        await api.desfavoritarVaga(vaga.id);
         toggleFavoriteVaga(candidatoId, vaga);
         setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, saved: false } : v));
         addToast({ type: 'success', title: 'Removido', message: 'Vaga removida.' });
       } else {
-        await api.favoritarVaga(candidatoId, vaga.id);
+        await api.favoritarVaga(vaga.id);
         toggleFavoriteVaga(candidatoId, vaga);
         setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, saved: true } : v));
         addToast({ type: 'success', title: 'Favoritado', message: 'Vaga favoritada!' });
