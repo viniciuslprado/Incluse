@@ -2,27 +2,32 @@
 import 'dotenv/config';
 import express from "express";
 import cors from "cors";
+
 import path from "path";
+import { fileURLToPath } from 'url';
 
-import tiposRoutes from "./routes/common/tipos.routes";
-import subtiposRoutes from "./routes/common/subtipos.routes";
-import barreirasRoutes from "./routes/common/barreiras.routes";
-import acessibilidadesRoutes from "./routes/common/acessibilidades.routes";
-import vinculosRoutes from "./routes/common/vinculos.routes";
-import vagasRoutes from "./routes/common/vagas.routes";
-import matchRoutes from "./routes/common/match.routes";
-import processoSeletivoRoutes from "./routes/common/processo-seletivo.routes";
-import areasFormacaoRoutes from "./routes/common/areas-formacao.routes";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-import adminRoutes from "./routes/admin/admin.routes";
+import tiposRoutes from "./routes/common/tipos.routes.js";
+import subtiposRoutes from "./routes/common/subtipos.routes.js";
+import barreirasRoutes from "./routes/common/barreiras.routes.js";
+import acessibilidadesRoutes from "./routes/common/acessibilidades.routes.js";
+import vinculosRoutes from "./routes/common/vinculos.routes.js";
+import vagasRoutes from "./routes/common/vagas.routes.js";
+import matchRoutes from "./routes/common/match.routes.js";
+import processoSeletivoRoutes from "./routes/common/processo-seletivo.routes.js";
+import areasFormacaoRoutes from "./routes/common/areas-formacao.routes.js";
 
-import empresaUsuariosRoutes from "./routes/empresa/empresa-usuarios.routes";
-import empresasRoutes from "./routes/empresa/empresas.routes";
+import adminRoutes from "./routes/admin/admin.routes.js";
 
-import candidatosRoutes from "./routes/candidato/candidatos.routes";
-import candidaturasRoutes from "./routes/candidato/candidaturas.routes";
+import empresaUsuariosRoutes from "./routes/empresa/empresa-usuarios.routes.js";
+import empresasRoutes from "./routes/empresa/empresas.routes.js";
 
-import authRoutes from "./routes/public/auth.routes";
+import candidatosRoutes from "./routes/candidato/candidatos.routes.js";
+import candidaturasRoutes from "./routes/candidato/candidaturas.routes.js";
+
+import authRoutes from "./routes/public/auth.routes.js";
 
 const app = express();
 app.use(cors({
