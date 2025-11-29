@@ -231,8 +231,8 @@ export default function VagasPage() {
       try {
         // Carregar dados para filtros
         const [tiposData, acessibilidadesData, empresasData] = await Promise.all([
-          api.listarTipos(),
-          api.listarAcessibilidades(),
+          api.listarTiposPublicos(),
+          api.listarAcessibilidadesPublicas(),
           api.listarEmpresas()
         ]);
 
@@ -241,7 +241,7 @@ export default function VagasPage() {
         setEmpresas(empresasData);
 
         // Carregar vagas de todas as empresas
-        const vagasAll = await api.listarVagas();
+        const vagasAll = await api.listarVagasPublicas();
         const todasVagas: VagaPublica[] = vagasAll.map((vaga: Vaga & { empresa: Empresa }) => ({
           ...vaga,
           empresa: vaga.empresa

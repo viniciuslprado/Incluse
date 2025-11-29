@@ -18,48 +18,61 @@ export default function MeuCurriculoPage() {
   const { addToast } = useToast();
   // const cand = useCandidate(); // não utilizado aqui
 
+
   useEffect(() => {
     async function carregar() {
+      if (!candidatoId || isNaN(candidatoId) || candidatoId <= 0) {
+        setLoading(false);
+        addToast({ type: 'error', title: 'ID inválido', message: 'ID do candidato ausente ou inválido.' });
+        return;
+      }
       try {
         // Tenta obter currículo do backend (fonte de verdade)
         const data = await api.obterCurriculoBasico(candidatoId);
         const baseUrl = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
-
-          if (data) {
-            // Se houver arquivo salvo no backend, usa ele
-            if (data.curriculo) {
-              const p = String(data.curriculo);
-              const absolute = p.startsWith('http')
-                ? p
-                : `${baseUrl}${p.startsWith('/') ? '' : '/'}${p}`;
-              setPreview(absolute);
-              const fname = p.split('/').pop() || 'arquivo';
-              setFileName(fname);
-            } else {
-              // Fallback: tenta localStorage (upload local prévio)
-              const saved = localStorage.getItem(`curriculo_base64_${candidatoId}`);
-              const name = localStorage.getItem(`curriculo_name_${candidatoId}`);
-              if (saved) setPreview(saved);
-              if (name) setFileName(name);
-            }          // Considera currículo básico preenchido se existir algum dado estruturado
+        if (data) {
+          // Se houver arquivo salvo no backend, usa ele
+          if (data.curriculo) {
+            const p = String(data.curriculo);
+            const absolute = p.startsWith('http')
+              ? p
+              : `${baseUrl}${p.startsWith('/') ? '' : '/'}${p}`;
+            setPreview(absolute);
+            const fname = p.split('/').pop() || 'arquivo';
+            setFileName(fname);
+          } else {
+            // Fallback: tenta localStorage (upload local prévio)
+            const saved = localStorage.getItem(`curriculo_base64_${candidatoId}`);
+            const name = localStorage.getItem(`curriculo_name_${candidatoId}`);
+            if (saved) setPreview(saved);
+            if (name) setFileName(name);
+          }
+          // Considera currículo básico preenchido se existir algum dado estruturado
           const hasBasico =
             !!(data.experiencias?.length || data.formacoes?.length || data.cursos?.length || data.competencias?.length || data.idiomas?.length);
           setHasCurriculoBasico(!!hasBasico);
         }
-      } catch (err) {
-        // Se falhar backend, mantém comportamento antigo baseado em localStorage
-        const saved = localStorage.getItem(`curriculo_base64_${candidatoId}`);
-        const name = localStorage.getItem(`curriculo_name_${candidatoId}`);
-        if (saved) setPreview(saved);
-        if (name) setFileName(name);
-        const curriculoBasico = localStorage.getItem(`curriculo_basico_${candidatoId}`);
-        setHasCurriculoBasico(!!curriculoBasico);
-        console.error('Erro ao carregar currículo do servidor:', err);
+      } catch (err: any) {
+        // Se for erro 404, mostra mensagem amigável
+        if (err?.status === 404) {
+          setPreview(null);
+          setFileName(null);
+          setHasCurriculoBasico(false);
+          addToast({ type: 'info', title: 'Currículo não encontrado', message: 'Você ainda não enviou um currículo PDF.' });
+        } else {
+          // Se falhar backend, mantém comportamento antigo baseado em localStorage
+          const saved = localStorage.getItem(`curriculo_base64_${candidatoId}`);
+          const name = localStorage.getItem(`curriculo_name_${candidatoId}`);
+          if (saved) setPreview(saved);
+          if (name) setFileName(name);
+          const curriculoBasico = localStorage.getItem(`curriculo_basico_${candidatoId}`);
+          setHasCurriculoBasico(!!curriculoBasico);
+          addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao carregar currículo do servidor.' });
+        }
       } finally {
         setLoading(false);
       }
     }
-
     carregar();
   }, [candidatoId]);
 

@@ -1,17 +1,17 @@
 import { diskStorage } from 'multer';
-import { extname, resolve } from 'path';
+import path, { extname, resolve } from 'path';
 import { mkdirSync } from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default {
   upload: (folder: string) => {
-    // ensure target directory exists (relative to project root, not src/)
     const dir = resolve(__dirname, '..', '..', folder);
     try {
       mkdirSync(dir, { recursive: true });
-    } catch (e) {
-      // ignore errors creating the directory
-    }
-
+    } catch (e) {}
     return {
       storage: diskStorage({
         destination: dir,

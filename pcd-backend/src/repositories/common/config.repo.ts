@@ -8,23 +8,34 @@ export async function getCandidatoConfig(candidatoId: number) {
   let config = await prisma.candidatoConfig.findUnique({
     where: { candidatoId }
   });
-  
-  // Se não existir, criar com valores padrão (termos aceitos na criação da conta)
+
+  // Se não existir, retorna objeto padrão (NÃO cria no banco, apenas retorna para o frontend)
   if (!config) {
     const candidato = await prisma.candidato.findUnique({
       where: { id: candidatoId },
       select: { createdAt: true }
     });
-    
-    config = await prisma.candidatoConfig.create({
-      data: { 
-        candidatoId,
-        termosAceitos: true,
-        termosAceitosEm: candidato?.createdAt || new Date()
-      }
-    });
+    const now = new Date();
+    return {
+      candidatoId,
+      emailNovasVagas: true,
+      emailAtualizacoes: true,
+      emailMensagens: true,
+      emailCurriculoIncompleto: true,
+      emailVagasExpiradas: true,
+      appNovasVagas: true,
+      appAtualizacoes: true,
+      appMensagens: true,
+      appCurriculoIncompleto: true,
+      appVagasExpiradas: true,
+      curriculoVisivel: true,
+      idioma: "pt-BR",
+      termosAceitos: true,
+      termosAceitosEm: candidato?.createdAt || now,
+      createdAt: candidato?.createdAt || now,
+      updatedAt: now
+    };
   }
-  
   return config;
 }
 

@@ -18,7 +18,7 @@ r.patch("/:id/status", verifyJWT, ensureRole('empresa'), VagasController.atualiz
 r.delete("/:id", verifyJWT, ensureRole('empresa'), VagasController.deletar);
 
 // Rotas de candidatos da vaga (apenas empresa)
-r.get("/:id/candidatos", verifyJWT, ensureRole('empresa'), VagasController.listarCandidatos);
+r.get("/:id/candidatos", verifyJWT, VagasController.listarCandidatos);
 r.get("/:id/candidato/:cid/detalhes", verifyJWT, ensureRole('empresa'), VagasController.detalhesCandidato);
 r.post("/:id/candidato/:cid/status", verifyJWT, ensureRole('empresa'), VagasController.atualizarStatusCandidato);
 

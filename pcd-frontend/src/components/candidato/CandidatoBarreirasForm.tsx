@@ -10,10 +10,11 @@ type Props = {
   initialSelecionadas?: number[];
   initialNiveis?: Record<number, string>;
   barreirasOverride?: Barreira[];
+  allBarreiras?: Barreira[]; // todas as barreiras públicas para o subtipo
   autoSync?: boolean; // sincroniza imediatamente os vínculos
 };
 
-export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableActions, onChange, initialSelecionadas, initialNiveis, barreirasOverride, autoSync }: Props) {
+export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableActions, onChange, initialSelecionadas, initialNiveis, barreirasOverride, allBarreiras, autoSync }: Props) {
   const [barreiras, setBarreiras] = useState<Barreira[]>([]);
   const [selecionadas, setSelecionadas] = useState<number[]>([]);
   const [niveis, setNiveis] = useState<Record<number, string>>({});
@@ -34,39 +35,34 @@ export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableAc
   useEffect(() => {
     // Validação mais rigorosa do subtipo
     if (!subtipo || subtipo.id === undefined || subtipo.id === null) {
-      console.log('Subtipo inválido ou indefinido:', subtipo);
       setBarreiras([]);
       return;
     }
-    
+    // Se vier todas as barreiras públicas para o subtipo, use-as
+    if (allBarreiras && allBarreiras.length) {
+      setBarreiras(allBarreiras);
+      return;
+    }
     // if parent provided barreiras for this subtipo, use them as override
     if (barreirasOverride && barreirasOverride.length) {
       setBarreiras(barreirasOverride);
       return;
     }
-    
     setErro(null);
     // Validar se o ID é um número válido
     const subtipoId = Number(subtipo.id);
     if (isNaN(subtipoId) || subtipoId <= 0) {
-      console.warn('ID de subtipo inválido após conversão:', subtipo.id, '->', subtipoId);
       setBarreiras([]);
       return;
     }
-    
-    console.log('Carregando barreiras para subtipo ID:', subtipoId);
     api
       .listarBarreirasPorSubtipo(subtipoId)
-      .then((b) => {
-        console.log('Barreiras carregadas para subtipo', subtipoId, ':', b);
-        setBarreiras(b);
-      })
-      .catch((e) => {
-        console.error('Erro ao carregar barreiras por subtipo', subtipoId, e);
+      .then((b) => setBarreiras(b))
+      .catch(() => {
         setBarreiras([]);
         setErro('Não foi possível carregar as barreiras para este subtipo.');
       });
-  }, [subtipo?.id, barreirasOverride]);
+  }, [subtipo?.id, barreirasOverride, allBarreiras]);
 
   useEffect(() => {
     if (initialSelecionadas && initialSelecionadas.length && selecionadas.length === 0) {

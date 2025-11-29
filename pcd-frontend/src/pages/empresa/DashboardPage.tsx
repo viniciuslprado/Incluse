@@ -39,17 +39,23 @@ export default function DashboardPage() {
   useEffect(() => {
     async function carregarDados() {
       try {
-        const vagasData = await api.listarVagas();
-        
+        // Checagem de permissão
+        const userType = localStorage.getItem('userType');
+        const userId = localStorage.getItem('userId');
+        if (userType !== 'empresa' || Number(userId) !== empresaId) {
+          alert('Acesso negado. Esta área é exclusiva para empresas.');
+          return navigate('/login', { replace: true });
+        }
+        // Buscar vagas apenas da empresa logada
+        const vagasData = await api.listarVagasPorEmpresa(empresaId);
+        const vagasArray = Array.isArray(vagasData) ? vagasData : vagasData.data;
         // Calcular estatísticas
-        const vagasAtivas = vagasData.filter((v: any) => v.isActive).length;
-        const vagasEncerradas = vagasData.filter((v: any) => !v.isActive).length;
-        
+        const vagasAtivas = vagasArray.filter((v: any) => v.isActive).length;
+        const vagasEncerradas = vagasArray.filter((v: any) => !v.isActive).length;
         // Contar candidatos
         let totalCandidatos = 0;
         const vagasComCandidatos: VagaRecente[] = [];
-        
-        for (const vaga of vagasData.slice(0, 5)) {
+        for (const vaga of vagasArray.slice(0, 5)) {
           try {
             const candidatos = await api.listarCandidatosPorVaga(vaga.id);
             totalCandidatos += candidatos.length;
@@ -70,12 +76,10 @@ export default function DashboardPage() {
             });
           }
         }
-        
         setVagasRecentes(vagasComCandidatos);
-        
         // Gerar insights
         const newInsights: string[] = [];
-        if (vagasAtivas === 0 && vagasData.length > 0) {
+        if (vagasAtivas === 0 && vagasArray.length > 0) {
           newInsights.push('⚠️ Você não tem vagas ativas no momento. Considere reabrir alguma vaga.');
         }
         if (totalCandidatos > 50) {
@@ -84,9 +88,7 @@ export default function DashboardPage() {
         if (vagasAtivas > 5) {
           newInsights.push('📈 Você está com várias vagas ativas. Organize seu processo seletivo.');
         }
-        
         setInsights(newInsights);
-        
         setStats({
           vagasAtivas: vagasAtivas || 0,
           vagasEncerradas: vagasEncerradas || 0,
@@ -101,11 +103,10 @@ export default function DashboardPage() {
         setLoading(false);
       }
     }
-
     if (empresaId) {
       carregarDados();
     }
-  }, [empresaId]);
+  }, [empresaId, navigate]);
 
   if (loading) {
     return (

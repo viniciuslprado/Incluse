@@ -9,31 +9,31 @@ type Props = {
   onChange?: (selecionados: SubtipoDeficiencia[]) => void;
   initialSelected?: number[];
   autoSync?: boolean; // se true, sincroniza imediatamente a cada toggle
+  allSubtipos: SubtipoDeficiencia[]; // todos os subtipos públicos
 };
 
-export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableActions, onChange, initialSelected, autoSync }: Props) {
+export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableActions, onChange, initialSelected, autoSync, allSubtipos }: Props) {
   const [subtipos, setSubtipos] = useState<SubtipoDeficiencia[]>([]);
   const [selecionados, setSelecionados] = useState<number[]>([]);
-  const [filtro, setFiltro] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
   const previousSelecionadosRef = useRef<string>('');
 
   useEffect(() => {
-    api.listarSubtiposCandidato(candidatoId)
-      .then((r: SubtipoDeficiencia[]) => setSubtipos(r))
-      .catch((e: any) => setErro(e.message));
-  }, [candidatoId]);
+    // Sempre exibe todos os subtipos públicos
+    setSubtipos(allSubtipos || []);
+  }, [allSubtipos]);
 
-  const visiveis = subtipos.filter((s) => s.nome.toLowerCase().includes(filtro.toLowerCase()));
+  // Exibe todos os subtipos como lista, sem filtro/pesquisa
+  const visiveis = subtipos;
 
-  // initialize selection from prop if provided (only once)
+  // initialize selection from prop if provided (apenas IDs vindos do backend)
   useEffect(() => {
     if (initialSelected && initialSelected.length && selecionados.length === 0) {
       setSelecionados(initialSelected);
     }
-  }, []);
+  }, [initialSelected]);
 
   // Notify parent when selection changes (evita loops comparando valor anterior)
   useEffect(() => {
@@ -100,9 +100,6 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
     <form className="card space-y-3" onSubmit={(e: React.FormEvent) => e.preventDefault()}>
       <div>
         <label className="label">Selecione seus subtipos</label>
-        <div className="mb-2">
-          <input placeholder="Filtrar por nome" value={filtro} onChange={(e) => setFiltro(e.target.value)} className="border rounded p-2 text-sm w-full" />
-        </div>
         <div className="max-h-60 overflow-y-auto space-y-2">
           {visiveis.length === 0 ? (
             <div className="text-sm text-gray-500">

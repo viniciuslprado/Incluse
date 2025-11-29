@@ -21,13 +21,15 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
   const [openTipo, setOpenTipo] = useState(true);
   const [openBarreiras, setOpenBarreiras] = useState(true);
   const [tiposComSubtipos, setTiposComSubtipos] = useState<any[]>([]);
+  // Map subtipoId -> all public barriers for that subtipo
+  const [allBarreirasBySubtipo, setAllBarreirasBySubtipo] = useState<Record<number, any[]>>({});
   const [selectedTipoIds, setSelectedTipoIds] = useState<number[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    // Carregar tipos com subtipos
-    api.listarTiposComSubtipos()
-      .then((r) => {
+    // Carregar tipos com subtipos (público)
+    api.listarTiposComSubtiposPublico()
+      .then(async (r) => {
         setTiposComSubtipos(r);
         // Após carregar tipos, identificar quais tipos estão selecionados baseado nos subtipos já passados via props
         if (candidateSubtipos && candidateSubtipos.length > 0) {
@@ -43,6 +45,23 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
           });
           setSelectedTipoIds(Array.from(tiposIds));
         }
+        // Fetch all barriers for all subtipos in parallel
+        const allSubtipos = r.flatMap((tipo: any) => tipo.subtipos || []);
+        const barrierResults = await Promise.all(
+          allSubtipos.map(async (subtipo: any) => {
+            try {
+              const barreiras = await api.listarBarreirasPorSubtipo(subtipo.id);
+              return [subtipo.id, barreiras];
+            } catch {
+              return [subtipo.id, []];
+            }
+          })
+        );
+        const barreirasMap: Record<number, any[]> = {};
+        barrierResults.forEach(([subtipoId, barreiras]) => {
+          barreirasMap[subtipoId] = barreiras;
+        });
+        setAllBarreirasBySubtipo(barreirasMap);
         setLoadingData(false);
       })
       .catch((err) => {
@@ -170,9 +189,14 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                         <p className="text-xs text-gray-500">{laudoSize ? `${Math.round(laudoSize/1024)} KB` : ''}</p>
                       </div>
                     </div>
-                    <button onClick={removeLaudo} className="text-red-600 hover:text-red-800 text-sm font-medium">
-                      Remover
-                    </button>
+                    <div className="flex gap-2">
+                      <button onClick={typeof window !== 'undefined' && (window as any).downloadLaudo ? (window as any).downloadLaudo : undefined} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Baixar
+                      </button>
+                      <button onClick={removeLaudo} className="text-red-600 hover:text-red-800 text-sm font-medium">
+                        Remover
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -226,7 +250,10 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                   candidatoId={candidatoId}
                   disableActions={false}
                   autoSync={true}
-                  initialSelected={candidateSubtipos?.map((s: any) => (typeof s === 'number' ? s : s.id)) ?? []}
+                  allSubtipos={tiposComSubtipos.flatMap((tipo: any) => tipo.subtipos || [])}
+                  initialSelected={candidateSubtipos && candidateSubtipos.length > 0
+                    ? candidateSubtipos.map((s: any) => (typeof s === 'number' ? s : s.id))
+                    : []}
                   onChange={(sel) => setCandidateSubtipos(sel)}
                 />
               </div>
@@ -287,6 +314,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                           initialSelecionadas={candidateBarreiras?.[subtipoObj.id]?.selecionadas ?? []}
                           initialNiveis={candidateBarreiras?.[subtipoObj.id]?.niveis ?? {}}
                           barreirasOverride={barreirasBySubtipo ? barreirasBySubtipo[subtipoObj.id] : undefined}
+                          allBarreiras={allBarreirasBySubtipo[subtipoObj.id] || []}
                           onChange={(selecionadas, niveis) => {
                             setCandidateBarreiras((prev: any) => ({
                               ...(prev || {}),

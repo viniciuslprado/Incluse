@@ -1,4 +1,3 @@
-
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance } from 'axios';
 import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga, Candidato } from "../types";
@@ -33,7 +32,8 @@ function createInstance(): AxiosInstance {
             localStorage.setItem('token', newToken);
             if (newRefresh) localStorage.setItem('refreshToken', newRefresh);
             if (original.headers) original.headers['Authorization'] = `Bearer ${newToken}`;
-            return axios(original);
+            // Garante que o token atualizado será enviado usando o axiosInstance (com interceptor)
+            return axiosInstance(original);
           }
         } catch (refreshErr) {
           try { localStorage.removeItem('token'); localStorage.removeItem('refreshToken'); } catch (e) {}
@@ -53,6 +53,8 @@ const axiosInstance = createInstance();
 export const api = {
   // Public
   listarVagasPublicas() { return axiosInstance.get('/vagas').then(r => r.data); },
+  listarTiposPublicos() { return axiosInstance.get<TipoDeficiencia[]>("/tipos").then(r => r.data); },
+  listarAcessibilidadesPublicas() { return axiosInstance.get<Acessibilidade[]>("/acessibilidades").then(r => r.data); },
 
   // Admin
   obterDashboardAdmin() { return axiosInstance.get('/admin/dashboard').then(r => r.data); },
@@ -77,7 +79,7 @@ export const api = {
   listarCandidatos() { return axiosInstance.get('/admin/candidatos').then(r => r.data); },
   listarVagas() { return axiosInstance.get('/admin/vagas').then(r => r.data); },
   buscarEmpresa(id: number) { return axiosInstance.get(`/empresa/${id}`).then(r => r.data); },
-  listarVagasPorEmpresa(empresaId: number) { return axiosInstance.get(`/vagas/empresa/${empresaId}`).then(r => r.data); },
+  listarVagasPorEmpresa(empresaId: number) { return axiosInstance.get(`/vagas/empresa/${empresaId}/pesquisar`).then(r => r.data); },
   criarVaga(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade?: string, estado?: string) {
     return axiosInstance.post('/vagas', { empresaId, titulo, descricao, escolaridade, cidade, estado }).then(r => r.data);
   },
@@ -93,9 +95,18 @@ export const api = {
   obterVaga(vagaId: number) { return axiosInstance.get<Vaga>(`/vagas/${vagaId}`).then(r => r.data); },
 
   // Candidato
-  getCandidato() { return axiosInstance.get<Candidato>(`/candidato/perfil`).then(r => r.data); },
-  atualizarCandidato(data: any) { return axiosInstance.put(`/candidato/perfil`, data).then(r => r.data); },
-  listarVagasCompativeis() { return axiosInstance.get<Vaga[]>(`/candidato/vagas-compativeis`).then(r => r.data); },
+  // Função ajustada: endpoint /candidato/perfil não existe no backend
+  // Use /candidato/:id se necessário
+  getCandidato(id: number) {
+    if (!id) throw new Error('ID do candidato é obrigatório');
+    return axiosInstance.get<Candidato>(`/candidato/${id}`).then(r => r.data);
+  },
+  atualizarCandidato(id: number, data: any) { return axiosInstance.put(`/candidato/${id}`, data).then(r => r.data); },
+  // Função removida/ajustada: endpoint /candidato/vagas-compativeis não existe no backend
+  // Se necessário, implemente a rota no backend ou ajuste para usar um endpoint existente
+  // listarVagasCompativeis(candidatoId: number) {
+  //   return axiosInstance.get<Vaga[]>(`/candidato/${candidatoId}/vagas-compativeis`).then(r => r.data);
+  // },
   calcularCompatibilidade(vagaId: number) { return axiosInstance.get(`/candidato/compatibilidade/${vagaId}`).then(r => r.data); },
   avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimato?: boolean) { return axiosInstance.post(`/empresa/${empresaId}/avaliacoes`, { nota, comentario, anonimato }).then(r => r.data); },
   listarVagasFavoritas() { return axiosInstance.get<Vaga[]>(`/candidato/favoritos`).then(r => r.data); },
@@ -118,31 +129,34 @@ export const api = {
   salvarAnotacoesCandidato(candidatoId: number, vagaId: number, anotacoes: string) { return axiosInstance.put(`/vagas/${vagaId}/candidatos/${candidatoId}/anotacoes`, { anotacoes }).then(r => r.data); },
   getQuemSomos() { return axiosInstance.get(`/conteudo/quem-somos`).then(r => r.data); },
   listarFAQ() { return axiosInstance.get(`/faq/list`).then(r => r.data); },
-  registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) { return axiosInstance.post(`/candidatos`, data).then(r => r.data); },
+  registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) { return axiosInstance.post(`/candidato`, data).then(r => r.data); },
   registerCandidatoWithFiles(formData: FormData) {
-    return axios.post(`${BASE_URL}/candidatos`, formData).then(r => r.data);
+    // O axiosInstance já usa o baseURL correto e adiciona headers necessários.
+    // Não setar manualmente Content-Type, o axios faz isso ao enviar FormData.
+    return axiosInstance.post('/candidato', formData).then(r => r.data);
   },
   requestPasswordReset(identifier: string) {
     return axiosInstance.post('/auth/forgot', { identifier }).then(r => r.data);
   },
-  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) { return axiosInstance.post(`/empresa/cadastro`, data).then(r => r.data); },
+  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) { return axiosInstance.post(`/empresa`, data).then(r => r.data); },
+  checkCnpjExists(cnpj: string) { return axiosInstance.get(`/empresa/check-cnpj/${encodeURIComponent(cnpj)}`).then(r => r.data.exists); },
   getEmpresaPerfil() { return axiosInstance.get(`/empresa/perfil`).then(r => r.data); },
   atualizarEmpresaAutenticada(data: any) { return axiosInstance.put(`/empresa/perfil`, data).then(r => r.data); },
   uploadLogoEmpresaAutenticada(formData: FormData) { return axiosInstance.post(`/empresa/logo`, formData).then(r => r.data); },
   atualizarEmpresa(id: number, data: any) { return axiosInstance.put(`/empresa/${id}`, data).then(r => r.data); },
   uploadLogoEmpresa(formData: FormData) { return axiosInstance.post(`/empresa/logo`, formData).then(r => r.data); },
   login(identifier: string, senha: string, userType: string) { return axiosInstance.post(`/auth/login`, { identifier, senha, userType }).then(r => r.data); },
-  listarSubtiposCandidato(id: number) { return axiosInstance.get<SubtipoDeficiencia[]>(`/candidatos/${id}/subtipos`).then(r => r.data); },
+  listarSubtiposCandidato(id: number) { return axiosInstance.get<SubtipoDeficiencia[]>(`/candidato/${id}/subtipos`).then(r => r.data); },
   listarBarreirasPorSubtipo(subtipoId: number) { 
     if (!subtipoId || isNaN(subtipoId) || subtipoId <= 0) {
       return Promise.reject(new Error('ID de subtipo inválido'));
     }
     return axiosInstance.get<Barreira[]>(`/subtipos/${subtipoId}/barreiras`).then(r => r.data); 
   },
-  vincularSubtiposACandidato(candidatoId: number, subtipoIds: number[]) { return axiosInstance.post(`/candidatos/${candidatoId}/subtipos`, { subtipoIds }).then(r => r.data); },
-  vincularBarreirasACandidato(candidatoId: number, subtipoId: number, barreiraIds: number[]) { return axiosInstance.post(`/candidatos/${candidatoId}/subtipos/${subtipoId}/barreiras`, { barreiraIds }).then(r => r.data); },
-  checkCpfExists(cpf: string) { return axiosInstance.get<{exists: boolean}>(`/candidatos/check-cpf/${encodeURIComponent(cpf)}`).then(r => r.data.exists); },
-  checkCandidatoEmailExists(email: string) { return axiosInstance.get<{exists: boolean}>(`/candidatos/check-email/${encodeURIComponent(email)}`).then(r => r.data.exists); },
+  vincularSubtiposACandidato(candidatoId: number, subtipoIds: number[]) { return axiosInstance.post(`/candidato/${candidatoId}/subtipos`, { subtipoIds }).then(r => r.data); },
+  vincularBarreirasACandidato(candidatoId: number, subtipoId: number, barreiraIds: number[]) { return axiosInstance.post(`/candidato/${candidatoId}/subtipos/${subtipoId}/barreiras`, { barreiraIds }).then(r => r.data); },
+  checkCpfExists(cpf: string) { return axiosInstance.get<{exists: boolean}>(`/candidato/check-cpf/${encodeURIComponent(cpf)}`).then(r => r.data.exists); },
+  checkCandidatoEmailExists(email: string) { return axiosInstance.get<{exists: boolean}>(`/candidato/check-email/${encodeURIComponent(email)}`).then(r => r.data.exists); },
   checkCnpjExists(cnpj: string) { return axiosInstance.get<{exists: boolean}>(`/empresa/check-cnpj/${encodeURIComponent(cnpj)}`).then(r => r.data.exists); },
   checkEmpresaEmailExists(email: string) { return axiosInstance.get<{exists: boolean}>(`/empresa/check-email/${encodeURIComponent(email)}`).then(r => r.data.exists); },
   getDevToken(candidatoId: number) { return axiosInstance.post('/auth/dev-token', { candidatoId }).then(r => r.data); },
@@ -164,12 +178,12 @@ export const api = {
   listarAreasFormacao() { return axiosInstance.get('/areas-formacao').then(r => r.data); },
   listarAreasFormacaoCandidato(candidatoId: number) { return axiosInstance.get(`/areas-formacao/candidato/${candidatoId}`).then(r => r.data); },
   vincularAreasFormacaoCandidato(candidatoId: number, areaIds: number[]) { return axiosInstance.post(`/areas-formacao/candidato/${candidatoId}`, { areaIds }).then(r => r.data); },
-  getConfig(candidatoId: number) { return axiosInstance.get(`/candidatos/${candidatoId}/config`).then(r => r.data); },
-  updateConfig(candidatoId: number, data: any) { return axiosInstance.put(`/candidatos/${candidatoId}/config`, data).then(r => r.data); },
-  alterarSenhaCandidato(candidatoId: number, senhaAtual: string, novaSenha: string) { return axiosInstance.post(`/candidatos/${candidatoId}/alterar-senha`, { senhaAtual, novaSenha }).then(r => r.data); },
-  aceitarTermos(candidatoId: number) { return axiosInstance.post(`/candidatos/${candidatoId}/aceitar-termos`).then(r => r.data); },
-  desativarConta(candidatoId: number) { return axiosInstance.post(`/candidatos/${candidatoId}/desativar-conta`).then(r => r.data); },
-  excluirConta(candidatoId: number, confirmar: string) { return axiosInstance.delete(`/candidatos/${candidatoId}/excluir-conta`, { data: { confirmar } }).then(r => r.data); },
+  getConfig(candidatoId: number) { return axiosInstance.get(`/candidato/${candidatoId}/config`).then(r => r.data); },
+  updateConfig(candidatoId: number, data: any) { return axiosInstance.put(`/candidato/${candidatoId}/config`, data).then(r => r.data); },
+  alterarSenhaCandidato(candidatoId: number, senhaAtual: string, novaSenha: string) { return axiosInstance.post(`/candidato/${candidatoId}/alterar-senha`, { senhaAtual, novaSenha }).then(r => r.data); },
+  aceitarTermos(candidatoId: number) { return axiosInstance.post(`/candidato/${candidatoId}/aceitar-termos`).then(r => r.data); },
+  desativarConta(candidatoId: number) { return axiosInstance.post(`/candidato/${candidatoId}/desativar-conta`).then(r => r.data); },
+  excluirConta(candidatoId: number, confirmar: string) { return axiosInstance.delete(`/candidato/${candidatoId}/excluir-conta`, { data: { confirmar } }).then(r => r.data); },
   listarAdministradores() { return axiosInstance.get('/admin/usuarios').then(r => r.data); },
   criarAdministrador(data: { nome: string; email: string; senha: string }) { return axiosInstance.post('/admin/usuarios', data).then(r => r.data); },
   atualizarAdministrador(id: number, data: { nome?: string; email?: string; senha?: string }) { return axiosInstance.put(`/admin/usuarios/${id}`, data).then(r => r.data); },
@@ -182,8 +196,24 @@ export const api = {
     return axiosInstance.get(`/candidaturas/candidato/${candidatoId}?${params.toString()}`).then(r => r.data);
   },
   obterDashboardCandidaturas(candidatoId: number) { return axiosInstance.get(`/candidaturas/candidato/${candidatoId}/dashboard`).then(r => r.data); },
-  retirarCandidatura(vagaId: number, candidatoId: number) { return axiosInstance.delete(`/candidaturas/vaga/${vagaId}/candidato/${candidatoId}`).then(r => r.data); },
+  listarTiposComSubtiposPublico() { return axiosInstance.get<TipoComSubtipos[]>("/tipos/com-subtipos").then(r => r.data); },
   verificarCandidatura(vagaId: number, candidatoId: number) { return axiosInstance.get(`/candidaturas/vaga/${vagaId}/candidato/${candidatoId}/verificar`).then(r => r.data.applied).catch(() => false); },
+
+  // Laudo (medical report)
+  uploadLaudo(candidatoId: number, file: File) {
+    const formData = new FormData();
+    formData.append('laudo', file);
+    return axiosInstance.post(`/candidatos/laudo/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: { candidatoId },
+    }).then(r => r.data);
+  },
+  getLaudo(candidatoId: number) {
+    return axiosInstance.get(`/candidato/${candidatoId}/laudo`, { responseType: 'blob' }).then(r => r);
+  },
+  deleteLaudo(candidatoId: number) {
+    return axiosInstance.delete(`/candidato/${candidatoId}/laudo`).then(r => r.data);
+  },
 };
 
 function mapAxiosError(err: AxiosError) {

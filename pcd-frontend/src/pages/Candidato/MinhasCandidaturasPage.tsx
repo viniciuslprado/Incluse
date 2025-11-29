@@ -89,7 +89,15 @@ export default function MinhasCandidaturasPage() {
       setDashboard(dashboardData);
     } catch (err: any) {
       if ((import.meta as any).env?.DEV) console.error('Erro geral ao carregar dados:', err);
-      addToast({ type: 'error', message: err?.message ?? 'Erro ao carregar dados' });
+      if (err?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userType');
+        localStorage.removeItem('userId');
+        addToast({ type: 'error', message: 'Usuário não autorizado ou sessão expirada. Faça login novamente.' });
+        setTimeout(() => window.location.href = '/login', 2000);
+      } else {
+        addToast({ type: 'error', message: err?.message ?? 'Erro ao carregar dados' });
+      }
     } finally {
       setLoading(false);
     }

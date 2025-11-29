@@ -31,7 +31,7 @@ export default function VisualizarCandidatoPage() {
       
       try {
         const [candidatoData, curriculoData] = await Promise.all([
-          api.getCandidato(),
+          api.getCandidato(Number(candidatoId)),
           api.obterCurriculoBasico(Number(candidatoId))
         ]);
         

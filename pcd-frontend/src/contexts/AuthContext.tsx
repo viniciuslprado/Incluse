@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = sessionStorage.getItem('auth_user');
+    const savedUser = localStorage.getItem('auth_user');
     if (savedUser) {
       const parsed = JSON.parse(savedUser);
       loadUserData(parsed.id, parsed.tipo, parsed);
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ) {
     try {
       if (tipo === 'candidato') {
-        const candidato = await api.getCandidato();
+        const candidato = await api.getCandidato(id);
         setUser({
           id: candidato.id,
           nome: candidato.nome,
@@ -96,12 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     extraUserData?: Partial<User>
   ) {
     setLoading(true);
-    sessionStorage.setItem('auth_user', JSON.stringify({ id, tipo, ...extraUserData }));
+    localStorage.setItem('auth_user', JSON.stringify({ id, tipo, ...extraUserData }));
     await loadUserData(id, tipo, extraUserData);
   }
 
   function logout() {
-    sessionStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_user');
     try {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');

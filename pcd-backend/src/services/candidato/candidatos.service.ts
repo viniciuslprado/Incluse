@@ -1,5 +1,7 @@
 import { CandidatosRepo } from "../../repositories/candidato/candidatos.repo";
-import * as bcrypt from 'bcryptjs';
+// Importação compatível com CommonJS/ESM para bcryptjs
+import bcryptjs from 'bcryptjs';
+const bcrypt = bcryptjs;
 import { SubtiposRepo } from "../../repositories/common/subtipos.repo";
 import { BarreirasRepo } from "../../repositories/common/barreiras.repo";
 
@@ -82,7 +84,7 @@ export const CandidatosService = {
       const c = await CandidatosRepo.findByCpf(normalizedCpf);
       if (c) throw Object.assign(new Error('Já existe uma conta cadastrada com este CPF'), { status: 400 });
     }
-    const senhaHash = (bcrypt as any).hashSync(senha, 8);
+    const senhaHash = bcrypt.hashSync(senha, 8);
     const created = await CandidatosRepo.create({ nome: nome.trim(), cpf: normalizedCpf, email: normalizedEmail, telefone, escolaridade: escolaridade ?? 'Não informado', curso, situacao, senhaHash, curriculo, laudo });
     // don't return senhaHash to caller
     if (created) {

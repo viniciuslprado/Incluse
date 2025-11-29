@@ -1,7 +1,33 @@
 import { Request, Response } from "express";
 import { CandidatosService } from "../../services/candidato/candidatos.service";
 
+// GET /candidatos/:id/laudo - Retornar laudo do candidato
+// DELETE /candidatos/:id/laudo - Excluir laudo do candidato
+
 export const CandidatosController = {
+  async getLaudo(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+      if (!id || isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+      const candidato = await CandidatosService.getCandidato(id);
+      if (!candidato || !candidato.laudo) return res.status(404).json({ error: 'Laudo não encontrado' });
+      // Retorna apenas a URL do laudo (privacidade)
+      res.json({ laudo: candidato.laudo });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message ?? 'Erro ao buscar laudo' });
+    }
+  },
+
+  async excluirLaudo(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+      if (!id || isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+      await CandidatosService.updateLaudo(id, null);
+      res.json({ ok: true, message: 'Laudo excluído com sucesso' });
+    } catch (e: any) {
+      res.status(400).json({ error: e.message ?? 'Erro ao excluir laudo' });
+    }
+  },
   async criar(req: Request, res: Response) {
     try {
       const contentType = req.headers['content-type'];
@@ -73,18 +99,27 @@ export const CandidatosController = {
   },
   async getCandidato(req: Request, res: Response) {
     const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
+    }
     const data = await CandidatosService.getCandidato(id);
     res.json(data);
   },
 
   async listarSubtipos(req: Request, res: Response) {
     const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
+    }
     const data = await CandidatosService.listarSubtipos(id);
     res.json(data);
   },
 
   async vincularSubtipos(req: Request, res: Response) {
     const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
+    }
     const { subtipoIds } = req.body ?? {};
     const result = await CandidatosService.vincularSubtipos(id, subtipoIds);
     res.json(result);
@@ -93,6 +128,12 @@ export const CandidatosController = {
   async vincularBarreiras(req: Request, res: Response) {
     const candidatoId = Number(req.params.id);
     const subtipoId = Number(req.params.subtipoId);
+    if (!candidatoId || isNaN(candidatoId)) {
+      return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
+    }
+    if (!subtipoId || isNaN(subtipoId)) {
+      return res.status(400).json({ error: 'ID do subtipo ausente ou inválido.' });
+    }
     const { barreiraIds } = req.body ?? {};
     const result = await CandidatosService.vincularBarreiras(candidatoId, subtipoId, barreiraIds);
     res.json(result);

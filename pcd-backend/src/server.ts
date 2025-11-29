@@ -1,4 +1,3 @@
-
 import 'dotenv/config';
 import express from "express";
 import cors from "cors";
@@ -18,6 +17,8 @@ import vagasRoutes from "./routes/common/vagas.routes.js";
 import matchRoutes from "./routes/common/match.routes.js";
 import processoSeletivoRoutes from "./routes/common/processo-seletivo.routes.js";
 import areasFormacaoRoutes from "./routes/common/areas-formacao.routes.js";
+import tiposDeficienciaRoutes from "./routes/common/tiposDeficienciaRoutes.js";
+import acessibilidadesPublicRoutes from "./routes/common/acessibilidadesRoutes.js";
 
 import adminRoutes from "./routes/admin/admin.routes.js";
 
@@ -47,10 +48,13 @@ app.use("/vinculos", vinculosRoutes)
 app.use("/barreiras", barreirasRoutes);
 app.use("/acessibilidades", acessibilidadesRoutes);
 app.use("/empresa", empresasRoutes);
+app.use("/candidato", candidatosRoutes);
 app.use("/vagas", vagasRoutes);
 app.use("/processo-seletivo", processoSeletivoRoutes);
 app.use("/auth", authRoutes);
 app.use("/match", matchRoutes);
+app.use("/tipos-deficiencia", tiposDeficienciaRoutes);
+app.use("/acessibilidades", acessibilidadesPublicRoutes);
 
 app.use("/admin", adminRoutes);
 app.use("/areas-formacao", areasFormacaoRoutes);

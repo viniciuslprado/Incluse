@@ -81,9 +81,8 @@ export default function Endereco({ form, handleInput }: Props) {
             aria-required="true"
           />
         </div>
-        
-        {/* Disponibilidade Geográfica */}
-        
+
+
         {/* Aceita mudança */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Aceita mudança de cidade? *</label>

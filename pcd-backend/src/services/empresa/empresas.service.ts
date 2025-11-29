@@ -1,5 +1,5 @@
 import { EmpresasRepo } from "../../repositories/empresa/empresas.repo";
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 
 export const EmpresasService = {
   async criarEmpresa(nome: string, cnpj?: string, email?: string, senha?: string) {

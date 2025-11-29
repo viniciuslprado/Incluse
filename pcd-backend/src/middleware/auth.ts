@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-secret';
 
@@ -46,8 +46,9 @@ export function verifyJWT(req: Request, res: Response, next: NextFunction) {
 export function ensureRole(...roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     const current = req.auth?.role;
+    console.log('[ensureRole] Esperado:', roles, '| Recebido:', current, '| req.auth:', req.auth);
     if (!current) return res.status(401).json({ error: 'Não autorizado' });
-    if (!roles.includes(current)) return res.status(403).json({ error: 'Acesso negado' });
+    if (!roles.includes(current)) return res.status(403).json({ error: 'Acesso negado', roleRecebido: current, rolesEsperados: roles });
     next();
   };
 }

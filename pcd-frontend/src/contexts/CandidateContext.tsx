@@ -37,7 +37,7 @@ export function CandidateProvider({ candidatoId, children }: Props) {
     if (!candidatoId) return;
     setLoading(true);
     try {
-      const data: any = await api.getCandidato();
+      const data: any = await api.getCandidato(candidatoId);
       setState({
         nome: data.nome ?? '',
         cpf: data.cpf ?? '',

@@ -49,7 +49,7 @@ export default function CadastroCandidatoPage() {
   useEffect(() => {
     async function carregarTipos() {
       try {
-        const tipos = await api.listarTiposComSubtipos();
+        const tipos = await api.listarTiposComSubtiposPublico();
         setTiposDeficiencia(tipos);
       } catch (error) {
         console.error('Erro ao carregar tipos:', error);
@@ -152,6 +152,8 @@ export default function CadastroCandidatoPage() {
     if (!formData.nomeCompleto.trim()) return 'Nome completo é obrigatório.';
     if (formData.cpf.replace(/\D/g, '').length !== 11) return 'CPF deve ter 11 dígitos.';
     if (!formData.telefone.trim()) return 'Telefone é obrigatório.';
+    const telefoneNumerico = formData.telefone.replace(/\D/g, '');
+    if (telefoneNumerico.length < 10 || telefoneNumerico.length > 13) return 'Telefone deve ter entre 10 e 13 dígitos (apenas números, com ou sem DDI).';
     if (!formData.email.trim()) return 'E-mail é obrigatório.';
     // simple email regex
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return 'E-mail inválido.';
@@ -221,7 +223,23 @@ export default function CadastroCandidatoPage() {
       const fd = new FormData();
       fd.append('nome', formData.nomeCompleto.trim());
       fd.append('cpf', formData.cpf);
-      fd.append('telefone', formData.telefone);
+      // Remove todos os caracteres não numéricos do telefone antes de enviar
+      let telefoneNumerico = formData.telefone.replace(/\D/g, '');
+      // Corrige bug de duplicação do último dígito (ex: 55168529634522 -> 5516852963452)
+      if (telefoneNumerico.length > 13 && telefoneNumerico.slice(-2, -1) === telefoneNumerico.slice(-1)) {
+        telefoneNumerico = telefoneNumerico.slice(0, -1);
+      }
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.log('[CadastroCandidato] Telefone enviado ao backend:', telefoneNumerico);
+      }
+      // Validação extra: só permite 10 a 13 dígitos
+      if (telefoneNumerico.length < 10 || telefoneNumerico.length > 13) {
+        setErro('Telefone deve ter entre 10 e 13 dígitos (apenas números, com ou sem DDI).');
+        setLoading(false);
+        return;
+      }
+      fd.append('telefone', telefoneNumerico);
       fd.append('email', formData.email);
       fd.append('escolaridade', formData.escolaridade);
       fd.append('senha', formData.senha);
@@ -229,8 +247,10 @@ export default function CadastroCandidatoPage() {
       if (fileLaudo) fd.append('laudo', fileLaudo);
 
       // debug: log FormData entries to browser console to inspect what will be sent
-      for (const entry of Array.from(fd.entries())) {
-        console.debug('[CadastroCandidato] formData entry:', entry[0], entry[1]);
+      if (import.meta.env.DEV) {
+        for (const entry of Array.from(fd.entries())) {
+          console.debug('[CadastroCandidato] formData entry:', entry[0], entry[1]);
+        }
       }
 
       const created: any = await api.registerCandidatoWithFiles(fd);
@@ -245,11 +265,23 @@ export default function CadastroCandidatoPage() {
       // redirect to candidate dashboard
       navigate(`/candidato/${candidatoId}`);
     } catch (err: any) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErro(msg || 'Erro ao finalizar cadastro.');
+      let userMessage = 'Erro ao finalizar cadastro.';
+      if (err?.response && err.response.data && (err.response.data.error || err.response.data.message)) {
+        userMessage = err.response.data.error || err.response.data.message;
+      } else if (err instanceof Error && err.message) {
+        userMessage = err.message;
+      } else if (typeof err === 'string') {
+        userMessage = err;
+      }
+      setErro(userMessage);
       // detect duplicate CPF message and show options
-      if (typeof msg === 'string' && msg.includes('CPF já cadastrado')) {
+      if (typeof userMessage === 'string' && userMessage.includes('CPF')) {
         setDuplicateCpf(formData.cpf);
+      }
+      // Log detalhes técnicos apenas em dev
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error('[CadastroCandidato] erro detalhado:', err);
       }
     } finally {
       setLoading(false);

@@ -8,6 +8,9 @@ import { NotificacoesController } from "../../controllers/common/notificacoes.co
 import { CurriculoController } from "../../controllers/candidato/curriculo.controller";
 import * as ConfigController from "../../controllers/common/config.controller";
 const router = Router();
+// Laudo médico
+router.get('/:id/laudo', verifyJWT, ensureSelfCandidate, CandidatosController.getLaudo);
+router.delete('/:id/laudo', verifyJWT, ensureSelfCandidate, CandidatosController.excluirLaudo);
 // Configure multer for PDF uploads with size + MIME validation
 const pdfUpload = multer({
 	storage: multerConfig.upload("uploads").storage,
@@ -89,6 +92,7 @@ router.delete("/:id", verifyJWT, ensureSelfCandidate, CandidatosController.exclu
 
 // Currículo (temporário sem auth para empresas visualizarem)
 router.get("/:id/curriculo", CurriculoController.obter);
+router.get("/:id/curriculo/download", CurriculoController.downloadPdf);
 router.put("/:id/curriculo/dados-pessoais", verifyJWT, ensureSelfCandidate, CurriculoController.atualizarDados);
 
 // Experiências

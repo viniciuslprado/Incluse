@@ -9,7 +9,7 @@ export const VagasController = {
       const limit = Number(req.query.limit) || 100;
       const filters: any = {};
       if (req.query.status) filters.status = req.query.status;
-      if (req.query.area) filters.area = req.query.area;
+      if (req.query.areaId) filters.areaId = Number(req.query.areaId);
       if (req.query.modeloTrabalho) filters.modeloTrabalho = req.query.modeloTrabalho;
       const result = await VagasService.listarVagas(undefined, filters, page, limit);
       // Se for uma requisição pública (sem paginação explícita), retorna apenas o array
@@ -25,7 +25,9 @@ export const VagasController = {
   // POST /vaga - Criar vaga completa
     async criar(req: Request, res: Response) {
     try {
-      const vaga = await VagasService.criarVaga(req.body);
+      const vagaData = req.body;
+      if (vagaData.areaId) vagaData.areaId = Number(vagaData.areaId);
+      const vaga = await VagasService.criarVaga(vagaData);
       res.status(201).json(vaga);
     } catch (e: any) {
       res.status(400).json({ error: e.message ?? "Erro ao criar vaga" });
@@ -41,7 +43,7 @@ export const VagasController = {
       const filters: any = {};
       
       if (req.query.status) filters.status = req.query.status;
-      if (req.query.area) filters.area = req.query.area;
+      if (req.query.areaId) filters.areaId = Number(req.query.areaId);
       if (req.query.modeloTrabalho) filters.modeloTrabalho = req.query.modeloTrabalho;
       
       const result = await VagasService.listarVagas(empresaId, filters, page, limit);
@@ -73,7 +75,9 @@ export const VagasController = {
   async atualizar(req: Request, res: Response) {
     try {
       const id = Number(req.params.id);
-      const vaga = await VagasService.atualizarVaga(id, req.body);
+      const vagaData = req.body;
+      if (vagaData.areaId) vagaData.areaId = Number(vagaData.areaId);
+      const vaga = await VagasService.atualizarVaga(id, vagaData);
       res.json(vaga);
     } catch (e: any) {
       const status = e.message === "Vaga não encontrada" ? 404 : 400;

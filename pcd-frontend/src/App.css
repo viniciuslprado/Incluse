@@ -16,8 +16,7 @@
 .container-page h1,
 .container-page h2,
 .container-page h3,
-.container-page p,
-.container-page div {
+.container-page p {
   text-align: center !important;
 }
 

@@ -13,7 +13,7 @@ export const VagasService = {
       tipoContratacao: vagaData.tipoContratacao,
       modeloTrabalho: vagaData.modeloTrabalho,
       localizacao: vagaData.localizacao,
-      area: vagaData.area,
+      areaId: vagaData.areaId ? Number(vagaData.areaId) : undefined,
       status: vagaData.status || 'ativa',
       escolaridade: vagaData.escolaridade,
       cidade: vagaData.cidade,

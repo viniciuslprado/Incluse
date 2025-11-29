@@ -15,7 +15,7 @@ export default function DashboardLayout() {
 
   useEffect(() => {
     if (!candidatoId || candidatoId <= 0) return;
-    api.getCandidato()
+    api.getCandidato(candidatoId)
       .then((c: any) => setNome(c?.nome ?? null))
       .catch((err: any) => {
         setNome(null);

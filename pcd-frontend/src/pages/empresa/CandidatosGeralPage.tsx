@@ -32,8 +32,9 @@ export default function CandidatosGeralPage() {
   async function carregarCandidatos() {
     try {
       setLoading(true);
-      const vagas = await api.listarVagas();
-      
+      const vagasResult = await api.listarVagasPorEmpresa(empresaId);
+      const vagas = Array.isArray(vagasResult) ? vagasResult : vagasResult.data;
+
       const todosCandidatos: Candidato[] = [];
       for (const vaga of vagas) {
         try {
@@ -50,7 +51,7 @@ export default function CandidatosGeralPage() {
           console.error(`Erro ao carregar candidatos da vaga ${vaga.id}:`, error);
         }
       }
-      
+
       setCandidatos(todosCandidatos);
     } catch (error) {
       console.error('Erro ao carregar candidatos:', error);

@@ -12,13 +12,14 @@ import candidato from "./candidato/candidatos.routes";
 import candidaturas from "./candidato/candidaturas.routes";
 import match from "./common/match.routes";
 import auth from "./public/auth.routes";
+import publicTipos from "./public/tipos.routes";
 import areasFormacao from "./common/areas-formacao.routes";
-import config from "./common/config.routes";
 
 const router = Router();
 
 router.use("/admin", admin);
 router.use("/auth", auth);
+router.use("/public/tipos", publicTipos);
 router.use("/tipos", tipos);
 router.use("/subtipos", subtipos);
 router.use("/barreiras", barreiras);
@@ -26,7 +27,6 @@ router.use("/acessibilidades", acessibilidades);
 router.use("/vagas", vagas);
 router.use("/empresa", empresa);
 router.use("/candidato", candidato);
-router.use("/candidatos", config);
 router.use("/candidaturas", candidaturas);
 router.use("/match", match);
 router.use("/areas-formacao", areasFormacao);

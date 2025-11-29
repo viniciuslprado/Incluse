@@ -8,7 +8,7 @@ function getMissingFields(c: any) {
   const missing: string[] = [];
   if (!c.cidade) missing.push('Cidade onde mora');
   if (!c.estado) missing.push('Estado');
-  if (!c.disponibilidadeGeografica) missing.push('Disponibilidade geográfica');
+  // Removido: disponibilidadeGeografica
   if (c.aceitaMudanca === null || c.aceitaMudanca === undefined) missing.push('Aceita mudança');
   if (c.aceitaViajar === null || c.aceitaViajar === undefined) missing.push('Aceita viajar');
   return missing;

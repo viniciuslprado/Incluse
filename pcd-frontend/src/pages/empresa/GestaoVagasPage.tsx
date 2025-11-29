@@ -30,11 +30,11 @@ export default function GestaoVagasPage() {
   async function carregarVagas() {
     try {
       setLoading(true);
-      const data = await api.listarVagas();
-      
+      const data = await api.listarVagasPorEmpresa(empresaId);
+      const vagasArray = Array.isArray(data) ? data : data.data;
       // Carregar candidatos para cada vaga
       const vagasComCandidatos = await Promise.all(
-        data.map(async (vaga: any) => {
+        vagasArray.map(async (vaga: any) => {
           try {
             const candidatos = await api.listarCandidatosPorVaga(vaga.id);
             return { ...vaga, totalCandidatos: candidatos.length };
@@ -43,7 +43,6 @@ export default function GestaoVagasPage() {
           }
         })
       );
-      
       setVagas(vagasComCandidatos);
     } catch (error) {
       console.error('Erro ao carregar vagas:', error);
@@ -97,6 +96,12 @@ export default function GestaoVagasPage() {
     );
   }
 
+
+  // Contagens para filtros
+  const totalVagas = vagas.length;
+  const totalAtivas = vagas.filter(v => v.status === 'ativa').length;
+  const totalEncerradas = vagas.filter(v => v.status === 'encerrada').length;
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
@@ -138,7 +143,7 @@ export default function GestaoVagasPage() {
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              Todas
+              Todas <span className="ml-1 text-xs font-semibold">({totalVagas})</span>
             </button>
             <button
               onClick={() => setFiltro('ativas')}
@@ -148,7 +153,7 @@ export default function GestaoVagasPage() {
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              Ativas
+              Ativas <span className="ml-1 text-xs font-semibold">({totalAtivas})</span>
             </button>
             <button
               onClick={() => setFiltro('encerradas')}
@@ -158,7 +163,7 @@ export default function GestaoVagasPage() {
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              Encerradas
+              Encerradas <span className="ml-1 text-xs font-semibold">({totalEncerradas})</span>
             </button>
           </div>
         </div>
@@ -305,25 +310,7 @@ export default function GestaoVagasPage() {
         )}
       </div>
 
-      {/* Estatísticas Resumidas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-400">Total de Vagas</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{vagas.length}</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-400">Vagas Ativas</div>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-            {vagas.filter(v => v.status === 'ativa').length}
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-400">Total de Candidatos</div>
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-            {vagas.reduce((acc, v) => acc + (v.totalCandidatos || 0), 0)}
-          </div>
-        </div>
-      </div>
+      {/* Estatísticas Resumidas removidas conforme solicitado */}
     </div>
   );
 }

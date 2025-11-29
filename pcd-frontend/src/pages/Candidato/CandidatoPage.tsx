@@ -3,6 +3,7 @@ import { useParams, NavLink } from "react-router-dom";
 import { api } from "../../lib/api";
 import type { Candidato, CandidatoSubtipo } from "../../types";
 import CandidatoSubtiposForm from "../../components/candidato/CandidatoSubtiposForm";
+import { useEffect as useEffect2 } from "react";
 import CandidatoBarreirasForm from "../../components/candidato/CandidatoBarreirasForm";
 
 export default function CandidatoPage() {
@@ -11,11 +12,21 @@ export default function CandidatoPage() {
   const [candidato, setCandidato] = useState<Candidato | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [allSubtipos, setAllSubtipos] = useState<any[]>([]);
+  // Carrega todos os subtipos públicos para passar como prop obrigatória
+  useEffect2(() => {
+    api.listarTiposComSubtiposPublico?.()
+      .then((tipos) => {
+        const subtipos = tipos?.flatMap((t: any) => t.subtipos || []) || [];
+        setAllSubtipos(subtipos);
+      })
+      .catch(() => setAllSubtipos([]));
+  }, []);
 
   const carregar = useCallback(async () => {
     setErro(null);
     try {
-      const data = await api.getCandidato();
+      const data = await api.getCandidato(candidatoId);
       setCandidato(data);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -50,7 +61,7 @@ export default function CandidatoPage() {
         </nav>
       </header>
 
-      <CandidatoSubtiposForm candidatoId={candidatoId} onUpdated={carregar} />
+      <CandidatoSubtiposForm candidatoId={candidatoId} onUpdated={carregar} allSubtipos={allSubtipos} />
 
       <div className="mt-6 space-y-4">
         {candidato.subtipos?.map((s: CandidatoSubtipo) => (

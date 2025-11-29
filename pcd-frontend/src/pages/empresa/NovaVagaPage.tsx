@@ -9,7 +9,7 @@ interface VagaData {
   modelo: string;
   cidade: string;
   estado: string;
-  area: string;
+  areaId: number | '';
   exigeMudanca: boolean;
   exigeViagens: boolean;
   
@@ -79,7 +79,7 @@ export default function NovaVagaPage() {
     modelo: '',
     cidade: '',
     estado: '',
-    area: '',
+    areaId: '',
     exigeMudanca: false,
     exigeViagens: false,
     resumo: '',
@@ -104,7 +104,7 @@ export default function NovaVagaPage() {
       try {
         const [areas, acessibilidades] = await Promise.all([
           api.listarAreasFormacao(),
-          api.listarAcessibilidades()
+          api.listarAcessibilidadesPublicas()
         ]);
         setAreasFormacao(areas);
         setAcessibilidadesDisponiveis(acessibilidades);
@@ -156,17 +156,6 @@ export default function NovaVagaPage() {
     }
   };
 
-  const handleSaveDraft = async () => {
-    setSaving(true);
-    try {
-      // await api.salvarRascunhoVaga(empresaId, vagaData);
-      navigate(`/empresa/${empresaId}/vagas`);
-    } catch (error) {
-      setErro('Erro ao salvar rascunho');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handlePublish = async () => {
     setSaving(true);
@@ -217,7 +206,7 @@ export default function NovaVagaPage() {
         localizacao,
         cidade: vagaData.cidade || undefined,
         estado: vagaData.estado || undefined,
-        area: vagaData.area || undefined,
+        areaId: vagaData.areaId || undefined,
         escolaridade: vagaData.formacao || undefined,
         exigeMudanca: vagaData.exigeMudanca,
         exigeViagens: vagaData.exigeViagens,
@@ -367,17 +356,18 @@ export default function NovaVagaPage() {
                 Área da Vaga *
               </label>
               <select
-                value={vagaData.area}
-                onChange={(e) => handleInputChange('area', e.target.value)}
+                  value={vagaData.areaId}
+                  onChange={(e) => handleInputChange('areaId', e.target.value ? Number(e.target.value) : '')}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
               >
                 <option value="">Selecione</option>
                 {areasFormacao.map((area) => (
-                  <option key={area.id} value={area.nome}>
+                    <option key={area.id} value={area.id}>
                     {area.nome}
                   </option>
                 ))}
               </select>
+              areaId: vagaData.areaId || undefined,
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1140,14 +1130,6 @@ export default function NovaVagaPage() {
           </button>
 
           <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={loading}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-            >
-              Salvar Rascunho
-            </button>
 
             {currentStep === 7 ? (
               <button

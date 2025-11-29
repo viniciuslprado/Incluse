@@ -98,7 +98,8 @@ model Vaga {
   tipoContratacao    String?                 // CLT, PJ, Estágio, etc
   modeloTrabalho     String?                 // Remoto, Presencial, Híbrido
   localizacao        String?                 // Texto livre ou estruturado
-  area               String?                 // TI, RH, Marketing, etc
+  areaId             Int?
+  area               AreaFormacao?           @relation(fields: [areaId], references: [id])
   exigeMudanca       Boolean?                @default(false) // Necessita mudança de cidade
   exigeViagens       Boolean?                @default(false) // Viagens frequentes
   status             String                  @default("ativa") // ativa, pausada, encerrada
@@ -419,6 +420,7 @@ model AreaFormacao {
   updatedAt DateTime                 @updatedAt
   
   candidatos CandidatoAreaFormacao[]
+  vagas      Vaga[]
 }
 
 model CandidatoAreaFormacao {

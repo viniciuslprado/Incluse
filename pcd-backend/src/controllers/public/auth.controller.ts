@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { EmpresasRepo } from "../../repositories/empresa/empresas.repo";
 import { CandidatosRepo } from "../../repositories/candidato/candidatos.repo";
-import * as bcrypt from 'bcryptjs';
-import * as jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import prisma from '../../prismaClient';
 import { randomBytes } from 'crypto';
 import { sendPasswordResetEmail } from '../../services/common/email.service';
@@ -22,6 +22,7 @@ export const AuthController = {
       let role = userType;
 
       if (userType === 'empresa') {
+        console.log('[AuthController] Login empresa - identifier recebido:', identifier);
         if (isEmail) {
           user = await EmpresasRepo.findByCnpj(identifier) // fallback
           user = await EmpresasRepo.findByEmail?.(identifier) ?? user;
@@ -29,6 +30,7 @@ export const AuthController = {
           const only = String(identifier).replace(/\D/g, '');
           user = await EmpresasRepo.findByCnpj(only) ?? await EmpresasRepo.findByCnpj(identifier);
         }
+        console.log('[AuthController] Empresa encontrada:', user);
       } else if (userType === 'candidato' || userType === 'admin') {
         if (isEmail) {
           if (userType === 'candidato') {
@@ -55,10 +57,13 @@ export const AuthController = {
 
       if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
 
+
       const senhaHash = (user as any).senhaHash;
+      console.log('[AuthController] senhaHash encontrado:', senhaHash);
       if (!senhaHash) return res.status(401).json({ error: 'Usuário sem senha cadastrada' });
 
       const ok = bcrypt.compareSync(senha, senhaHash);
+      console.log('[AuthController] senha recebida:', senha, '| senhaHash:', senhaHash, '| ok:', ok);
       if (!ok) return res.status(401).json({ error: 'Senha inválida' });
 
       // Reativar conta se estiver desativada
@@ -76,13 +81,19 @@ export const AuthController = {
       const refreshExpiresAt = new Date(Date.now() + refreshDays * 24 * 60 * 60 * 1000);
       await prisma.refreshToken.create({ data: { token: refreshToken, userId: user.id, userType: role ?? userType, expiresAt: refreshExpiresAt } });
 
-      if (userType === 'candidato' || userType === 'empresa') {
-        res.json({ token, refreshToken, user: { id: user.id, nome: user.nome ?? user.nomeContato, email: user.email }, userType });
-      } else if (userType === 'admin') {
-        res.json({ token, refreshToken, user: { id: null, nome: user.nome, email: user.email }, userType });
-      } else {
-        res.json({ token, refreshToken, user: { nome: user.nome ?? user.nomeContato, email: user.email }, userType });
-      }
+      // Sempre retorna o campo 'id' no objeto user
+      const responseObj = {
+        token,
+        refreshToken,
+        user: {
+          id: user.id ?? null,
+          nome: user.nome ?? user.nomeContato ?? null,
+          email: user.email ?? null
+        },
+        userType
+      };
+      console.log('[AuthController] Login response:', JSON.stringify(responseObj, null, 2));
+      res.json(responseObj);
     } catch (e: any) {
       res.status(500).json({ error: e.message ?? 'Erro ao autenticar' });
     }

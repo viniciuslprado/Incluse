@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useParams, Outlet, NavLink, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import type { Empresa } from "../../types";
 import { FiHome, FiUsers, FiSettings, FiFileText, FiMenu, FiPlusCircle, FiList, FiLogOut } from "react-icons/fi";
@@ -13,29 +13,13 @@ export default function EmpresaPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Verificar autenticação antes de carregar
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userType = localStorage.getItem('userType');
-    const userId = localStorage.getItem('userId');
-
-    if (!token) {
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    if (userType !== 'empresa') {
-      alert('Acesso negado. Esta área é exclusiva para empresas.');
-      navigate('/', { replace: true });
-      return;
-    }
-
-    if (Number(userId) !== empresaId) {
-      alert('Acesso negado. Você não tem permissão para acessar esta empresa.');
-      navigate(`/empresa/${userId}/dashboard`, { replace: true });
-      return;
-    }
-  }, [empresaId, navigate]);
+  // Checagem de permissão ANTES de renderizar qualquer coisa
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const userType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+  if (!token) return <Navigate to="/login" replace />;
+  if (userType !== 'empresa') return <div className="container-page py-8 text-red-600">Acesso negado. Esta área é exclusiva para empresas.</div>;
+  if (Number(userId) !== empresaId) return <div className="container-page py-8 text-red-600">Acesso negado. Você não tem permissão para acessar esta empresa.</div>;
 
   useEffect(() => {
     async function carregar() {
@@ -49,7 +33,8 @@ export default function EmpresaPage() {
           localStorage.removeItem('token');
           localStorage.removeItem('userType');
           localStorage.removeItem('userId');
-          navigate('/login', { replace: true });
+          setErro("Usuário não autorizado ou sessão expirada. Faça login novamente.");
+          setTimeout(() => navigate('/login', { replace: true }), 2000);
           return;
         }
         setErro("Erro ao carregar dados da empresa");

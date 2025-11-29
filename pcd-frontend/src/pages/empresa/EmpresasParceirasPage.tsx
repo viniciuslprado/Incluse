@@ -23,22 +23,16 @@ export default function EmpresasParceirasPage() {
     async function carregarEmpresas() {
       try {
         const empresasData = await api.listarEmpresas();
-        
-        // Buscar quantidade de vagas para cada empresa
-        const empresasComVagas = await Promise.all(
-          empresasData.map(async (empresa: Empresa) => {
-            try {
-              const vagas = await api.listarVagas();
-              return {
-                ...empresa,
-                vagasAtivas: Array.isArray(vagas) ? vagas.filter((v: any) => v.status === 'ativa').length : 0
-              };
-            } catch {
-              return { ...empresa, vagasAtivas: 0 };
-            }
-          })
-        );
-        
+        const vagasPublicas = await api.listarVagasPublicas();
+
+        // Buscar quantidade de vagas ativas para cada empresa usando apenas vagas públicas
+        const empresasComVagas = empresasData.map((empresa: Empresa) => {
+          const vagasAtivas = Array.isArray(vagasPublicas)
+            ? vagasPublicas.filter((v: any) => v.status === 'ativa' && v.empresaId === empresa.id).length
+            : 0;
+          return { ...empresa, vagasAtivas };
+        });
+
         setEmpresas(empresasComVagas);
       } catch (err) {
         console.error('Erro ao carregar empresas:', err);

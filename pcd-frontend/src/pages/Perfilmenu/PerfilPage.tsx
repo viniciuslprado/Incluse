@@ -1,3 +1,36 @@
+    async function downloadLaudo() {
+      const idStr = window.location.pathname.split('/')[2];
+      const id = Number(idStr);
+      if (!id) return;
+      try {
+        const response = await api.getLaudo(id);
+        if (response && response.data) {
+          let fileName = laudoName || 'laudo.pdf';
+          const disposition = response.headers?.['content-disposition'];
+          if (disposition) {
+            const match = disposition.match(/filename="?([^";]+)"?/);
+            if (match) fileName = match[1];
+          }
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode?.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }
+      } catch (e) {
+        addToast({ type: 'error', title: 'Erro', message: 'Erro ao baixar laudo.' });
+      }
+    }
+
+    // Expor função de download globalmente para uso no botão do componente filho
+    if (typeof window !== 'undefined') {
+      (window as any).downloadLaudo = downloadLaudo;
+    }
+  // Expor função de download globalmente para uso no botão do componente filho
+  // Isso deve ser feito após a declaração da função downloadLaudo
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
@@ -63,7 +96,9 @@ export default function PerfilPage() {
         
         let c: any = null;
         try {
-          c = await api.getCandidato();
+          if (id && !isNaN(id)) {
+            c = await api.getCandidato(id);
+          }
         } catch (err: any) {
           // Se candidato não existe no banco, redirecionar
           if (err?.status === 404) {
@@ -85,11 +120,26 @@ export default function PerfilPage() {
         
         if (mounted) {
           setCandidato(c);
-          
-          // Carregar áreas de formação disponíveis
-          const areasDisponiveis = await api.listarAreasFormacao();
-          const areasVinculadas = await api.listarAreasFormacaoCandidato(id);
-          
+          let areasDisponiveis = [];
+          let areasVinculadas = [];
+          // LOG: token e userId antes das chamadas de áreas de formação
+          const token = localStorage.getItem('token');
+          const userId = localStorage.getItem('userId');
+          const userType = localStorage.getItem('userType');
+          // eslint-disable-next-line no-console
+          console.log('[PerfilPage] Token atual:', token);
+          // eslint-disable-next-line no-console
+          console.log('[PerfilPage] userId:', userId, 'userType:', userType, 'candidatoId:', id);
+          try {
+            areasDisponiveis = await api.listarAreasFormacao();
+          } catch (e: any) {
+            addToast({ type: 'error', title: 'Erro', message: 'Erro ao carregar áreas de formação disponíveis.' });
+          }
+          try {
+            areasVinculadas = await api.listarAreasFormacaoCandidato(id);
+          } catch (e: any) {
+            addToast({ type: 'error', title: 'Erro', message: 'Erro ao carregar áreas de formação do candidato.' });
+          }
           const formData = {
             nome: c.nome || candCtx.nome || 'Candidato',
             username: c.username ?? draft.username ?? '',
@@ -104,11 +154,11 @@ export default function PerfilPage() {
             escolaridade: c.escolaridade ?? 'Ensino Médio Completo',
             curso: c.curso ?? draft.curso ?? '',
             sobre: draft.sobre ?? c.sobre ?? '',
-            disponibilidadeGeografica: c.disponibilidadeGeografica ?? draft.disponibilidadeGeografica ?? '',
+            // disponibilidadeGeografica removido
             aceitaMudanca: c.aceitaMudanca ?? draft.aceitaMudanca ?? null,
             aceitaViajar: c.aceitaViajar ?? draft.aceitaViajar ?? null,
             pretensaoSalarialMin: c.pretensaoSalarialMin ?? draft.pretensaoSalarialMin ?? '',
-            areasFormacao: areasVinculadas.map((a: any) => a.id),
+            areasFormacao: Array.isArray(areasVinculadas) ? areasVinculadas.map((a: any) => a.id) : [],
             areasFormacaoDisponiveis: areasDisponiveis,
           };
           setForm(formData);
@@ -197,7 +247,34 @@ export default function PerfilPage() {
         if (mounted) setLoading(false);
       }
     }
+    // Buscar laudo do backend
+    async function fetchLaudo() {
+      try {
+        const idStr = window.location.pathname.split('/')[2];
+        const id = Number(idStr);
+        if (!id) return;
+        const response = await api.getLaudo(id);
+        if (response && response.data) {
+          // Tenta extrair nome do arquivo do header ou usa fallback
+          let fileName = 'laudo.pdf';
+          const disposition = response.headers?.['content-disposition'];
+          if (disposition) {
+            const match = disposition.match(/filename="?([^";]+)"?/);
+            if (match) fileName = match[1];
+          }
+          setLaudoName(fileName);
+          setLaudoSize(response.data.size || null);
+        } else {
+          setLaudoName(null);
+          setLaudoSize(null);
+        }
+      } catch (e) {
+        setLaudoName(null);
+        setLaudoSize(null);
+      }
+    }
     load();
+    fetchLaudo();
     return () => { mounted = false };
   }, []);
 
@@ -270,7 +347,7 @@ export default function PerfilPage() {
     // novos campos obrigatórios de perfil completo
     if (!form.cidade || String(form.cidade).trim().length === 0) newErrors.cidade = 'Cidade é obrigatória.';
     if (!form.estado || String(form.estado).trim().length === 0) newErrors.estado = 'Estado é obrigatório.';
-    if (!form.disponibilidadeGeografica || String(form.disponibilidadeGeografica).trim().length === 0) newErrors.disponibilidadeGeografica = 'Informe a disponibilidade geográfica.';
+    // Removido: disponibilidadeGeografica obrigatória
     if (form.aceitaMudanca === null || form.aceitaMudanca === undefined) newErrors.aceitaMudanca = 'Informe se aceita mudança.';
     if (form.aceitaViajar === null || form.aceitaViajar === undefined) newErrors.aceitaViajar = 'Informe se aceita viajar.';
 
@@ -298,14 +375,14 @@ export default function PerfilPage() {
         curso: form.curso,
         cidade: form.cidade,
         estado: form.estado,
-        disponibilidadeGeografica: form.disponibilidadeGeografica,
+        // disponibilidadeGeografica removido
         aceitaMudanca: form.aceitaMudanca,
         aceitaViajar: form.aceitaViajar,
         pretensaoSalarialMin: form.pretensaoSalarialMin ? Number(form.pretensaoSalarialMin) : undefined,
       });
       
       // Salvar dados no backend
-      const resultado = await api.atualizarCandidato({
+      const resultado = await api.atualizarCandidato(id, {
         nome: form.nome,
         email: form.email,
         telefone: form.telefone,
@@ -313,7 +390,7 @@ export default function PerfilPage() {
         curso: form.curso,
         cidade: form.cidade,
         estado: form.estado,
-        disponibilidadeGeografica: form.disponibilidadeGeografica,
+        // disponibilidadeGeografica removido
         aceitaMudanca: form.aceitaMudanca,
         aceitaViajar: form.aceitaViajar,
         pretensaoSalarialMin: form.pretensaoSalarialMin ? Number(form.pretensaoSalarialMin) : undefined,
@@ -368,19 +445,63 @@ export default function PerfilPage() {
   // removed password reset: candidates do not edit password here
 
   // file handlers for laudo (medical report) and curriculo
-  function handleLaudoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleLaudoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     setLaudoName(f.name);
     setLaudoSize(f.size);
-    // TODO: Implementar upload de laudo para o backend
+    const idStr = window.location.pathname.split('/')[2];
+    const id = Number(idStr);
+    if (!id) return;
+    try {
+      await api.uploadLaudo(id, f);
+      addToast({ type: 'success', title: 'Laudo', message: 'Laudo enviado com sucesso.' });
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao enviar laudo.' });
+      setLaudoName(null);
+      setLaudoSize(null);
+    }
   }
 
-  function removeLaudo() {
-    setLaudoName(null);
-    setLaudoSize(null);
-    // TODO: Remover laudo do backend
-    addToast({ type: 'success', title: 'Laudo', message: 'Laudo removido.' });
+  async function removeLaudo() {
+    const idStr = window.location.pathname.split('/')[2];
+    const id = Number(idStr);
+    if (!id) return;
+    try {
+      await api.deleteLaudo(id);
+      setLaudoName(null);
+      setLaudoSize(null);
+      addToast({ type: 'success', title: 'Laudo', message: 'Laudo removido com sucesso.' });
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao remover laudo.' });
+    }
+  }
+
+  async function downloadLaudo() {
+    const idStr = window.location.pathname.split('/')[2];
+    const id = Number(idStr);
+    if (!id) return;
+    try {
+      const response = await api.getLaudo(id);
+      if (response && response.data) {
+        let fileName = laudoName || 'laudo.pdf';
+        const disposition = response.headers?.['content-disposition'];
+        if (disposition) {
+          const match = disposition.match(/filename="?([^";]+)"?/);
+          if (match) fileName = match[1];
+        }
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      addToast({ type: 'error', title: 'Erro', message: 'Erro ao baixar laudo.' });
+    }
   }
 
   function computeCompleteness() {
@@ -394,7 +515,7 @@ export default function PerfilPage() {
       { key: 'escolaridade', required: true },
       { key: 'cidade', required: true },
       { key: 'estado', required: true },
-      { key: 'disponibilidadeGeografica', required: true },
+      // { key: 'disponibilidadeGeografica', required: true },
     ];
     total += checks.length;
     checks.forEach(c => {

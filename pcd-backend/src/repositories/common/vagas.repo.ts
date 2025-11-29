@@ -6,7 +6,7 @@ export const VagasRepo = {
     const where: any = {};
     if (empresaId) where.empresaId = empresaId;
     if (filters?.status) where.status = filters.status;
-    if (filters?.area) where.area = { contains: filters.area, mode: 'insensitive' };
+    if (filters?.areaId) where.areaId = Number(filters.areaId);
     if (filters?.modeloTrabalho) where.modeloTrabalho = filters.modeloTrabalho;
     return prisma.vaga.findMany({
       where,
@@ -15,6 +15,7 @@ export const VagasRepo = {
       orderBy: { createdAt: 'desc' },
       include: {
         empresa: { select: { id: true, nome: true, email: true, cnpj: true } },
+        area: { select: { id: true, nome: true } },
         descricaoVaga: true,
         requisitos: true,
         beneficios: true,
@@ -56,7 +57,7 @@ export const VagasRepo = {
     tipoContratacao?: string;
     modeloTrabalho?: string;
     localizacao?: string;
-    area?: string;
+    areaId?: number;
     status?: string;
     escolaridade?: string;
     cidade?: string;
@@ -75,7 +76,7 @@ export const VagasRepo = {
         tipoContratacao: vagaData.tipoContratacao,
         modeloTrabalho: vagaData.modeloTrabalho,
         localizacao: vagaData.localizacao,
-        area: vagaData.area,
+        areaId: vagaData.areaId,
         status: vagaData.status || 'ativa',
         escolaridade: vagaData.escolaridade,
         cidade: vagaData.cidade,
@@ -93,7 +94,7 @@ export const VagasRepo = {
 
   async update(id: number, vagaData: any) {
     const updateData: any = {};
-    const simpleFields = ['titulo', 'tipoContratacao', 'modeloTrabalho', 'localizacao', 'area', 'status', 'escolaridade', 'cidade', 'estado'];
+    const simpleFields = ['titulo', 'tipoContratacao', 'modeloTrabalho', 'localizacao', 'areaId', 'status', 'escolaridade', 'cidade', 'estado'];
     for (const f of simpleFields) if (vagaData[f] !== undefined) updateData[f] = vagaData[f];
     return (prisma as any).vaga.update({
       where: { id },

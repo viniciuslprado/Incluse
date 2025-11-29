@@ -1,7 +1,24 @@
 import { Request, Response } from "express";
 import { CurriculoService } from "../../services/candidato/curriculo.service";
 
+// GET /candidatos/:id/curriculo/download - Download do PDF do currículo
+
 export const CurriculoController = {
+  async downloadPdf(req: Request, res: Response) {
+    try {
+      const candidatoId = Number(req.params.id);
+      const curriculo = await CurriculoService.obterCurriculo(candidatoId);
+      if (!curriculo || !curriculo.curriculo) {
+        return res.status(404).json({ error: 'Currículo PDF não encontrado' });
+      }
+      // Caminho absoluto do arquivo
+      const path = require('path');
+      const filePath = path.join(process.cwd(), 'pcd-backend', curriculo.curriculo.startsWith('/') ? curriculo.curriculo.substring(1) : curriculo.curriculo);
+      return res.download(filePath, `curriculo_${candidatoId}.pdf`);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message ?? 'Erro ao baixar currículo PDF' });
+    }
+  },
 
   async obter(req: Request, res: Response) {
     try {

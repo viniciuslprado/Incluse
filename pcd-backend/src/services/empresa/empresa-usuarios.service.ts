@@ -1,5 +1,5 @@
 import { EmpresaUsuariosRepo } from "../../repositories/empresa/empresa-usuarios.repo";
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 
 export const EmpresaUsuariosService = {
   async listarUsuarios(empresaId: number) {

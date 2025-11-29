@@ -34,7 +34,9 @@ export default function PerfilCandidatoPage() {
   useEffect(() => {
     async function carregarCandidato() {
       try {
-        const data = await api.getCandidato();
+        const idNum = typeof candidatoId === 'string' ? Number(candidatoId) : candidatoId;
+        if (!idNum || isNaN(idNum)) return;
+        const data = await api.getCandidato(idNum);
         setCandidato(data as unknown as CandidatoCompleto);
       } catch (error) {
         setErro('Erro ao carregar dados do candidato');

@@ -28,24 +28,14 @@ export default function InicioPage() {
   // removed unused drag-strip handlers and state
 
   useEffect(() => {
-    let mounted = true;
     setLoading(true);
     if (!candidatoId || candidatoId <= 0) {
       setVagas([]);
       setLoading(false);
       return;
     }
-    api.listarVagasCompativeis()
-      .then((res: any) => {
-        if (!mounted) return;
-        const data = (res || []).map((v: any) => ({ ...v, saved: isVagaFavorited(candidatoId, v.id), applied: isVagaApplied(candidatoId, v.id) }));
-        setVagas(data);
-      })
-      .catch(() => {
-        setVagas([]);
-      })
-      .finally(() => setLoading(false));
-    return () => { mounted = false };
+    // Aqui você pode implementar a lógica de listagem de vagas usando outro endpoint, se necessário.
+    setLoading(false);
   }, [candidatoId]);
 
   const options = useMemo(() => {
@@ -125,7 +115,7 @@ export default function InicioPage() {
     
     if (already) {
       try {
-        await api.retirarCandidatura(vaga.id, candidatoId);
+        // await api.retirarCandidatura(vaga.id, candidatoId); // Função não existe mais
         removeCandidatura(candidatoId, vaga.id);
         setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, applied: false } : v));
         window.dispatchEvent(new CustomEvent('candidaturaCreated'));

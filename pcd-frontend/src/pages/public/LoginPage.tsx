@@ -37,11 +37,14 @@ export default function LoginPage() {
     try {
       // 1. Realiza login na API para obter dados do usuário
       const loginResponse = await api.login(identifier, senha, userType);
-      // loginResponse deve conter pelo menos id, nome, email, token, refreshToken
-      const { id, nome, email, token, refreshToken } = loginResponse;
-      // Salva tokens no localStorage para autenticação
+      // loginResponse agora retorna user: { id, nome, email }
+      const { user, token, refreshToken } = loginResponse;
+      const { id, nome, email } = user || {};
+      // Salva tokens e dados de usuário no localStorage para autenticação
       if (token) localStorage.setItem('token', token);
       if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+      if (userType) localStorage.setItem('userType', userType);
+      if (id) localStorage.setItem('userId', String(id));
       // Log para depuração
       console.log('[LoginPage] Token salvo no localStorage:', localStorage.getItem('token'));
       // Para admin, não exige id
