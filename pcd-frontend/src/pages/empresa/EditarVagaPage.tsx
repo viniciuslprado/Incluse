@@ -450,8 +450,8 @@ export default function EditarVagaPage() {
           </h2>
           
           <div className="space-y-3 mb-4">
-            {beneficios.map((benef, idx) => (
-              <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+            {beneficios.map((benef) => (
+              <div key={benef} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
                 <span className="flex-1 text-gray-900 dark:text-gray-100">{benef}</span>
                 {beneficiosOriginais.includes(benef) && (
                   <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
@@ -487,8 +487,8 @@ export default function EditarVagaPage() {
           </h2>
           
           <div className="space-y-3 mb-4">
-            {habilidadesTecnicas.map((hab, idx) => (
-              <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+            {habilidadesTecnicas.map((hab) => (
+              <div key={hab} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
                 <span className="flex-1 text-gray-900 dark:text-gray-100">{hab}</span>
                 {habilidadesOriginais.includes(hab) && (
                   <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
@@ -524,8 +524,8 @@ export default function EditarVagaPage() {
           </h2>
           
           <div className="space-y-3 mb-4">
-            {competencias.map((comp, idx) => (
-              <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+            {competencias.map((comp) => (
+              <div key={comp} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
                 <span className="flex-1 text-gray-900 dark:text-gray-100">{comp}</span>
                 {competenciasOriginais.includes(comp) && (
                   <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">

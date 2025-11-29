@@ -287,7 +287,7 @@ export default function HomePage() {
             <div className="hidden md:grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {vagas.slice(0, 6).map((vaga) => (
                 <VagaCard 
-                  key={vaga.id} 
+                  key={`vaga-${vaga.id}-empresa-${vaga.empresa?.id ?? ''}`}
                   vaga={vaga} 
                   onClick={() => setModalVagaId(vaga.id)}
                 />
@@ -297,7 +297,7 @@ export default function HomePage() {
             <div className="md:hidden">
               <ResponsiveCardList
                 items={vagas.slice(0, 6).map((vaga) => ({
-                  id: vaga.id,
+                  id: `vaga-${vaga.id}-empresa-${vaga.empresa?.id ?? ''}`,
                   title: vaga.titulo || vaga.descricao,
                   subtitle: vaga.empresa?.nome,
                   meta: [

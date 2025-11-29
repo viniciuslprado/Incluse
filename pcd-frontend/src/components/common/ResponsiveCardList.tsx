@@ -54,8 +54,11 @@ export default function ResponsiveCardList({ items, emptyMessage = 'Nenhum item 
 
   return (
     <div className={`divide-y divide-gray-200 dark:divide-gray-700 ${className ?? ''}`}>
-      {items.map((item) => (
-        <div key={item.id} className="p-4">
+      {items.map((item, idx) => {
+        // Gera uma chave única mesmo se ids se repetirem
+        const uniqueKey = `${typeof item.id}-${String(item.id)}-${idx}`;
+        return (
+          <div key={uniqueKey} className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{item.title}</h3>
@@ -77,8 +80,8 @@ export default function ResponsiveCardList({ items, emptyMessage = 'Nenhum item 
 
           {item.meta && item.meta.length > 0 && (
             <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-              {item.meta.map((m, idx) => (
-                <div key={idx}>
+              {item.meta.map((m, metaIdx) => (
+                <div key={m.label + '-' + String(m.value) + '-' + metaIdx}>
                   <div className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     {m.icon}{m.label}
                   </div>
@@ -91,6 +94,7 @@ export default function ResponsiveCardList({ items, emptyMessage = 'Nenhum item 
           {item.actions && item.actions.length > 0 && (
             <div className="mt-4 grid grid-cols-2 gap-2">
               {item.actions.map((a, idx) => {
+                const actionKey = a.label + '-' + idx;
                 const btn = (
                   <button
                     type="button"
@@ -102,17 +106,18 @@ export default function ResponsiveCardList({ items, emptyMessage = 'Nenhum item 
                 );
                 if (a.to) {
                   return (
-                    <Link key={idx} to={a.to} className={actionClasses(a.variant)}>
+                    <Link key={actionKey + '-' + idx} to={a.to} className={actionClasses(a.variant)}>
                       {a.label}
                     </Link>
                   );
                 }
-                return <div key={idx} className={a.full ? 'col-span-2' : ''}>{btn}</div>;
+                return <div key={actionKey + '-' + idx} className={a.full ? 'col-span-2' : ''}>{btn}</div>;
               })}
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -19,7 +19,6 @@ import BarreirasPage from "./pages/admin/BarreirasPage";
 import TiposPage from "./pages/admin/TiposPage";
 import SubtiposPage from "./pages/admin/SubtiposPage";
 import AcessibilidadesPage from "./pages/admin/AcessibilidadesPage";
-import VagaPage from "./pages/empresa/VagaPage";
 import NovaVagaPage from "./pages/empresa/NovaVagaPage";
 import PerfilCandidatoPage from "./pages/empresa/PerfilCandidatoPage";
 import VagaDetalhePage from "./pages/empresa/VagaDetalhePage";
@@ -39,7 +38,6 @@ import ConfiguracoesEmpresaPage from "./pages/empresa/ConfiguracoesPage";
 import EditarVagaPage from "./pages/empresa/EditarVagaPage";
 
 import InicioPage from "./pages/Candidato/InicioPage";
-import CandidatoVagasPage from "./pages/Candidato/CandidatoVagasPage";
 import MinhasCandidaturasPage from "./pages/Candidato/MinhasCandidaturasPage";
 import VagasFavoritasPage from "./pages/Candidato/VagasFavoritasPage";
 import EmpresasPage from "./pages/Candidato/EmpresasPage";
@@ -55,6 +53,8 @@ import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { ToastProvider } from "./components/common/Toast";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import FaqFloating from "./components/FaqFloating";
+
+import CandidatoVagasPage from "./pages/Candidato/CandidatoVagasPage";
 
 
 import Navbar from "./components/Navbar";
@@ -75,8 +75,9 @@ function AppRoutes() {
       {!isAdminRoute && <Navbar />}
       <FaqFloating />
       <FaqModal />
-      <Routes>
-              <Route path="/" element={<HomePage />} />
+            <Routes>
+              <Route path="/inicio" element={<HomePage />} />
+              <Route path="/" element={<Navigate to="/inicio" replace />} />
               <Route path="/vagas" element={<VagasPage />} />
               <Route path="/vagas/:vagaId" element={<VagaPublicaPage />} />
               <Route path="/empresa" element={<EmpresasParceirasPage />} />

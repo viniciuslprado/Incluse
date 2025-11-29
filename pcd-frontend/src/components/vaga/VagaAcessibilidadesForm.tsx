@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+
+import React, { useState, useCallback } from "react";
 import { api } from "../../lib/api";
 import type { Acessibilidade } from "../../types";
 
@@ -7,59 +8,73 @@ type Props = {
   subtiposSelecionados?: number[];
 };
 
-export default function VagaAcessibilidadesForm({ vagaId, subtiposSelecionados }: Props) {
+export default function VagaAcessibilidadesForm({ vagaId }: Props) {
   const [acessibilidades, setAcessibilidades] = useState<Acessibilidade[]>([]);
   const [selecionadas, setSelecionadas] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
 
+
   const carregarAcessibilidades = useCallback(async () => {
+    setLoading(true);
+    setErro(null);
     try {
-      if (subtiposSelecionados && subtiposSelecionados.length > 0) {
-        // buscar detalhes de cada subtipo e extrair acessibilidades
-        const sets = await Promise.all(subtiposSelecionados.map((id) => api.obterSubtipo(id)));
-        type SubtipoDeep = {
-          barreiras?: Array<{
-            barreira?: {
-              acessibilidades?: Array<{
-                acessibilidade?: Acessibilidade | null;
-              }> | null;
-            } | null;
-          }> | null;
-        };
-        const map = new Map<number, Acessibilidade>();
-        for (const sRaw of sets) {
-          const s = sRaw as unknown as SubtipoDeep;
-          const barreiras = s?.barreiras ?? [];
-          for (const sb of barreiras) {
-            const b = sb?.barreira;
-            const acessList = b?.acessibilidades ?? [];
-            for (const ba of acessList) {
-              const a = ba?.acessibilidade;
-              if (a && !map.has(a.id)) map.set(a.id, a);
-            }
-          }
-        }
-        setAcessibilidades(Array.from(map.values()));
-      } else {
-        const data = await api.listarAcessibilidades();
-        setAcessibilidades(data);
-      }
-    try {
-      setErro('Função api.obterSubtipo não implementada. Implemente ou ajuste a busca de acessibilidades.');
+      const data = await api.listarAcessibilidades();
+      setAcessibilidades(data);
+    } catch (e: any) {
+      setErro("Erro ao carregar acessibilidades");
       setAcessibilidades([]);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  React.useEffect(() => {
+    carregarAcessibilidades();
+  }, [carregarAcessibilidades]);
+
+  function toggleSelecionada(id: number) {
+    setSelecionadas((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
+    );
+  }
+
+  async function handleSalvar() {
+    setLoading(true);
+    setErro(null);
+    setOk(false);
+    try {
+      await api.vincularAcessibilidadesAVaga(vagaId, selecionadas);
+      setOk(true);
+    } catch (e: any) {
+      setErro("Erro ao salvar acessibilidades");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Remove duplicados por id
+  const acessibilidadesUnicas = acessibilidades.filter(
+    (item, idx, arr) => arr.findIndex(a => a.id === item.id) === idx
+  );
+  // Debug: mostrar ids únicos para garantir que não há duplicados
+  console.log('Acessibilidades únicas ids:', acessibilidadesUnicas.map((a: Acessibilidade) => a.id));
+
+  return (
     <div className="card space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Definir Acessibilidades da Vaga</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Definir Acessibilidades da Vaga
+        </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Selecione as acessibilidades que sua empresa oferece para esta vaga. Isso aumenta a atratividade para candidatos PCD.
+          Selecione as acessibilidades que sua empresa oferece para esta vaga.
+          Isso aumenta a atratividade para candidatos PCD.
         </p>
         {selecionadas.length > 0 && (
-          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{selecionadas.length} acessibilidade(s) selecionada(s)</p>
+          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+            {selecionadas.length} acessibilidade(s) selecionada(s)
+          </p>
         )}
       </div>
 
@@ -71,13 +86,16 @@ export default function VagaAcessibilidadesForm({ vagaId, subtiposSelecionados }
 
       {ok && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-3">
-          <p className="text-green-600 dark:text-green-400 text-sm">✅ Acessibilidades vinculadas com sucesso!</p>
+          <p className="text-green-600 dark:text-green-400 text-sm">
+            ✅ Acessibilidades vinculadas com sucesso!
+          </p>
         </div>
       )}
 
       <div className="max-h-60 overflow-y-auto">
         <div className="grid grid-cols-1 gap-2">
-          {acessibilidades.map((acessibilidade) => (
+
+          {acessibilidadesUnicas.map((acessibilidade) => (
             <label
               key={acessibilidade.id}
               className="flex items-start space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -89,13 +107,17 @@ export default function VagaAcessibilidadesForm({ vagaId, subtiposSelecionados }
                 className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <div>
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{acessibilidade.descricao}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {acessibilidade.descricao}
+                </span>
               </div>
             </label>
           ))}
 
           {acessibilidades.length === 0 && (
-            <p className="text-gray-500 text-center py-4">Nenhuma acessibilidade cadastrada</p>
+            <p className="text-gray-500 text-center py-4">
+              Nenhuma acessibilidade cadastrada
+            </p>
           )}
         </div>
       </div>
