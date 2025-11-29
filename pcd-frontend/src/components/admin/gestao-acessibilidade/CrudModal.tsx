@@ -1,6 +1,6 @@
 import React from "react";
-import Modal from "../../ui/Modal";
-import Button from "../../ui/Button";
+import Modal from "../../common/Modal";
+import Button from "../../common/Button";
 
 interface CrudModalProps {
   open: boolean;

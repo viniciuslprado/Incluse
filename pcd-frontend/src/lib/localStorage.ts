@@ -110,11 +110,11 @@ export function getSavedVagasAsVagas(candidatoId: number): Vaga[] {
     id: Number(s.id),
     titulo: s.titulo ?? undefined,
     descricao: s.titulo ?? '',
-    escolaridade: '',
+    escolaridade: undefined,
     cidade: undefined,
     estado: undefined,
     empresaId: 0,
-    empresa: { id: 0, nome: s.empresaNome ?? '—' },
+    empresa: { id: 0, nome: s.empresaNome ?? '' },
     createdAt: s.savedAt,
     updatedAt: s.savedAt,
   }));

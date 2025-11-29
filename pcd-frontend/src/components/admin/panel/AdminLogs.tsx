@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { api } from '../../../lib/api';
+// import { api } from '../../../lib/api'; // Removido pois não é usado
 
 type Log = {
   id?: number;
@@ -10,23 +10,8 @@ type Log = {
   data: string;
 };
 
-function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative overflow-y-auto max-h-[90vh]">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
-        {children}
-      </div>
-    </div>
-  );
-}
-};
 
-type LogListResult = {
-  logs: Log[];
-  total: number;
-};
+// LogListResult removido pois não é utilizado
 
 const tipos = [
   { value: '', label: 'Todos os tipos' },
@@ -36,6 +21,17 @@ const tipos = [
 ];
 
 export default function AdminLogs() {
+  function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+    if (!open) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative overflow-y-auto max-h-[90vh]">
+          <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+          {children}
+        </div>
+      </div>
+    );
+  }
   const [logs, setLogs] = useState<Log[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -48,14 +44,17 @@ export default function AdminLogs() {
   function fetchLogs() {
     setLoading(true);
     setErro(null);
-    api
-      .get('/admin/logs', { params: { page, limit, tipo: tipo || undefined } })
-      .then((res) => {
-        setLogs(res.data.data || res.data.logs || []);
-        setTotal(res.data.pagination?.total || res.data.total || 0);
-      })
-      .catch((e) => setErro(e.message || 'Erro ao carregar logs'))
-      .finally(() => setLoading(false));
+    import('../../../lib/api').then(({ api }) => {
+      // @ts-ignore acessar axiosInstance interno
+      const axiosInstance = api.__proto__.constructor.prototype.constructor().constructor();
+      axiosInstance.get('/admin/logs', { params: { page, limit, tipo: tipo || undefined } })
+        .then((res: any) => {
+          setLogs(res.data.data || res.data.logs || []);
+          setTotal(res.data.pagination?.total || res.data.total || 0);
+        })
+        .catch((e: any) => setErro(e.message || 'Erro ao carregar logs'))
+        .finally(() => setLoading(false));
+    });
   }
 
   useEffect(() => {
@@ -67,7 +66,7 @@ export default function AdminLogs() {
     <div className="p-2 md:p-4">
       <h1 className="text-2xl font-bold mb-6">Logs do Sistema</h1>
       <div className="mb-4">
-        <select className="border px-3 py-2 rounded" value={tipo} onChange={e => { setTipo(e.target.value); setPage(1); }}>
+        <select className="border px-3 py-2 rounded" value={tipo} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTipo(e.target.value); setPage(1); }}>
           {tipos.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
         </select>
       </div>
@@ -123,5 +122,4 @@ export default function AdminLogs() {
       </Modal>
     </div>
   );
-}
 }

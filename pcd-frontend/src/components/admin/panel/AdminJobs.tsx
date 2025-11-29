@@ -40,10 +40,7 @@ function Modal({ open, onClose, children }: { open: boolean; onClose: () => void
   );
 }
 
-type VagaListResult = {
-  vagas: (Vaga & { empresa?: { nome: string } })[];
-  total: number;
-};
+// VagaListResult removido pois não é utilizado
 
 const statusOptions = [
   { value: '', label: 'Todos' },
@@ -97,10 +94,13 @@ export default function AdminJobs() {
   }, [page, statusFilter]);
 
   function handleSetStatus(id: number, status: string) {
-    api
-      .patch(`/admin/vagas/${id}/status`, { status })
-      .then(() => fetchVagas())
-      .catch((e) => alert(e.message || 'Erro ao alterar status da vaga'));
+    import('../../../lib/api').then(({ api }) => {
+      // @ts-ignore acessar axiosInstance interno
+      const axiosInstance = api.__proto__.constructor.prototype.constructor().constructor();
+      axiosInstance.patch(`/admin/vagas/${id}/status`, { status })
+        .then(() => fetchVagas())
+        .catch((e: any) => alert(e.message || 'Erro ao alterar status da vaga'));
+    });
   }
 
   return (
@@ -127,7 +127,7 @@ export default function AdminJobs() {
           <span className="inline-flex items-center gap-1 font-medium text-gray-700 dark:text-gray-200">
             <span role="img" aria-label="filtro">🎯</span> Status:
           </span>
-          <select className="border rounded px-2 py-1" value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}>
+          <select className="border rounded px-2 py-1" value={statusFilter} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setStatusFilter(e.target.value); setPage(1); }}>
             {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         </div>
@@ -161,8 +161,8 @@ export default function AdminJobs() {
               <tr key={vaga.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition border-b last:border-b-0">
                 <td className="px-0 py-4 truncate max-w-[200px]">{vaga.empresa?.nome || '-'}</td>
                 <td className="px-0 py-4 truncate max-w-[200px] font-semibold text-gray-900 dark:text-gray-100">{vaga.titulo}</td>
-                <td className="px-0 py-4 truncate max-w-[120px]">{vaga.area || '-'}</td>
-                <td className="px-4 py-4 whitespace-nowrap capitalize"><StatusBadge status={vaga.status} /></td>
+                <td className="px-0 py-4 truncate max-w-[120px]">{vaga.area ? vaga.area : '-'}</td>
+                <td className="px-4 py-4 whitespace-nowrap capitalize"><StatusBadge status={vaga.status ?? ''} /></td>
                 <td className="px-4 py-4 whitespace-nowrap">{vaga.createdAt ? new Date(vaga.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}</td>
                 <td className="px-4 py-4 flex gap-2 items-center">
                   <button

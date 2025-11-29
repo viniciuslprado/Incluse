@@ -1,5 +1,5 @@
 // Navbar is rendered globally by `App.tsx`
-import Footer from '../components/Footer';
+import Footer from '../../components/Footer';
 
 export default function QuemSomosPage() {
   return (

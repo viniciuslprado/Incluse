@@ -22,9 +22,9 @@ export default function AcessibilidadeList({ acessibilidades }: Props) {
         {acessibilidades.map((acessibilidade) => (
           <li key={acessibilidade.id} className="py-3 flex justify-between items-center">
             <div>
-              <p className="font-medium text-gray-900 dark:text-gray-100">
-                {acessibilidade.nome}
-              </p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">
+                  {acessibilidade.descricao}
+                </p>
               {acessibilidade.createdAt && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Criada em: {new Date(acessibilidade.createdAt).toLocaleDateString('pt-BR')}

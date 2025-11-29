@@ -6,8 +6,10 @@ import { verifyJWT, ensureRole } from "../../middleware/auth";
 const r = Router();
 
 // Rotas públicas (leitura)
-r.get("/:id", VagasController.detalhar);
-r.get("/empresa/:empresaId", VagasController.listarPorEmpresa); // Público - qualquer um pode ver vagas
+
+// Rota pública para listar todas as vagas
+r.get("/", VagasController.listarPublicas);
+
 
 // Rotas protegidas - EMPRESA
 r.post("/", verifyJWT, ensureRole('empresa'), VagasController.criar);

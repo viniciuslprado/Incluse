@@ -1,17 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/public/HomePage";
 import VagasPage from "./pages/VagasPage";
-import VagaPublicaPage from "./pages/VagaPublicaPage";
-import LoginPage from "./pages/LoginPage";
+import VagaPublicaPage from "./pages/public/VagaPublicaPage";
+import LoginPage from "./pages/public/LoginPage";
 import CadastroPage from "./pages/Cadastro/CadastroPage";
 import CadastroCandidatoPage from "./pages/Cadastro/CadastroCandidatoPage";
 import CadastroEmpresaPage from "./pages/Cadastro/CadastroEmpresaPage";
 import CadastroEmpresaMinima from "./pages/Cadastro/CadastroEmpresaMinima";
-import RecoverPasswordPage from "./pages/RecoverPasswordPage";
-import FAQPage from "./pages/FAQPage";
+import RecoverPasswordPage from "./pages/public/RecoverPasswordPage";
+import FAQPage from "./pages/public/FAQPage";
 import FaqModal from "./components/FaqModal";
-import PoliticaPrivacidadePage from "./pages/PoliticaPrivacidadePage";
-import QuemSomosPage from "./pages/QuemSomosPage";
+import PoliticaPrivacidadePage from "./pages/public/PoliticaPrivacidadePage";
+import QuemSomosPage from "./pages/public/QuemSomosPage";
 import AcessibilidadePage from "./pages/AcessibilidadePage";
 import EmpresasParceirasPage from "./pages/empresa/EmpresasParceirasPage";
 import AdminPage from "./pages/admin/AdminPage";
@@ -52,9 +52,8 @@ import MeuCurriculoPage from "./pages/Candidato/MeuCurriculoPage";
 import CurriculoEditorPage from "./pages/Candidato/CurriculoEditorPage";
 import CurriculoBasicoEditorPage from "./pages/Candidato/CurriculoBasicoEditorPage";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
-import { ToastProvider } from "./components/ui/Toast";
+import { ToastProvider } from "./components/common/Toast";
 import AccessibilityMenu from "./components/AccessibilityMenu";
-import SkipLinks from "./components/SkipLinks";
 import FaqFloating from "./components/FaqFloating";
 
 
@@ -80,7 +79,7 @@ function AppRoutes() {
               <Route path="/" element={<HomePage />} />
               <Route path="/vagas" element={<VagasPage />} />
               <Route path="/vagas/:vagaId" element={<VagaPublicaPage />} />
-              <Route path="/empresas" element={<EmpresasParceirasPage />} />
+              <Route path="/empresa" element={<EmpresasParceirasPage />} />
               <Route path="/quem-somos" element={<QuemSomosPage />} />
               <Route path="/acessibilidade" element={<AcessibilidadePage />} />
               <Route path="/politica-privacidade" element={<PoliticaPrivacidadePage />} />
@@ -166,7 +165,6 @@ export default function App() {
     <AccessibilityProvider>
       <ToastProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
-          <SkipLinks />
           <AccessibilityMenu />
           <BrowserRouter>
             <AppRoutes />

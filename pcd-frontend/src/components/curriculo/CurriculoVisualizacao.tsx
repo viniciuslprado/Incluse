@@ -23,7 +23,7 @@ export default function CurriculoVisualizacao({ candidatoId, showPdfStatus, pdfF
       setLoading(true);
       try {
         // Carrega dados do candidato (nome, email, cidade, estado, telefone)
-        const cand = await api.getCandidato(candidatoId);
+        const cand = await api.getCandidato();
         if (!mounted) return;
         setCandidato(cand);
         // Carrega currículo do localStorage

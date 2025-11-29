@@ -16,7 +16,7 @@ export default function EmpresasParceirasPage() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [busca, setBusca] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+  const [, setErro] = useState<string | null>(null);
 
   // Carregar empresas reais do banco de dados
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function EmpresasParceirasPage() {
         const empresasComVagas = await Promise.all(
           empresasData.map(async (empresa: Empresa) => {
             try {
-              const vagas = await api.listarVagas(empresa.id);
+              const vagas = await api.listarVagas();
               return {
                 ...empresa,
                 vagasAtivas: Array.isArray(vagas) ? vagas.filter((v: any) => v.status === 'ativa').length : 0

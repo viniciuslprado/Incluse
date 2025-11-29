@@ -34,7 +34,7 @@ export default function PerfilPage() {
     const idStr = window.location.pathname.split('/')[2];
     const id = Number(idStr);
     if (!id) {
-      if (import.meta.env.DEV) console.error('PerfilPage: ID inválido');
+      if ((import.meta as any).env?.DEV) console.error('PerfilPage: ID inválido');
       return;
     }
     let mounted = true;
@@ -63,7 +63,7 @@ export default function PerfilPage() {
         
         let c: any = null;
         try {
-          c = await api.getCandidato(id);
+          c = await api.getCandidato();
         } catch (err: any) {
           // Se candidato não existe no banco, redirecionar
           if (err?.status === 404) {
@@ -153,7 +153,7 @@ export default function PerfilPage() {
             // Caso não haja subtipos vinculados ainda (perfil recém-criado), carrega lista completa para seleção
             if (!backendSubtipos.length) {
               try {
-                const allSubs = await api.listarSubtipos();
+                const allSubs = await api.listarSubtiposCandidato(id);
                 setCandidateSubtipos(allSubs);
                 console.log('PerfilPage: Sem subtipos vinculados, carregando todos para seleção:', allSubs.length);
               } catch (errAll) {
@@ -305,7 +305,7 @@ export default function PerfilPage() {
       });
       
       // Salvar dados no backend
-      const resultado = await api.atualizarCandidato(id, {
+      const resultado = await api.atualizarCandidato({
         nome: form.nome,
         email: form.email,
         telefone: form.telefone,

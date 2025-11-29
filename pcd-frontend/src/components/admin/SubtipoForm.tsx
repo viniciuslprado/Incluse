@@ -29,7 +29,7 @@ export default function SubtipoForm({ pedro }: Props) {
 
     setLoading(true);
     try {
-      await api.criarSubtipo(trimmed, Number(tipoId));
+      await api.criarSubtipo(Number(tipoId), trimmed);
       setNome("");
       setTipoId("");
       pedro(); // chama a função do pai - carregar()

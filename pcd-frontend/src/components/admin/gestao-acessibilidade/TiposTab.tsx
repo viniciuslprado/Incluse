@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { api } from '../../../lib/api';
 import type { TipoDeficiencia } from '../../../types';
 import CrudModal from './CrudModal';
-import ConfirmModal from '../../ui/ConfirmModal';
-import Button from '../../ui/Button';
-import { useToast } from '../../ui/Toast';
+import ConfirmModal from '../../common/ConfirmModal';
+import Button from '../../common/Button';
+import { useToast } from '../../common/Toast';
 
 export default function TiposTab() {
   const [tipos, setTipos] = useState<TipoDeficiencia[]>([]);

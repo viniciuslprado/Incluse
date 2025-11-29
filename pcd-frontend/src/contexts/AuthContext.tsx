@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ) {
     try {
       if (tipo === 'candidato') {
-        const candidato = await api.getCandidato(id);
+        const candidato = await api.getCandidato();
         setUser({
           id: candidato.id,
           nome: candidato.nome,

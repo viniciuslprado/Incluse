@@ -126,4 +126,3 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 }
 
 export { AccessibilityContext };
-export { AccessibilityContext };

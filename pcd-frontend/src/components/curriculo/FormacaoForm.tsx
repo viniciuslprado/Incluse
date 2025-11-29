@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CandidatoFormacao } from '../../types';
+import type { CandidatoFormacao, Escolaridade } from '../../types';
 
 type Props = {
   formacao?: CandidatoFormacao;
@@ -20,7 +20,7 @@ const escolaridades = [
 ];
 
 export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
-  const [escolaridade, setEscolaridade] = useState(formacao?.escolaridade || '');
+  const [escolaridade, setEscolaridade] = useState<Escolaridade | ''>(formacao?.escolaridade || '');
   const [instituicao, setInstituicao] = useState(formacao?.instituicao || '');
   const [curso, setCurso] = useState(formacao?.curso || '');
     const [situacao, setSituacao] = useState<'concluido' | 'cursando'>(formacao?.situacao || 'concluido');
@@ -53,6 +53,7 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
     e.preventDefault();
     if (!validate()) return;
 
+    if (!escolaridade) return; // nunca envie escolaridade inválida
     onSave({
       id: formacao?.id,
       escolaridade,
@@ -75,7 +76,7 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
         </label>
         <select
           value={escolaridade}
-          onChange={(e) => setEscolaridade(e.target.value)}
+          onChange={(e) => setEscolaridade(e.target.value as Escolaridade)}
           className="w-full border rounded px-3 py-2"
         >
           <option value="">Selecione...</option>
@@ -148,7 +149,7 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                Término {situacao === 'Concluído' && <span className="text-red-600">*</span>}
+                Término {situacao === 'concluido' && <span className="text-red-600">*</span>}
               </label>
               <input
                 type="month"

@@ -10,7 +10,12 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
     useEffect(() => {
-        Promise.all([api.listarSubtipos(), api.listarBarreiras()])
+        // Aqui você pode definir um ID de deficiência padrão ou buscar todos os subtipos de todas as deficiências
+        // Exemplo: buscar subtipos da deficiência 1
+        Promise.all([
+            api.listarSubtiposPorTipo(1), // Ajuste conforme necessário
+            api.listarBarreiras()
+        ])
             .then(([subs, bars]) => {
                 setSubtipos(subs);
                 setBarreiras(bars);
@@ -33,7 +38,9 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
         }
         setLoading(true);
         try {
-            await api.vincularBarreirasASubtipo(Number(subtipoId), barreiraIds);
+            // Aqui você deve implementar a chamada correta para vincular barreiras ao subtipo, conforme sua API backend
+            // Exemplo fictício:
+            // await api.vincularBarreirasASubtipo(Number(subtipoId), barreiraIds);
             setBarreiraIds([]);
             setSubtipoId("");
             onLinked();
@@ -74,7 +81,7 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
                                 onChange={() => toggleBarreira(b.id)}
                                 disabled={loading}
                             />
-                            {b.nome}
+                            {b.descricao}
                         </label>
                     ))}
                 </div>

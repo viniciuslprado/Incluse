@@ -39,7 +39,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function carregarDados() {
       try {
-        const vagasData = await api.listarVagas(empresaId);
+        const vagasData = await api.listarVagas();
         
         // Calcular estatísticas
         const vagasAtivas = vagasData.filter((v: any) => v.isActive).length;

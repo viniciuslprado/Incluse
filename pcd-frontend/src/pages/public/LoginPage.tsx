@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { api } from '../lib/api';
-import { PasswordInput } from '../components/PasswordInput';
+import { api } from '../../lib/api';
+import PasswordInput from '../../components/PasswordInput';
 
 type UserType = 'candidato' | 'empresa' | 'admin';
 

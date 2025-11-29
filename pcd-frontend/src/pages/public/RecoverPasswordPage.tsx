@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { PasswordInput } from '../../components/PasswordInput';
+import PasswordInput from '../../components/PasswordInput';
 
 type Step = 'request' | 'reset';
 

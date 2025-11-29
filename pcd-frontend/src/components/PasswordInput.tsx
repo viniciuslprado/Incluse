@@ -15,7 +15,7 @@ interface PasswordInputProps {
   onTogglePassword?: () => void;
 }
 
-export function PasswordInput({
+export default function PasswordInput({
   id,
   name,
   value,

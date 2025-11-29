@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { FiArrowLeft, FiEdit, FiMapPin, FiBriefcase, FiDollarSign, FiBook, FiAward, FiHeart, FiEye } from "react-icons/fi";

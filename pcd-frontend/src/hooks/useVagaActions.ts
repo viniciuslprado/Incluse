@@ -11,7 +11,7 @@ export function useFavoritos(candidatoId: number) {
       return;
     }
 
-    api.listarVagasFavoritas(candidatoId)
+    api.listarVagasFavoritas()
       .then((vagas) => {
         setFavoritos(new Set(vagas.map(v => v.id)));
       })
@@ -39,9 +39,9 @@ export function useFavoritos(candidatoId: number) {
 
     try {
       if (wasFavorited) {
-        await api.desfavoritarVaga(candidatoId, vagaId);
+        await api.desfavoritarVaga(vagaId);
       } else {
-        await api.favoritarVaga(candidatoId, vagaId);
+        await api.favoritarVaga(vagaId);
       }
     } catch (error) {
       // Reverter em caso de erro

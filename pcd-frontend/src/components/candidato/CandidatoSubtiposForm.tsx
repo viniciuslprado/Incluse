@@ -21,8 +21,10 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
   const previousSelecionadosRef = useRef<string>('');
 
   useEffect(() => {
-    api.listarSubtipos().then(setSubtipos).catch((e) => setErro(e.message));
-  }, []);
+    api.listarSubtiposCandidato(candidatoId)
+      .then((r: SubtipoDeficiencia[]) => setSubtipos(r))
+      .catch((e: any) => setErro(e.message));
+  }, [candidatoId]);
 
   const visiveis = subtipos.filter((s) => s.nome.toLowerCase().includes(filtro.toLowerCase()));
 
@@ -95,7 +97,7 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
   }
 
   return (
-    <form className="card space-y-3" onSubmit={(e) => e.preventDefault()}>
+    <form className="card space-y-3" onSubmit={(e: React.FormEvent) => e.preventDefault()}>
       <div>
         <label className="label">Selecione seus subtipos</label>
         <div className="mb-2">
@@ -107,7 +109,7 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
               {erro ? (
                 <div>
                   <div>Não foi possível carregar os subtipos: {erro}</div>
-                  <button type="button" className="mt-2 px-2 py-1 border rounded text-sm" onClick={() => { setErro(null); setLoading(true); api.listarSubtipos().then((r) => { setSubtipos(r); setLoading(false); }).catch((e) => { setErro(e.message); setLoading(false); }); }}>
+                  <button type="button" className="mt-2 px-2 py-1 border rounded text-sm" onClick={() => { setErro(null); setLoading(true); api.listarSubtiposCandidato(candidatoId).then((r: SubtipoDeficiencia[]) => { setSubtipos(r); setLoading(false); }).catch((e: any) => { setErro(e.message); setLoading(false); }); }}>
                     Tentar novamente
                   </button>
                 </div>

@@ -1,9 +1,29 @@
-import { Request, Response } from "express";
-import { VagasService } from "../../services/common/vagas.service";
 
+import { Request, Response } from "express";
+import { VagasService } from "../../services/common/vagas.service.js";
 export const VagasController = {
+  // GET /vaga - Listar todas as vagas públicas
+  async listarPublicas(req: Request, res: Response) {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 100;
+      const filters: any = {};
+      if (req.query.status) filters.status = req.query.status;
+      if (req.query.area) filters.area = req.query.area;
+      if (req.query.modeloTrabalho) filters.modeloTrabalho = req.query.modeloTrabalho;
+      const result = await VagasService.listarVagas(undefined, filters, page, limit);
+      // Se for uma requisição pública (sem paginação explícita), retorna apenas o array
+      if (!req.query.page && !req.query.limit) {
+        res.json(result.data);
+      } else {
+        res.json(result);
+      }
+    } catch (e: any) {
+      res.status(500).json({ error: e.message ?? "Erro ao listar vagas" });
+    }
+  },
   // POST /vaga - Criar vaga completa
-  async criar(req: Request, res: Response) {
+    async criar(req: Request, res: Response) {
     try {
       const vaga = await VagasService.criarVaga(req.body);
       res.status(201).json(vaga);

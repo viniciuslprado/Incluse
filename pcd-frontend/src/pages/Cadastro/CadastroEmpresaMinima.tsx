@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/common/Toast';
-import { PasswordInput } from '../../components/PasswordInput';
+import PasswordInput from '../../components/PasswordInput';
 
 export default function CadastroEmpresaMinima() {
   const [nomeEmpresa, setNomeEmpresa] = useState('');

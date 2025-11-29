@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
-import { useToast } from '../ui/Toast';
 
 type AreaFormacao = {
   id: number;
@@ -17,7 +16,6 @@ export default function AreasFormacaoSelector({ candidatoId, onSave }: Props) {
   const [selectedAreas, setSelectedAreas] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { addToast } = useToast();
 
   useEffect(() => {
     async function carregarDados() {
@@ -30,7 +28,7 @@ export default function AreasFormacaoSelector({ candidatoId, onSave }: Props) {
         setAreas(todasAreas);
         setSelectedAreas(areasVinculadas.map((area: AreaFormacao) => area.id));
       } catch (err: any) {
-        addToast({ type: 'error', title: 'Erro', message: 'Erro ao carregar áreas de formação' });
+        alert('Erro ao carregar áreas de formação');
       } finally {
         setLoading(false);
       }
@@ -49,17 +47,17 @@ export default function AreasFormacaoSelector({ candidatoId, onSave }: Props) {
 
   const handleSave = async () => {
     if (selectedAreas.length === 0) {
-      addToast({ type: 'error', title: 'Erro', message: 'Selecione pelo menos uma área de formação' });
+      alert('Selecione pelo menos uma área de formação');
       return;
     }
 
     setSaving(true);
     try {
       await api.vincularAreasFormacaoCandidato(candidatoId, selectedAreas);
-      addToast({ type: 'success', title: 'Sucesso', message: 'Áreas de formação salvas!' });
+      alert('Áreas de formação salvas!');
       onSave?.();
     } catch (err: any) {
-      addToast({ type: 'error', title: 'Erro', message: 'Erro ao salvar áreas de formação' });
+      alert('Erro ao salvar áreas de formação');
     } finally {
       setSaving(false);
     }

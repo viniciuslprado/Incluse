@@ -29,7 +29,7 @@ export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave,
     const hasCompatibility = vaga?.matchPercent !== undefined || vaga?.compatibility !== undefined;
     if (!hasCompatibility && currentCandidatoId && vaga?.id) {
       setLoadingCompatibility(true);
-      api.calcularCompatibilidade(currentCandidatoId, vaga.id)
+      api.calcularCompatibilidade(vaga.id)
         .then(data => setCompatibilityData(data))
         .catch(err => console.error('Erro ao calcular compatibilidade:', err))
         .finally(() => setLoadingCompatibility(false));

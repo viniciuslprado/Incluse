@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { TipoComSubtipos, Barreira } from '../../types';
-import { PasswordInput } from '../../components/PasswordInput';
+import PasswordInput from '../../components/PasswordInput';
 import { formatPhone, unformatPhone } from '../../utils/formatters';
 
 export default function CadastroCandidatoPage() {

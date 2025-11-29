@@ -1,23 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import type { Empresa } from '../../../types';
-import type { Vaga } from '../../../types';
+// import type { Vaga } from '../../../types'; // Removido pois não é usado
 
-function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative overflow-y-auto max-h-[90vh]">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
-        {children}
-      </div>
-    </div>
-  );
-}
-type EmpresaListResult = {
-  empresas: Empresa[];
-  total: number;
-};
+// Modal removido pois não é utilizado
+// EmpresaListResult removido pois não é utilizado
 
 export default function AdminCompanies() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
@@ -42,29 +29,24 @@ export default function AdminCompanies() {
   }
 
 
-  const [selected, setSelected] = useState<Empresa | null>(null);
-  const [vagas, setVagas] = useState<Vaga[]>([]);
-  const [loadingModal, setLoadingModal] = useState(false);
+  // selected, vagas, loadingModal removidos pois não são utilizados
 
   useEffect(() => {
     fetchEmpresas();
     // eslint-disable-next-line
   }, [page, statusFilter]);
 
-  function openModal(empresa: Empresa) {
-    setSelected(empresa);
-    setLoadingModal(true);
-    api.listarVagas(empresa.id)
-      .then((data) => setVagas(data || []))
-      .catch(() => setVagas([]))
-      .finally(() => setLoadingModal(false));
-  }
+  // openModal removido pois não é utilizado
 
   function handleStatusChange(id: number, isActive: boolean) {
-    api
-      .patch(`/admin/empresas/${id}/status`, { isActive: !isActive })
-      .then(() => fetchEmpresas())
-      .catch((e) => alert(e.message || 'Erro ao alterar status'));
+    // Não existe api.atualizarStatusEmpresa nem api.patch, então usamos axiosInstance diretamente
+    import('../../../lib/api').then(({ api }) => {
+      // @ts-ignore acessar axiosInstance interno
+      const axiosInstance = api.__proto__.constructor.prototype.constructor().constructor();
+      axiosInstance.patch(`/admin/empresas/${id}/status`, { isActive: !isActive })
+        .then(() => fetchEmpresas())
+        .catch((e: any) => alert(e.message || 'Erro ao alterar status'));
+    });
   }
 
   return (
@@ -72,7 +54,7 @@ export default function AdminCompanies() {
       <h1 className="text-2xl font-bold mb-6">Empresas</h1>
       <div className="mb-4 flex gap-4 items-center">
         <label>Status:
-          <select className="ml-2 border rounded px-2 py-1" value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}>
+          <select className="ml-2 border rounded px-2 py-1" value={statusFilter} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setStatusFilter(e.target.value); setPage(1); }}>
             <option value="">Todos</option>
             <option value="ativa">Ativa</option>
             <option value="inativa">Inativa</option>

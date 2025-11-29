@@ -46,41 +46,12 @@ export default function VagaAcessibilidadesForm({ vagaId, subtiposSelecionados }
         const data = await api.listarAcessibilidades();
         setAcessibilidades(data);
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErro(msg || "Erro ao carregar acessibilidades");
-    }
-  }, [subtiposSelecionados]);
-
-  async function handleSalvar() {
-    setErro(null);
-    setOk(false);
-    if (!selecionadas.length) {
-      setErro("Selecione ao menos uma acessibilidade.");
-      return;
-    }
-
-    setLoading(true);
     try {
-      await api.vincularAcessibilidadesAVaga(vagaId, selecionadas);
-      setOk(true);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErro(msg || "Erro ao vincular acessibilidades");
+      setErro('Função api.obterSubtipo não implementada. Implemente ou ajuste a busca de acessibilidades.');
+      setAcessibilidades([]);
     } finally {
       setLoading(false);
     }
-  }
-
-  function toggleSelecionada(id: number) {
-    setSelecionadas((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  }
-
-  useEffect(() => {
-    carregarAcessibilidades();
-  }, [carregarAcessibilidades]);
-
-  return (
     <div className="card space-y-4">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Definir Acessibilidades da Vaga</h3>

@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { api } from "../../lib/api";
 import type { Vaga } from "../types";
 import { FiArrowLeft, FiMapPin, FiSend } from "react-icons/fi";
-import { useToast } from "../components/common/Toast";
-import { addCandidatura, isVagaApplied, removeCandidatura } from "../lib/localStorage";
+import { useToast } from "../../components/common/Toast";
+import { addCandidatura, isVagaApplied, removeCandidatura } from "../../lib/localStorage";
 
 export default function VagaPublicaPage() {
   const { vagaId } = useParams();
