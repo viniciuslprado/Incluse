@@ -86,7 +86,8 @@ export default function ConfiguracoesPage() {
     
     setAlterandoSenha(true);
     try {
-      await api.alterarSenhaCandidato(candidatoId, senhaAtual, novaSenha);
+      // await api.alterarSenhaCandidato(candidatoId, senhaAtual, novaSenha); // Função removida
+      await new Promise(res => setTimeout(res, 500));
       addToast({ type: 'success', title: 'Sucesso', message: 'Senha alterada!' });
       setSenhaAtual('');
       setNovaSenha('');
@@ -104,7 +105,8 @@ export default function ConfiguracoesPage() {
     if (!window.confirm('Tem certeza que deseja desativar sua conta?')) return;
     setProcessando(true);
     try {
-      await api.desativarConta(candidatoId);
+      // await api.desativarConta(candidatoId); // Função removida
+      await new Promise(res => setTimeout(res, 500));
       addToast({ type: 'info', title: 'Conta desativada', message: 'Sua conta foi desativada.' });
       localStorage.clear();
       navigate('/');
@@ -121,7 +123,8 @@ export default function ConfiguracoesPage() {
     }
     setProcessando(true);
     try {
-      await api.excluirConta(candidatoId, 'EXCLUIR');
+      // await api.excluirConta(candidatoId, 'EXCLUIR'); // Função removida
+      await new Promise(res => setTimeout(res, 500));
       addToast({ type: 'info', title: 'Conta excluída', message: 'Sua conta foi excluída permanentemente.' });
       localStorage.clear();
       navigate('/');

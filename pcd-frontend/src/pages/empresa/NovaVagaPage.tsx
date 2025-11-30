@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { FaRegFileAlt, FaGraduationCap, FaGift, FaClipboardList, FaWheelchair, FaRocket, FaLightbulb } from 'react-icons/fa';
+import { FaRegFileAlt, FaGraduationCap, FaGift, FaClipboardList, FaWheelchair, FaRocket } from 'react-icons/fa';
+import { FaEarListen, FaEye, FaBrain, FaPuzzlePiece, FaRegCommentDots } from 'react-icons/fa6';
 import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
 interface VagaData {
+    area?: string;
   // Seção 1 - Dados básicos
   titulo: string;
   tipo: string;
@@ -41,6 +43,8 @@ interface VagaData {
 }
 
 export default function NovaVagaPage() {
+  // Campo de busca para acessibilidades (deve ficar fora do renderStep)
+  const [buscaAcess, setBuscaAcess] = useState("");
   const { id } = useParams<{ id: string }>();
   const empresaId = Number(id);
   const navigate = useNavigate();
@@ -127,7 +131,7 @@ export default function NovaVagaPage() {
     { id: 7, name: 'Publicação', icon: <FaRocket /> }
   ];
 
-  const handleInputChange = (field: keyof VagaData, value: any) => {
+  const handleInputChange = (field: keyof VagaData, value: string | number | boolean | string[] | number[]) => {
     setVagaData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -159,39 +163,63 @@ export default function NovaVagaPage() {
   };
 
 
+  // Função de validação dos campos obrigatórios
+  const validarCamposObrigatorios = () => {
+    const obrigatorios = [
+      { campo: vagaData.titulo, nome: 'Título da Vaga' },
+      { campo: vagaData.tipo, nome: 'Tipo de Contrato' },
+      { campo: vagaData.modelo, nome: 'Modelo de Trabalho' },
+      { campo: vagaData.cidade, nome: 'Cidade' },
+      { campo: vagaData.estado, nome: 'Estado (UF)' },
+      { campo: vagaData.areaId, nome: 'Área da Vaga' },
+      { campo: vagaData.formacao, nome: 'Formação Mínima' },
+      { campo: vagaData.recursos, nome: 'Recursos de Acessibilidade' },
+    ];
+    const faltando = obrigatorios.filter(o => {
+      if (Array.isArray(o.campo)) {
+        return o.campo.length === 0;
+      }
+      return !o.campo;
+    });
+    if (faltando.length > 0) {
+      return faltando.map(f => f.nome);
+    }
+    return null;
+  };
+
   const handlePublish = async () => {
+    setErro(null);
+    const camposFaltando = validarCamposObrigatorios();
+    if (camposFaltando) {
+      setErro(`Preencha todos os campos obrigatórios: ${camposFaltando.join(', ')}`);
+      return;
+    }
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
       const userType = localStorage.getItem('userType');
       const userId = localStorage.getItem('userId');
-      
       if (!token) {
         setErro('Você precisa estar logado como empresa para criar vagas');
         setSaving(false);
         return;
       }
-      
       if (userType !== 'empresa') {
         setErro(`Apenas empresas podem criar vagas. Tipo atual: ${userType}`);
         setSaving(false);
         return;
       }
-      
       if (Number(userId) !== empresaId) {
         setErro(`ID da empresa não corresponde. URL: ${empresaId}, Usuário: ${userId}`);
         setSaving(false);
         return;
       }
-      
       const localizacao = vagaData.cidade && vagaData.estado 
         ? `${vagaData.cidade} - ${vagaData.estado}` 
         : undefined;
-      
       const jornada = vagaData.jornadaHoras 
         ? `${vagaData.jornadaHoras}h ${vagaData.jornadaPeriodo === 'semanal' ? 'semanais' : 'mensais'}`
         : undefined;
-      
       // Converter nomes de recursos em IDs
       const acessibilidadeIds = vagaData.recursos
         .map(recursoNome => {
@@ -199,7 +227,6 @@ export default function NovaVagaPage() {
           return acess?.id;
         })
         .filter((id): id is number => id !== undefined);
-      
       const payload = {
         empresaId,
         titulo: vagaData.titulo,
@@ -228,9 +255,7 @@ export default function NovaVagaPage() {
         processos: vagaData.etapas.map((etapa, idx) => ({ etapa, ordem: idx + 1 })),
         acessibilidadeIds
       };
-      
       console.log('📦 Payload da vaga:', payload);
-      
       await api.criarVagaCompleta(payload);
       navigate(`/empresa/${empresaId}/gestao-vagas`);
     } catch (error) {
@@ -649,23 +674,44 @@ export default function NovaVagaPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Liste os benefícios oferecidos pela empresa
             </p>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Adicionar Benefícios
+                Selecione os benefícios oferecidos:
               </label>
-              <div className="flex gap-2 mb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {['Vale alimentação', 'Vale transporte', 'Plano de saúde', 'Plano odontológico', 'Gympass', 'Home office', 'Horário flexível', 'Day off aniversário'].map((sug) => (
+                  <label key={sug} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={vagaData.beneficios.includes(sug)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          addToArray('beneficios', sug);
+                        } else {
+                          removeFromArray('beneficios', vagaData.beneficios.indexOf(sug));
+                        }
+                      }}
+                      className="accent-blue-600"
+                    />
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{sug}</span>
+                  </label>
+                ))}
+              </div>
+              {/* Campo para adicionar benefício personalizado */}
+              <div className="flex gap-2 mt-4">
                 <input
                   type="text"
                   id="beneficio-input"
-                  placeholder="Ex: Vale alimentação, Plano de saúde"
+                  placeholder="Outro benefício..."
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       const input = e.currentTarget;
-                      addToArray('beneficios', input.value);
-                      input.value = '';
+                      if (input.value && !vagaData.beneficios.includes(input.value)) {
+                        addToArray('beneficios', input.value);
+                        input.value = '';
+                      }
                     }
                   }}
                 />
@@ -673,50 +719,28 @@ export default function NovaVagaPage() {
                   type="button"
                   onClick={() => {
                     const input = document.getElementById('beneficio-input') as HTMLInputElement;
-                    addToArray('beneficios', input.value);
-                    input.value = '';
+                    if (input.value && !vagaData.beneficios.includes(input.value)) {
+                      addToArray('beneficios', input.value);
+                      input.value = '';
+                    }
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                   Adicionar
                 </button>
               </div>
-              <div className="space-y-2">
-                {vagaData.beneficios.map((ben, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+              {/* Lista de benefícios personalizados marcados */}
+              <div className="mt-2 space-y-1">
+                {vagaData.beneficios.filter(ben => !['Vale alimentação', 'Vale transporte', 'Plano de saúde', 'Plano odontológico', 'Gympass', 'Home office', 'Horário flexível', 'Day off aniversário'].includes(ben)).map((ben, idx) => (
+                  <div key={ben} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={true}
+                      onChange={() => removeFromArray('beneficios', vagaData.beneficios.indexOf(ben))}
+                      className="accent-blue-600"
+                    />
                     <span className="text-sm text-gray-900 dark:text-gray-100">{ben}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFromArray('beneficios', idx)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Remover
-                    </button>
                   </div>
-                ))}
-                {vagaData.beneficios.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">Nenhum benefício adicionado ainda</p>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2"><FaLightbulb className="inline mr-1" /> Sugestões de Benefícios</h4>
-              <div className="flex flex-wrap gap-2">
-                {['Vale alimentação', 'Vale transporte', 'Plano de saúde', 'Plano odontológico', 'Gympass', 'Home office', 'Horário flexível', 'Day off aniversário'].map((sug) => (
-                  <button
-                    key={sug}
-                    type="button"
-                    onClick={e => {
-                      if (!vagaData.beneficios.includes(sug)) {
-                        addToArray('beneficios', sug);
-                      }
-                      e.currentTarget.blur();
-                    }}
-                    className="px-3 py-1 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                  >
-                    + {sug}
-                  </button>
                 ))}
               </div>
             </div>
@@ -730,23 +754,44 @@ export default function NovaVagaPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Defina as etapas do processo seletivo
             </p>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Etapas do Processo
+                Selecione as etapas do processo:
               </label>
-              <div className="flex gap-2 mb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {['Análise de currículo', 'Entrevista com RH', 'Teste técnico', 'Entrevista com gestor', 'Dinâmica de grupo', 'Proposta'].map((sug) => (
+                  <label key={sug} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={vagaData.etapas.includes(sug)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          addToArray('etapas', sug);
+                        } else {
+                          removeFromArray('etapas', vagaData.etapas.indexOf(sug));
+                        }
+                      }}
+                      className="accent-blue-600"
+                    />
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{sug}</span>
+                  </label>
+                ))}
+              </div>
+              {/* Campo para adicionar etapa personalizada */}
+              <div className="flex gap-2 mt-4">
                 <input
                   type="text"
                   id="etapa-input"
-                  placeholder="Ex: Entrevista com RH"
+                  placeholder="Outra etapa..."
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       const input = e.currentTarget;
-                      addToArray('etapas', input.value);
-                      input.value = '';
+                      if (input.value && !vagaData.etapas.includes(input.value)) {
+                        addToArray('etapas', input.value);
+                        input.value = '';
+                      }
                     }
                   }}
                 />
@@ -754,121 +799,141 @@ export default function NovaVagaPage() {
                   type="button"
                   onClick={() => {
                     const input = document.getElementById('etapa-input') as HTMLInputElement;
-                    addToArray('etapas', input.value);
-                    input.value = '';
+                    if (input.value && !vagaData.etapas.includes(input.value)) {
+                      addToArray('etapas', input.value);
+                      input.value = '';
+                    }
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                   Adicionar
                 </button>
               </div>
-              <div className="space-y-2">
-                {vagaData.etapas.map((etapa, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                    <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
-                      {idx + 1}
-                    </span>
-                    <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">{etapa}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFromArray('etapas', idx)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2"><FaLightbulb className="inline mr-1" /> Etapas Comuns</h4>
-              <div className="flex flex-wrap gap-2">
-                {['Análise de currículo', 'Entrevista com RH', 'Teste técnico', 'Entrevista com gestor', 'Dinâmica de grupo', 'Proposta'].map((sug) => (
-                  <button
-                    key={sug}
-                    type="button"
-                    onClick={e => {
-                      if (!vagaData.etapas.includes(sug)) {
-                        addToArray('etapas', sug);
-                      }
-                      e.currentTarget.blur();
-                    }}
-                    className="px-3 py-1 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                  >
-                    + {sug}
-                  </button>
-                ))}
+              {/* Visualização das etapas selecionadas */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Etapas Selecionadas
+                </label>
+                {vagaData.etapas.length > 0 ? (
+                  <ol className="list-decimal ml-6 space-y-2">
+                    {vagaData.etapas.map((etapa, idx) => (
+                      <li key={etapa} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                        <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">{etapa}</span>
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            aria-label="Mover para cima"
+                            disabled={idx === 0}
+                            onClick={() => {
+                              if (idx > 0) {
+                                const novasEtapas = [...vagaData.etapas];
+                                [novasEtapas[idx - 1], novasEtapas[idx]] = [novasEtapas[idx], novasEtapas[idx - 1]];
+                                setVagaData({ ...vagaData, etapas: novasEtapas });
+                              }
+                            }}
+                            className={`text-blue-600 hover:text-blue-800 text-xs disabled:opacity-30 disabled:cursor-not-allowed`}
+                            style={{lineHeight: 1}}
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Mover para baixo"
+                            disabled={idx === vagaData.etapas.length - 1}
+                            onClick={() => {
+                              if (idx < vagaData.etapas.length - 1) {
+                                const novasEtapas = [...vagaData.etapas];
+                                [novasEtapas[idx + 1], novasEtapas[idx]] = [novasEtapas[idx], novasEtapas[idx + 1]];
+                                setVagaData({ ...vagaData, etapas: novasEtapas });
+                              }
+                            }}
+                            className={`text-blue-600 hover:text-blue-800 text-xs disabled:opacity-30 disabled:cursor-not-allowed`}
+                            style={{lineHeight: 1}}
+                          >
+                            ▼
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFromArray('etapas', idx)}
+                          className="text-red-600 hover:text-red-800 text-xs"
+                        >
+                          Remover
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">Nenhuma etapa selecionada</p>
+                )}
               </div>
             </div>
           </div>
         );
 
       case 6:
+        const acessFiltradas = acessibilidadesDisponiveis.filter(a => a.descricao.toLowerCase().includes(buscaAcess.toLowerCase()));
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-medium">Acessibilidade</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Informe sobre recursos de acessibilidade e adaptações disponíveis
             </p>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Recursos de Acessibilidade Disponíveis *
+                Selecione os recursos de acessibilidade disponíveis: *
               </label>
-              <div className="space-y-2">
-                {vagaData.recursos.map((rec, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                    <span className="text-sm text-gray-900 dark:text-gray-100"><FaWheelchair className="inline mr-1" />{rec}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFromArray('recursos', idx)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                ))}
-                {vagaData.recursos.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">Nenhum recurso adicionado ainda</p>
+              <div className="mb-3 relative">
+                <input
+                  type="text"
+                  value={buscaAcess}
+                  onChange={e => setBuscaAcess(e.target.value)}
+                  placeholder="Buscar acessibilidade..."
+                  className="pl-10 pr-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white"
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {acessFiltradas.map((a) => {
+                  let Icon = FaWheelchair;
+                  const desc = a.descricao.toLowerCase();
+                  if (desc.includes('auditiva')) Icon = FaEarListen;
+                  else if (desc.includes('visual')) Icon = FaEye;
+                  else if (desc.includes('intelectual')) Icon = FaBrain;
+                  else if (desc.includes('autismo') || desc.includes('tea')) Icon = FaPuzzlePiece;
+                  else if (desc.includes('fala')) Icon = FaRegCommentDots;
+                  else if (desc.includes('física') || desc.includes('motora')) Icon = FaWheelchair;
+                  return (
+                    <label key={a.id} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={vagaData.recursos.includes(a.descricao)}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            addToArray('recursos', a.descricao);
+                          } else {
+                            removeFromArray('recursos', vagaData.recursos.indexOf(a.descricao));
+                          }
+                        }}
+                        className="accent-blue-600"
+                      />
+                      <span className="text-sm text-gray-900 dark:text-gray-100 flex items-center"><Icon className="inline mr-1" />{a.descricao}</span>
+                    </label>
+                  );
+                })}
+                {acessFiltradas.length === 0 && (
+                  <span className="text-gray-500 text-sm col-span-2">Nenhum recurso encontrado</span>
                 )}
               </div>
-            </div>
-
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2"><FaWheelchair className="inline mr-1" /> Recursos Disponíveis</h4>
-              <div className="flex flex-wrap gap-2">
-                {acessibilidadesDisponiveis.map((acess) => (
-                  <button
-                    key={acess.id}
-                    type="button"
-                    onClick={e => {
-                      if (!vagaData.recursos.includes(acess.descricao)) {
-                        addToArray('recursos', acess.descricao);
-                      }
-                      e.currentTarget.blur();
-                    }}
-                    className="px-3 py-1 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                  >
-                    + {acess.descricao}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Adaptações e Observações
-              </label>
               <textarea
-                rows={4}
                 value={vagaData.adaptacoes}
                 onChange={(e) => handleInputChange('adaptacoes', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                className="mt-4 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
                 placeholder="Descreva quaisquer adaptações específicas que podem ser feitas para candidatos PCD..."
               />
             </div>
-
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
               <div className="flex">
                 <svg className="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">

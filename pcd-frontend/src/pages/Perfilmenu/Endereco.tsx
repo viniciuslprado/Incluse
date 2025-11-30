@@ -1,9 +1,10 @@
 
 import CepInput from '../../components/CepInput';
 
+import type { Empresa, Candidato } from '../../types';
 type Props = {
-  form: any;
-  handleInput: (key: string, value: any) => void;
+  form: Partial<Empresa & Candidato>;
+  handleInput: (key: keyof (Empresa & Candidato), value: string | boolean | number) => void;
 };
 
 export default function Endereco({ form, handleInput }: Props) {

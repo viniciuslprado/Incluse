@@ -1,3 +1,4 @@
+import CustomSelect from '../../components/common/CustomSelect';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
@@ -142,7 +143,7 @@ export default function VagasFavoritasPage() {
             <label className="text-gray-600 dark:text-gray-400 shrink-0">Ordenar:</label>
             <CustomSelect
               value={sort}
-              onChange={v => setSort(v as any)}
+              onChange={(v: string) => setSort(v as any)}
               options={[
                 { value: 'recent', label: 'Recentes' },
                 { value: 'titulo', label: 'Título' },

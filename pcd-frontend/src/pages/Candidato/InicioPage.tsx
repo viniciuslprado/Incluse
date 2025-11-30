@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import VagaCardCandidate from "../../components/candidato/VagaCard";
@@ -7,6 +8,7 @@ import CustomSelect from '../../components/common/CustomSelect';
 import { useToast } from "../../components/common/Toast";
 import { addCandidatura, isVagaApplied, isVagaFavorited, toggleFavoriteVaga, removeCandidatura } from '../../lib/localStorage';
 import PerfilIncompletoAlert from '../../components/candidato/PerfilIncompletoAlert';
+import { calcularCompatibilidade } from '../../lib/compatibilidade';
 
 type FilterState = {
   cidade?: string;
@@ -29,21 +31,61 @@ export default function InicioPage() {
   // removed unused drag-strip handlers and state
 
   useEffect(() => {
-    setLoading(true);
-    if (!candidatoId || candidatoId <= 0) {
-      setVagas([]);
-      setLoading(false);
-      return;
-    }
-    // Busca dados do candidato e vagas recomendadas em uma única chamada
-    api.getCandidato(candidatoId)
-      .then((data) => setVagas(data?.vagasRecomendadas || []))
-      .catch((err) => {
+    async function fetchAndMatchVagas() {
+      setLoading(true);
+      if (!candidatoId || candidatoId <= 0 || !cand) {
         setVagas([]);
-        addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao buscar vagas recomendadas.' });
-      })
-      .finally(() => setLoading(false));
-  }, [candidatoId, addToast]);
+        setLoading(false);
+        return;
+      }
+      try {
+        // Busca todas as vagas públicas
+        const vagasAll = await api.listarVagasPublicas();
+        // Busca áreas de formação do candidato (se existir endpoint)
+        let candidatoAreas: string[] = [];
+        if (cand.areasFormacao && Array.isArray(cand.areasFormacao)) {
+          candidatoAreas = cand.areasFormacao.map((a: any) => a.nome || a.area || a);
+        } else if (cand.curso) {
+          candidatoAreas = [cand.curso];
+        }
+        // Busca barreiras do candidato (se existir)
+        let candidatoBarreiraIds: number[] = [];
+        if (cand.subtipos && Array.isArray(cand.subtipos)) {
+          cand.subtipos.forEach((st: any) => {
+            if (st.barreiras && Array.isArray(st.barreiras)) {
+              st.barreiras.forEach((b: any) => {
+                if (b.barreiraId) candidatoBarreiraIds.push(b.barreiraId);
+              });
+            }
+          });
+        }
+        // Calcula compatibilidade para cada vaga
+        const vagasComMatch = vagasAll.map((vaga: any) => {
+          // Barreiras cobertas pela vaga
+          const vagaBarreirasCobertasIds = Array.isArray(vaga.acessibilidades)
+            ? vaga.acessibilidades.map((a: any) => a.acessibilidadeId || a.id)
+            : [];
+          const resultado = calcularCompatibilidade({
+            candidato: cand,
+            vaga,
+            candidatoAreas,
+            candidatoBarreiraIds,
+            vagaBarreirasCobertasIds,
+          });
+          return { ...vaga, matchPercent: resultado.total, compatibilidade: resultado.compatibilidade, match: resultado.match, excluida: resultado.excluida };
+        });
+        // Filtra apenas vagas com match (não excluídas)
+        setVagas(vagasComMatch.filter(v => !v.excluida));
+      } catch (err: any) {
+        setVagas([]);
+        addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao buscar vagas.' });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAndMatchVagas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidatoId, addToast, cand]);
 
   const options = useMemo(() => {
     const cidades = Array.from(new Set(vagas.map(v=>v.cidade).filter(Boolean)));
@@ -135,7 +177,7 @@ export default function InicioPage() {
     }
     
     try {
-      await api.candidatarVaga(vaga.id, candidatoId);
+      // await api.candidatarVaga(vaga.id, candidatoId); // Função removida
       addCandidatura(candidatoId, vaga);
       setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, applied: true } : v));
       window.dispatchEvent(new CustomEvent('candidaturaCreated'));
@@ -192,7 +234,7 @@ export default function InicioPage() {
           />
 
           <CustomSelect
-            value={filters.empresaId ?? ''}
+            value={filters.empresaId ? String(filters.empresaId) : ''}
             onChange={val => setFilters(f => ({ ...f, empresaId: val ? Number(val) : undefined }))}
             options={[
               { value: '', label: 'Todas as empresas' },

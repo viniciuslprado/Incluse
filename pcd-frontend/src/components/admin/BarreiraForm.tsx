@@ -6,16 +6,18 @@ export default function BarreiraForm({ onCreated }: Props) {
     const [descricao, setDescricao] = useState("");
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
+    // Adicione subtipoId como estado ou prop
+    const [subtipoId, setSubtipoId] = useState<number | null>(null);
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setErro(null);
-        if (!descricao.trim()) {
-            setErro("Informe uma descrição.");
+        if (!descricao.trim() || !subtipoId) {
+            setErro("Informe uma descrição e selecione o subtipo.");
             return;
         }
         setLoading(true);
         try {
-            await api.criarBarreira(descricao.trim()); // agora envia como nome
+            await api.criarBarreira(subtipoId, descricao.trim());
             setDescricao("");
             onCreated();
         } catch (e) {

@@ -1,8 +1,9 @@
 import React from 'react';
 
+import type { Candidato } from '../../types';
 type Props = {
-  form: any;
-  handleInput: (key: string, value: any) => void;
+  form: Partial<Candidato>;
+  handleInput: (key: keyof Candidato, value: string) => void;
   curriculoName: string | null;
   curriculoDate: string | null;
   handleCurriculoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

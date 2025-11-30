@@ -1,69 +1,54 @@
-    async function downloadLaudo() {
+// (Removido: funções duplicadas handleFileChange e removeAvatar fora do componente)
+  import { useEffect, useState, useRef } from 'react';
+  import type { Empresa } from '../../types';
+  import { useNavigate } from 'react-router-dom';
+  import { api } from '../../lib/api';
+  import { useCandidate } from '../../contexts/CandidateContext';
+  import { useToast } from '../../components/common/Toast';
+  import MeuPerfil from './meuperfil';
+  import Acessibilidade from './Acessibilidade';
+  import Endereco from './Endereco';
+
+  type Candidato = any;
+
+
+  export default function PerfilPage() {
+    const candCtx = useCandidate();
+    const [candidato, setCandidato] = useState<Candidato | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [form, setForm] = useState<Partial<Candidato & Empresa> & { areasFormacaoDisponiveis?: { id: number; nome: string }[]; areasFormacao?: number[]; username?: string }>({});
+    // candidateSubtipos holds array of subtipo objects when available
+    const [candidateSubtipos, setCandidateSubtipos] = useState<any[]>([]);
+    const [candidateBarreiras, setCandidateBarreiras] = useState<Record<number, { selecionadas: number[]; niveis: Record<number,string> }>>({});
+    const [barreirasBySubtipo, setBarreirasBySubtipo] = useState<Record<number, any[]>>({});
+    const [errors, setErrors] = useState<Record<string,string>>({});
+    const [laudoName, setLaudoName] = useState<string | null>(null);
+    const [laudoSize, setLaudoSize] = useState<number | null>(null);
+
+    const fileRef = useRef<HTMLInputElement | null>(null);
+    const { addToast } = useToast();
+    const navigate = useNavigate();
+
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => setAvatarPreview(String(reader.result || ''));
+      reader.readAsDataURL(f);
+    }
+
+    function removeAvatar() {
       const idStr = window.location.pathname.split('/')[2];
       const id = Number(idStr);
       if (!id) return;
-      try {
-        const response = await api.getLaudo(id);
-        if (response && response.data) {
-          let fileName = laudoName || 'laudo.pdf';
-          const disposition = response.headers?.['content-disposition'];
-          if (disposition) {
-            const match = disposition.match(/filename="?([^";]+)"?/);
-            if (match) fileName = match[1];
-          }
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', fileName);
-          document.body.appendChild(link);
-          link.click();
-          link.parentNode?.removeChild(link);
-          window.URL.revokeObjectURL(url);
-        }
-      } catch (e) {
-        addToast({ type: 'error', title: 'Erro', message: 'Erro ao baixar laudo.' });
-      }
+      localStorage.removeItem(`candidate_avatar_${id}`);
+      setAvatarPreview(null);
+      addToast({ type: 'success', title: 'Foto', message: 'Foto removida.' });
     }
 
-    // Expor função de download globalmente para uso no botão do componente filho
-    if (typeof window !== 'undefined') {
-      (window as any).downloadLaudo = downloadLaudo;
-    }
-  // Expor função de download globalmente para uso no botão do componente filho
-  // Isso deve ser feito após a declaração da função downloadLaudo
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../../lib/api';
-import { useCandidate } from '../../contexts/CandidateContext';
-import { useToast } from '../../components/common/Toast';
-// section components imported below
-import MeuPerfil from './meuperfil';
-import Acessibilidade from './Acessibilidade';
-import Endereco from './Endereco';
-
-
-type Candidato = any;
-
-export default function PerfilPage() {
-  const navigate = useNavigate();
-  const candCtx = useCandidate();
-  const [candidato, setCandidato] = useState<Candidato | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [form, setForm] = useState<any>({});
-  // candidateSubtipos holds array of subtipo objects when available
-  const [candidateSubtipos, setCandidateSubtipos] = useState<any[]>([]);
-  const [candidateBarreiras, setCandidateBarreiras] = useState<Record<number, { selecionadas: number[]; niveis: Record<number,string> }>>({});
-  const [barreirasBySubtipo, setBarreirasBySubtipo] = useState<Record<number, any[]>>({});
-  const [errors, setErrors] = useState<Record<string,string>>({});
-  const [laudoName, setLaudoName] = useState<string | null>(null);
-  const [laudoSize, setLaudoSize] = useState<number | null>(null);
-
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  const { addToast } = useToast();
-
-  useEffect(() => {
+    useEffect(() => {
     const idStr = window.location.pathname.split('/')[2];
     const id = Number(idStr);
     if (!id) {
@@ -278,83 +263,23 @@ export default function PerfilPage() {
     return () => { mounted = false };
   }, []);
 
-  function handleInput<K extends string>(key: K, value: any) {
+
+  function handleInput<K extends keyof (Candidato & Empresa & { areasFormacaoDisponiveis?: { id: number; nome: string }[]; areasFormacao?: number[]; username?: string })>(key: K, value: string | number | number[] | boolean) {
     setForm((s: any) => ({ ...s, [key]: value }));
     setErrors(e => ({ ...e, [key]: '' }));
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => setAvatarPreview(String(reader.result || ''));
-    reader.readAsDataURL(f);
-  }
-
-  function removeAvatar() {
-    const idStr = window.location.pathname.split('/')[2];
-    const id = Number(idStr);
-    if (!id) return;
-    localStorage.removeItem(`candidate_avatar_${id}`);
-    setAvatarPreview(null);
-    addToast({ type: 'success', title: 'Foto', message: 'Foto removida.' });
-  }
-
-  function validateEmail(e: string) {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(e);
-  }
-
-  function validateCelular(telefone: string) {
-    // Remove todos os caracteres não numéricos
-    const numbers = telefone.replace(/\D/g, '');
-    // Aceita: (DD) XXXXX-XXXX ou (DD) 9XXXX-XXXX (10 ou 11 dígitos)
-    // Também aceita DDI: +55DDXXXXXXXXX (12 ou 13 dígitos)
-    return (numbers.length === 10 || numbers.length === 11 || numbers.length === 12 || numbers.length === 13);
-  }
-
-  // formatCelular não é utilizado; removido para satisfazer noUnusedLocals
-
   async function handleSave() {
     const idStr = window.location.pathname.split('/')[2];
     const id = Number(idStr);
-    if (!id) return;
-    // basic validation (required fields)
-    const newErrors: Record<string,string> = {};
-    // accept either full name or social name as valid
-    if (!form.nome || String(form.nome).trim().length < 2) newErrors.nome = 'Informe o Nome completo.';
-    if (!form.email || !validateEmail(form.email)) newErrors.email = 'Email inválido. Use o formato: usuario@dominio.com';
-    if (!form.telefone || !validateCelular(form.telefone)) newErrors.telefone = 'Celular inválido. Use o formato: (DD) XXXXX-XXXX';
-    // cpf comes from cadastro
-    if (!form.cpf) newErrors.cpf = 'CPF não encontrado no cadastro.';
-    // require at least one subtipo
-    if (!candidateSubtipos || candidateSubtipos.length === 0) newErrors.subtipos = 'Selecione pelo menos um tipo de deficiência.';
-    // escolaridade required
-    if (!form.escolaridade || String(form.escolaridade).trim().length === 0) newErrors.escolaridade = 'Escolaridade é obrigatória.';
-    // if ensino superior, require areas formacao
-    if (form.escolaridade && /superior/i.test(String(form.escolaridade)) && (!form.areasFormacao || form.areasFormacao.length === 0)) newErrors.curso = 'Selecione pelo menos uma área de formação (ensino superior).';
-    // barreiras: ensure at least one selected per subtipo
-    if (candidateSubtipos && candidateSubtipos.length > 0) {
-      for (const s of candidateSubtipos) {
-        const entry = candidateBarreiras?.[s.id];
-        if (!entry || !entry.selecionadas || entry.selecionadas.length === 0) {
-          newErrors.barreiras = 'Selecione pelo menos uma barreira para cada tipo de deficiência.';
-          break;
-        }
-      }
-    }
-
-    // novos campos obrigatórios de perfil completo
-    if (!form.cidade || String(form.cidade).trim().length === 0) newErrors.cidade = 'Cidade é obrigatória.';
-    if (!form.estado || String(form.estado).trim().length === 0) newErrors.estado = 'Estado é obrigatório.';
-    // Removido: disponibilidadeGeografica obrigatória
+    const newErrors: Record<string, string> = {};
     if (form.aceitaMudanca === null || form.aceitaMudanca === undefined) newErrors.aceitaMudanca = 'Informe se aceita mudança.';
     if (form.aceitaViajar === null || form.aceitaViajar === undefined) newErrors.aceitaViajar = 'Informe se aceita viajar.';
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       // show first message
-      const first = Object.values(newErrors)[0];
+      const first = Object.values(newErrors)[0] as string;
       return addToast({ type: 'error', title: 'Validação', message: first });
     }
 
@@ -380,7 +305,6 @@ export default function PerfilPage() {
         aceitaViajar: form.aceitaViajar,
         pretensaoSalarialMin: form.pretensaoSalarialMin ? Number(form.pretensaoSalarialMin) : undefined,
       });
-      
       // Salvar dados no backend
       const resultado = await api.atualizarCandidato(id, {
         nome: form.nome,
@@ -396,7 +320,6 @@ export default function PerfilPage() {
         pretensaoSalarialMin: form.pretensaoSalarialMin ? Number(form.pretensaoSalarialMin) : undefined,
       });
       console.log('Resultado da atualização:', resultado);
-      console.log('Resultado da atualização:', resultado);
 
       // Salvar áreas de formação
       if (form.areasFormacao && form.areasFormacao.length > 0) {
@@ -408,7 +331,7 @@ export default function PerfilPage() {
       if (avatarPreview) {
         localStorage.setItem(`candidate_avatar_${id}`, avatarPreview);
       }
-      
+
       // Salvar apenas rascunho de campos não enviados ao backend
       const draft = {
         sobre: form.sobre,
@@ -417,10 +340,10 @@ export default function PerfilPage() {
         cep: form.cep,
       };
       localStorage.setItem(`candidate_profile_draft_${id}`, JSON.stringify(draft));
-      
+
       // Limpar cache antigo
       localStorage.removeItem(`candidate_profile_${id}`);
-      
+
       // Dispatch event
       window.dispatchEvent(new CustomEvent('candidateProfileChanged', { detail: { id, data: form } }));
       setTimeout(() => {
@@ -611,6 +534,7 @@ export default function PerfilPage() {
                 laudoName={laudoName}
                 laudoSize={laudoSize}
                 removeLaudo={removeLaudo}
+                downloadLaudo={downloadLaudo}
                 barreirasBySubtipo={barreirasBySubtipo}
               />
 
@@ -628,4 +552,3 @@ export default function PerfilPage() {
     </div>
   );
 }
-

@@ -89,10 +89,10 @@ export default function AcessibilidadesTab() {
     setLoading(true);
     const op = editAcess
       ? api.atualizarAcessibilidade(editAcess.id, descricao)
-      : api.criarAcessibilidade(descricao); // Supondo que backend já vincula barreiraId
+      : api.criarAcessibilidade(barreiraId, descricao);
     op.then(() => {
       toast.addToast({ message: editAcess ? "Acessibilidade atualizada" : "Acessibilidade criada", type: "success" });
-      if (barreiraId) api.listarAcessibilidades().then(data => setAcessibilidades(data.filter((a: any) => a.barreiraId === barreiraId)));
+      if (barreiraId) api.listarAcessibilidadesPorBarreira(barreiraId).then(setAcessibilidades);
       closeModal();
     })
       .catch(() => toast.addToast({ message: "Erro ao salvar", type: "error" }))
@@ -109,7 +109,7 @@ export default function AcessibilidadesTab() {
     api.deletarAcessibilidade(deleteId)
       .then(() => {
         toast.addToast({ message: "Acessibilidade excluída", type: "success" });
-        if (barreiraId) api.listarAcessibilidades().then(data => setAcessibilidades(data.filter((a: any) => a.barreiraId === barreiraId)));
+        if (barreiraId) api.listarAcessibilidadesPorBarreira(barreiraId).then(setAcessibilidades);
       })
       .catch(() => toast.addToast({ message: "Erro ao excluir", type: "error" }))
       .finally(() => {

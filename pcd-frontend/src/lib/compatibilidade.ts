@@ -20,138 +20,7 @@ function escolaridadeNivel(valor?: string): number {
   return idx === -1 ? -1 : idx;
 }
 
-// Normaliza disponibilidade geográfica em código simples
-function normalizarDisponibilidade(raw?: string):
-  | "CIDADE"
-  | "REGIAO"
-  | "ESTADO"
-  | "BRASIL"
-  | "INTERNACIONAL"
-  | undefined {
-  if (!raw) return undefined;
-  const v = raw.toLowerCase();
-  if (v.includes("apenas") && v.includes("cidade")) return "CIDADE";
-  if (v.includes("regi") || v.includes("próximas") || v.includes("proximas")) return "REGIAO";
-  if (v.includes("estado")) return "ESTADO";
-  if (v.includes("brasil")) return "BRASIL";
-  if (v.includes("internacional")) return "INTERNACIONAL";
-  return undefined;
-}
 
-// Normaliza modelo de trabalho
-function normalizarModeloTrabalho(raw?: string): "REMOTO" | "PRESENCIAL" | "HIBRIDO" | undefined {
-  if (!raw) return undefined;
-  const v = raw.toLowerCase();
-  if (v.includes("remot")) return "REMOTO";
-  if (v.includes("híbr") || v.includes("hibr")) return "HIBRIDO";
-  if (v.includes("presenc")) return "PRESENCIAL";
-  return undefined;
-}
-
-// Checa incompatibilidade hard-stop (retorna true se barra deve ser 0)
-function isHardIncompatible(
-  candidato: Candidato,
-  vaga: Vaga,
-  disponibilidade: ReturnType<typeof normalizarDisponibilidade>,
-  modelo: ReturnType<typeof normalizarModeloTrabalho>
-): boolean {
-  if (!modelo) return false;
-  if ((modelo === "PRESENCIAL" || modelo === "HIBRIDO") && disponibilidade === "CIDADE") {
-    // Se não mesma cidade
-    if (
-      vaga.cidade && candidato.cidade &&
-      vaga.cidade.toLowerCase() !== candidato.cidade.toLowerCase()
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Pontuação Localidade + Modelo (15%)
-function pontuacaoLocalidadeModelo(
-  candidato: Candidato,
-  vaga: Vaga,
-  disponibilidade: ReturnType<typeof normalizarDisponibilidade>,
-  modelo: ReturnType<typeof normalizarModeloTrabalho>
-): number {
-  if (!modelo) return 0; // se não definido, sem pontuação
-
-  if (modelo === "REMOTO") return 15; // qualquer localização
-
-  const mesmaCidade = vaga.cidade && candidato.cidade && vaga.cidade.toLowerCase() === candidato.cidade.toLowerCase();
-  const mesmoEstado = vaga.estado && candidato.estado && vaga.estado.toLowerCase() === candidato.estado.toLowerCase();
-
-  if (modelo === "PRESENCIAL") {
-    if (mesmaCidade) return 15;
-    if (disponibilidade === "REGIAO") return 12;
-    if (mesmoEstado) return 10;
-    if (disponibilidade === "ESTADO" || disponibilidade === "BRASIL" || disponibilidade === "INTERNACIONAL") return 10;
-    return 0;
-  }
-  // HÍBRIDO
-  if (modelo === "HIBRIDO") {
-    if (mesmaCidade) return 15;
-    if (disponibilidade === "REGIAO") return 10;
-    if (mesmoEstado) return 7;
-    if (disponibilidade === "ESTADO") return 7;
-    if (disponibilidade === "BRASIL" || disponibilidade === "INTERNACIONAL") return 5;
-    return 0;
-  }
-  return 0;
-}
-
-// Disponibilidade geográfica (10%): depende de flags da vaga
-function pontuacaoDisponibilidadeGeografica(
-  candidato: Candidato,
-  vaga: Vaga,
-  disponibilidade: ReturnType<typeof normalizarDisponibilidade>
-): number {
-  let score = 0;
-  if (!disponibilidade) return 0;
-
-  // Mudança
-  if (vaga.exigeMudanca) {
-    const mobilidadeOk =
-      disponibilidade === "ESTADO" ||
-      disponibilidade === "BRASIL" ||
-      disponibilidade === "INTERNACIONAL" ||
-      // morar na cidade já é compatível
-      (vaga.cidade && candidato.cidade && vaga.cidade.toLowerCase() === candidato.cidade.toLowerCase());
-    if (mobilidadeOk) score += 6;
-  }
-  // Viagens
-  if (vaga.exigeViagens) {
-    const viagensOk =
-      disponibilidade === "REGIAO" ||
-      disponibilidade === "ESTADO" ||
-      disponibilidade === "BRASIL" ||
-      disponibilidade === "INTERNACIONAL";
-    if (viagensOk) score += 4;
-  }
-  return score; // máximo 10
-}
-
-// Escolaridade (45%): atende ou supera => 45, caso contrário 0
-function pontuacaoEscolaridade(candidato: Candidato, vaga: Vaga): number {
-  const vReq = escolaridadeNivel(vaga.escolaridade);
-  const vCand = escolaridadeNivel(candidato.escolaridade);
-  if (vReq === -1 || vCand === -1) return 0; // dados incompletos
-  return vCand >= vReq ? 45 : 0;
-}
-
-// Área / Formação (30%): mesma área => 30, diferente => 0
-// Para múltiplas áreas do candidato, basta uma coincidência com a vaga.
-function pontuacaoArea(
-  candidatoAreas: string[] | undefined,
-  vagaArea?: string
-): number {
-  if (!vagaArea || !candidatoAreas || candidatoAreas.length === 0) return 0;
-  const match = candidatoAreas.some(
-    (a) => a.toLowerCase() === vagaArea.toLowerCase()
-  );
-  return match ? 30 : 0;
-}
 
 // Acessibilidade (Filtro): retorna true se vaga cobre todas barreiras do candidato
 // Aqui recebemos listas já normalizadas de IDs de barreiras cobertas ou função externa que resolva.
@@ -163,24 +32,28 @@ function barreirasCobertas(
   if (!vagaBarreirasCobertasIds) return false;
   return candidatoBarreiraIds.every((id) => vagaBarreirasCobertasIds.includes(id));
 }
-
 export interface CompatibilidadeResultado {
   total: number; // 0 a 100
+  match: number; // 0 a 65
+  compatibilidade: number; // 0 a 35
   fatores: {
+    acessibilidade: number;
     escolaridade: number;
     area: number;
-    localidadeModelo: number;
+    localidade: number;
     disponibilidadeGeografica: number;
   };
   pesos: {
+    acessibilidade: number;
     escolaridade: number;
     area: number;
-    localidadeModelo: number;
+    localidade: number;
     disponibilidadeGeografica: number;
   };
-  hardStop: boolean; // incompatibilidade por localidade restrita
-  acessibilidadeOk: boolean; // vaga cobre barreiras
+  excluida: boolean; // true se eliminada por filtro obrigatório
+  motivoExclusao?: string;
 }
+
 
 interface CalculoParams {
   candidato: Candidato;
@@ -188,60 +61,144 @@ interface CalculoParams {
   candidatoAreas?: string[]; // nomes de áreas selecionadas pelo candidato
   candidatoBarreiraIds?: number[]; // barreiras do candidato
   vagaBarreirasCobertasIds?: number[]; // barreiras cobertas pela vaga (resolvido externamente)
+  areaSimilaridadeFn?: (candidatoArea: string, vagaArea: string) => boolean | number; // função opcional para similaridade
 }
 
+
 export function calcularCompatibilidade(params: CalculoParams): CompatibilidadeResultado {
-  const { candidato, vaga, candidatoAreas, candidatoBarreiraIds, vagaBarreirasCobertasIds } = params;
+  const {
+    candidato,
+    vaga,
+    candidatoAreas,
+    candidatoBarreiraIds,
+    vagaBarreirasCobertasIds,
+    areaSimilaridadeFn,
+  } = params;
 
-  const disponibilidade = normalizarDisponibilidade(candidato.disponibilidadeGeografica);
-  const modelo = normalizarModeloTrabalho(vaga.modeloTrabalho);
+  // Pesos
+  const PESOS = {
+    acessibilidade: 35,
+    escolaridade: 30,
+    area: 20,
+    localidade: 10,
+    disponibilidadeGeografica: 5,
+  };
 
+  // --- ETAPA 1: MATCH (eliminatório, 65%) ---
+  // 1. Acessibilidade (obrigatório)
   const acessibilidadeOk = barreirasCobertas(candidatoBarreiraIds, vagaBarreirasCobertasIds);
+  let fatores = {
+    acessibilidade: 0,
+    escolaridade: 0,
+    area: 0,
+    localidade: 0,
+    disponibilidadeGeografica: 0,
+  };
+  let excluida = false;
+  let motivoExclusao = undefined;
   if (!acessibilidadeOk) {
+    excluida = true;
+    motivoExclusao = "Vaga não cobre todas as barreiras de acessibilidade do candidato.";
     return {
       total: 0,
-      fatores: { escolaridade: 0, area: 0, localidadeModelo: 0, disponibilidadeGeografica: 0 },
-      pesos: { escolaridade: 45, area: 30, localidadeModelo: 15, disponibilidadeGeografica: 10 },
-      hardStop: false,
-      acessibilidadeOk: false,
+      match: 0,
+      compatibilidade: 0,
+      fatores,
+      pesos: PESOS,
+      excluida,
+      motivoExclusao,
     };
   }
+  fatores.acessibilidade = PESOS.acessibilidade;
 
-  const hardStop = isHardIncompatible(candidato, vaga, disponibilidade, modelo);
-  if (hardStop) {
+  // 2. Escolaridade mínima (obrigatório)
+  const vReq = escolaridadeNivel(vaga.escolaridade);
+  const vCand = escolaridadeNivel(candidato.escolaridade);
+  if (vReq === -1 || vCand === -1 || vCand < vReq) {
+    excluida = true;
+    motivoExclusao = "Escolaridade do candidato inferior à exigida pela vaga.";
     return {
       total: 0,
-      fatores: { escolaridade: 0, area: 0, localidadeModelo: 0, disponibilidadeGeografica: 0 },
-      pesos: { escolaridade: 45, area: 30, localidadeModelo: 15, disponibilidadeGeografica: 10 },
-      hardStop: true,
-      acessibilidadeOk: true,
+      match: fatores.acessibilidade,
+      compatibilidade: 0,
+      fatores,
+      pesos: PESOS,
+      excluida,
+      motivoExclusao,
     };
   }
+  fatores.escolaridade = PESOS.escolaridade;
 
-  const escolaridadeScore = pontuacaoEscolaridade(candidato, vaga); // 45 ou 0
-  const areaScore = pontuacaoArea(candidatoAreas, vaga.area); // 30 ou 0
-  const localidadeScore = pontuacaoLocalidadeModelo(candidato, vaga, disponibilidade, modelo); // 0..15
-  const disponibilidadeScore = pontuacaoDisponibilidadeGeografica(candidato, vaga, disponibilidade); // 0..10
+  // --- ETAPA 2: COMPATIBILIDADE (ajusta nota, 35%) ---
+  // A) Área / formação (20%)
+  let areaScore = 0;
+  if (vaga.area && candidatoAreas && candidatoAreas.length > 0) {
+    // Idêntica: 20%, Similar: 10-15%, Não relacionada: 0%
+    let melhor = 0;
+    for (const areaCand of candidatoAreas) {
+      if (areaCand.toLowerCase() === vaga.area.toLowerCase()) {
+        melhor = PESOS.area;
+        break;
+      } else if (areaSimilaridadeFn) {
+        // Função customizada de similaridade
+        const sim = areaSimilaridadeFn(areaCand, vaga.area);
+        if (typeof sim === 'number') {
+          melhor = Math.max(melhor, Math.min(PESOS.area, Math.max(0, sim)));
+        } else if (sim) {
+          melhor = Math.max(melhor, 15); // similaridade booleana
+        }
+      }
+    }
+    if (melhor === 0 && candidatoAreas.some(a => a && vaga.area && a[0] === vaga.area[0])) {
+      melhor = 10; // fallback: inicial igual = 10%
+    }
+    areaScore = melhor;
+  }
+  fatores.area = areaScore;
 
-  const total = escolaridadeScore + areaScore + localidadeScore + disponibilidadeScore;
+  // B) Localidade (10%)
+  let localidadeScore = 0;
+  const aceitaMudanca = !!candidato.aceitaMudanca;
+  const mesmaCidade = vaga.cidade && candidato.cidade && vaga.cidade.toLowerCase() === candidato.cidade.toLowerCase();
+  const mesmoEstado = vaga.estado && candidato.estado && vaga.estado.toLowerCase() === candidato.estado.toLowerCase();
+  if (aceitaMudanca) {
+    localidadeScore = PESOS.localidade;
+  } else if (mesmaCidade) {
+    localidadeScore = PESOS.localidade;
+  } else if (mesmoEstado) {
+    localidadeScore = 7;
+  } else if (vaga.estado && candidato.estado && vaga.estado !== candidato.estado) {
+    localidadeScore = 5;
+  } else {
+    localidadeScore = 0;
+  }
+  fatores.localidade = localidadeScore;
+
+  // C) Disponibilidade geográfica (5%)
+  let dispScore = 0;
+  if (aceitaMudanca) dispScore += 2.5;
+  if (candidato.aceitaViajar) dispScore += 2.5;
+  fatores.disponibilidadeGeografica = dispScore;
+
+  // Soma dos blocos
+  const match = fatores.acessibilidade + fatores.escolaridade;
+  const compatibilidade = fatores.area + fatores.localidade + fatores.disponibilidadeGeografica;
+  const total = match + compatibilidade;
 
   return {
     total,
-    fatores: {
-      escolaridade: escolaridadeScore,
-      area: areaScore,
-      localidadeModelo: localidadeScore,
-      disponibilidadeGeografica: disponibilidadeScore,
-    },
-    pesos: { escolaridade: 45, area: 30, localidadeModelo: 15, disponibilidadeGeografica: 10 },
-    hardStop,
-    acessibilidadeOk,
+    match,
+    compatibilidade,
+    fatores,
+    pesos: PESOS,
+    excluida: false,
   };
 }
 
-// Exemplo rápido (deve resultar em 89%)
-// Vaga: Presencial — São Paulo; Escolaridade mínima Superior; Área Administração; exigeViagens true; exigeMudanca false
-// Candidato: Campinas, disponibilidade "Em todo o estado", área Administração, escolaridade Pós
+
+// Exemplo rápido (deve resultar em 65+35=100%)
+// Vaga: São Paulo, exige Superior, área Administração
+// Candidato: Campinas, aceita mudança, área Administração, escolaridade Pós
 export function exemploCalculo(): CompatibilidadeResultado {
   const candidato: Candidato = {
     id: 1,
@@ -249,6 +206,8 @@ export function exemploCalculo(): CompatibilidadeResultado {
     escolaridade: "Pós",
     cidade: "Campinas",
     estado: "SP",
+    aceitaMudanca: true,
+    aceitaViagens: true,
   } as any;
   const vaga: Vaga = {
     id: 1,
@@ -257,12 +216,8 @@ export function exemploCalculo(): CompatibilidadeResultado {
     escolaridade: "Superior",
     cidade: "São Paulo",
     estado: "SP",
-    modeloTrabalho: "Presencial",
     area: "Administração",
-    exigeViagens: true,
-    exigeMudanca: false,
   } as any;
-  candidato.disponibilidadeGeografica = "Em todo o estado";
   return calcularCompatibilidade({
     candidato,
     vaga,

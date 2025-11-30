@@ -137,7 +137,7 @@ const areas = [
   "Vigilância"
 ];
 
-async function main() {
+export async function seedAreas() {
   console.log('🌱 Iniciando seed de áreas de formação/profissionais...');
   console.log(`Total de áreas únicas: ${areas.length}`);
 
@@ -151,12 +151,3 @@ async function main() {
 
   console.log('✅ Áreas inseridas com sucesso!');
 }
-
-main()
-  .catch((e) => {
-    console.error('❌ Erro ao popular áreas:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });

@@ -114,6 +114,22 @@ const axiosInstance = createInstance();
 
 // Objeto da API
 export const api = {
+      /**
+       * Cria uma vaga (compatibilidade)
+       */
+      async criarVaga(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade: string, estado: string) {
+        return api.criarVagaCompleta({ empresaId, titulo, descricao, escolaridade, cidade, estado });
+      },
+    /**
+     * Avalia uma empresa
+     * @param empresaId ID da empresa
+     * @param nota Nota de 1 a 5
+     * @param comentario Comentário opcional
+     * @param anonimo Se a avaliação é anônima
+     */
+    async avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimo?: boolean) {
+      return axiosInstance.post(`/empresa/${empresaId}/avaliacoes`, { nota, comentario, anonimo }).then(r => r.data);
+    },
   /**
    * Cadastra uma nova empresa
    * @param data Dados da empresa
@@ -130,7 +146,7 @@ export const api = {
   async checkCnpjExists(cnpj: string): Promise<boolean> {
     if (!cnpj || cnpj.length < 14) return false;
     try {
-      const res = await axiosInstance.get(`/empresas/check-cnpj/${encodeURIComponent(cnpj)}`);
+      const res = await axiosInstance.get(`/empresa/check-cnpj/${encodeURIComponent(cnpj)}`);
       return !!res.data?.exists;
     } catch (e: any) {
       if (e?.status === 404) return false;
@@ -210,7 +226,7 @@ export const api = {
   listarTipos() { return axiosInstance.get('/tipos').then(r => r.data); },
   listarSubtiposPorTipo(tipoId: number) { return axiosInstance.get(`/tipos/${tipoId}/subtipos`).then(r => r.data); },
   listarAcessibilidadesPublicas() { return axiosInstance.get('/acessibilidades').then(r => r.data); },
-  listarEmpresas() { return axiosInstance.get('/admin/empresas').then(r => r.data); },
+  listarEmpresas() { return axiosInstance.get('/empresa').then(r => r.data); },
   listarVagasPublicas() { return axiosInstance.get('/vagas').then(r => r.data); },
   requestPasswordReset(identifier: string) { return axiosInstance.post('/auth/request-password-reset', { identifier }).then(r => r.data); },
   listarAreasFormacao() { return axiosInstance.get('/areas-formacao').then(r => r.data); },

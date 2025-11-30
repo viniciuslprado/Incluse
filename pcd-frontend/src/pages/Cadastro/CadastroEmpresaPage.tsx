@@ -156,7 +156,7 @@ export default function CadastroEmpresaPage() {
 
   // Voltar etapas
   const handleBack = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) setStep((prev) => (prev === 2 ? 1 : 2));
   };
 
   // Submeter etapa final
@@ -181,8 +181,20 @@ export default function CadastroEmpresaPage() {
         nomeContato: formData.nomeContato,
         cargo: formData.cargo,
       };
-      await api.registerEmpresa(payload);
-      navigate('/login');
+      const empresa = await api.registerEmpresa(payload);
+      // Salva userType e userId no localStorage
+      if (empresa && empresa.id) {
+        localStorage.setItem('userType', 'empresa');
+        localStorage.setItem('userId', String(empresa.id));
+        // Se a API retornar token, salve também:
+        if (empresa.token) {
+          localStorage.setItem('token', empresa.token);
+        }
+        navigate(`/empresa/${empresa.id}/dashboard`);
+      } else {
+        // fallback: vai para login
+        navigate('/login');
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setErro(msg || 'Erro ao realizar cadastro. Tente novamente.');
@@ -245,7 +257,7 @@ export default function CadastroEmpresaPage() {
               <div>
                 <label htmlFor="quantidadeFuncionarios" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantidade de Funcionários *</label>
                 <CustomSelect options={opcoesQuantidadeFuncionarios} value={formData.quantidadeFuncionarios}
-                  onChange={v => handleInputChange({ target: { name: 'quantidadeFuncionarios', value: v } })}
+                  onChange={(v: string) => setFormData(prev => ({ ...prev, quantidadeFuncionarios: v }))}
                   placeholder="Selecione..." disabled={loading} className="mt-1 block w-full sm:text-sm" />
               </div>
               {/* Mensagem de erro */}
@@ -275,7 +287,7 @@ export default function CadastroEmpresaPage() {
           {step === 2 && (
             <form onSubmit={e => { e.preventDefault(); handleNext(); }} className="space-y-6">
               {/* Endereço */}
-              <CepInput value={formData.cep} onCepFound={handleAddressFound} onChange={e => handleInputChange(e)} name="cep" label="CEP" disabled={loading} />
+              <CepInput value={formData.cep} onAddressFound={handleAddressFound} onChange={v => setFormData(prev => ({ ...prev, cep: v }))} />
               <div>
                 <label htmlFor="rua" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rua</label>
                 <input type="text" name="rua" id="rua" value={formData.rua} onChange={handleInputChange} className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm" placeholder="Rua" disabled={loading} />
@@ -306,7 +318,7 @@ export default function CadastroEmpresaPage() {
               </div>
               <div>
                 <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição da Empresa</label>
-                <textarea name="descricao" id="descricao" value={formData.descricao} onChange={handleInputChange} className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm" placeholder="Conte um pouco sobre a empresa" disabled={loading} />
+                <textarea name="descricao" id="descricao" value={formData.descricao} onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))} className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm" placeholder="Conte um pouco sobre a empresa" disabled={loading} />
               </div>
               <div className="flex justify-between">
                 <button type="button" onClick={handleBack} disabled={loading} className="px-4 py-2 rounded-md text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">Voltar</button>

@@ -1,7 +1,9 @@
 
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from "@prisma/client";
-import { seedDeficiencia } from "./seed-def";
+import { seedDeficiencia } from "./seed-def.js";
+import { seedAreas } from "./seed-areas.js";
+import { seedCandidatosVagas } from "./seed-candidatos-vagas.js";
 const prisma = new PrismaClient();
 
 async function main() {
@@ -21,8 +23,10 @@ async function main() {
       console.warn('⚠️ Variáveis ADMIN_EMAIL e ADMIN_PASSWORD não definidas no .env. Admin não criado.');
     }
 
-  // Executa seed de deficiência
-  await seedDeficiencia();
+    // Executa todas as seeds
+    await seedDeficiencia();
+    await seedAreas();
+    await seedCandidatosVagas();
 }
 
 main()

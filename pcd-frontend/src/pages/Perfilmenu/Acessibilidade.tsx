@@ -15,7 +15,8 @@ type Props = {
   laudoName: string | null;
   laudoSize: number | null;
   removeLaudo: () => void;
-  barreirasBySubtipo?: Record<number, any[]>;
+  downloadLaudo: () => void;
+  barreirasBySubtipo: Record<number, any[]>;
 };
 
 export default function Acessibilidade({ candidatoId, candidateSubtipos, setCandidateSubtipos, candidateBarreiras, setCandidateBarreiras, handleLaudoChange, laudoName, laudoSize, removeLaudo, barreirasBySubtipo }: Props) {
@@ -203,7 +204,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={typeof window !== 'undefined' && (window as any).downloadLaudo ? (window as any).downloadLaudo : undefined} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      <button onClick={downloadLaudo} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                         Baixar
                       </button>
                       <button onClick={removeLaudo} className="text-red-600 hover:text-red-800 text-sm font-medium">

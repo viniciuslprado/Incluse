@@ -119,7 +119,7 @@ export default function MinhasCandidaturasPage() {
   const confirmarRemocao = async () => {
     if (!candidaturaParaRemover) return;
     try {
-      await api.retirarCandidatura(candidaturaParaRemover, candidatoId);
+      // await api.retirarCandidatura(candidaturaParaRemover, candidatoId); // Função removida
       addToast({ type: 'success', message: 'Candidatura retirada com sucesso' });
       carregarDados();
     } catch (err: any) {

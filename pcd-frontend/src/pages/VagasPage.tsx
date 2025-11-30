@@ -131,7 +131,8 @@ function FiltrosPanel({
 }
 
 function VagaCard({ vaga }: { vaga: VagaPublica }) {
-  const { isAuthenticated } = useAuth();
+  const auth = useAuth();
+  const isAuthenticated = auth.isAuthenticated;
   const navigate = useNavigate();
   const handleVerDetalhes = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
@@ -238,7 +239,8 @@ export default function VagasPage() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
 
   // Move hooks to top level
-  const { isAuthenticated } = useAuth();
+  const auth = useAuth();
+  const isAuthenticated = auth.isAuthenticated;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -355,9 +357,8 @@ export default function VagasPage() {
                 <ResponsiveCardList
                   items={vagasFiltradas.map((vaga) => {
                     // Define a stable handler for each vaga
-                    const handleVerDetalhes = (e: React.MouseEvent) => {
+                    const handleVerDetalhes = () => {
                       if (!isAuthenticated) {
-                        e.preventDefault();
                         navigate('/login');
                       }
                     };

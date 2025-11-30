@@ -23,6 +23,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   className = '',
 }) => {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   }, []);
 
   const selected = options.find((opt) => opt.value === value);
+  const filteredOptions = options.filter(opt => opt.label.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div ref={ref} className={`relative w-full max-w-xs ${className}`} tabIndex={-1}>
@@ -64,16 +66,29 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         style={{ minWidth: '100%' }}
         role="listbox"
       >
-        {options.length === 0 && (
+        {open && (
+          <div className="px-3 py-2 sticky top-0 bg-white z-10">
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar..."
+              className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+              autoFocus
+            />
+          </div>
+        )}
+        {filteredOptions.length === 0 && (
           <div className="px-4 py-2 text-gray-400">Sem opções</div>
         )}
-        {options.map((opt) => (
+        {filteredOptions.map((opt) => (
           <button
             key={opt.value}
             className={`w-full text-left px-4 py-2 hover:bg-blue-50 focus:bg-blue-100 transition rounded ${value === opt.value ? 'bg-blue-100 text-blue-700' : ''}`}
             onClick={() => {
               onChange(opt.value);
               setOpen(false);
+              setSearch('');
             }}
             role="option"
             aria-selected={value === opt.value}

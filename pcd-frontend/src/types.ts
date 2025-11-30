@@ -53,6 +53,21 @@ export type Empresa = {
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  // Propriedades adicionais para compatibilidade com componentes
+  areaAtuacao?: string;
+  nomeContato?: string;
+  telefone?: string;
+  quantidadeFuncionarios?: string;
+  cargo?: string;
+  cep?: string;
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  descricao?: string;
+  endereco?: string;
+  logoUrl?: string;
 };
 export type Vaga = {
   id: number;
@@ -144,6 +159,8 @@ export type Candidato = {
   competencias?: CandidatoCompetencia[];
   idiomas?: CandidatoIdioma[];
   areasFormacao?: any[];
+  fotoUrl?: string;
+  username?: string;
 };
 
 

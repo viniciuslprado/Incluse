@@ -1,6 +1,6 @@
 type SavedVaga = { id: number; titulo?: string; empresaNome?: string; savedAt: string };
 type Candidatura = { id: number; titulo?: string; empresaNome?: string; appliedAt: string };
-import type { Vaga } from '../types';
+import type { Vaga, Empresa } from '../types';
 
 const keySaved = (candidatoId: number) => `incluse:saved:${candidatoId}`;
 const keyApplied = (candidatoId: number) => `incluse:candidaturas:${candidatoId}`;
@@ -22,7 +22,7 @@ export function getSavedVagas(candidatoId: number): SavedVaga[] {
   } catch (e) { return []; }
 }
 
-export function toggleSaveVaga(candidatoId: number, vaga: any): boolean {
+export function toggleSaveVaga(candidatoId: number, vaga: Vaga): boolean {
   const key = keySaved(candidatoId);
   const current = getSavedVagas(candidatoId);
   const idx = current.findIndex(s => s.id === vaga.id);
@@ -50,7 +50,7 @@ export function getAppliedIds(candidatoId: number): number[] {
   } catch (e) { return []; }
 }
 
-export function addCandidatura(candidatoId: number, vaga: any): boolean {
+export function addCandidatura(candidatoId: number, vaga: Vaga): boolean {
   const key = keyApplied(candidatoId);
   try {
     const raw = localStorage.getItem(key);
@@ -91,7 +91,7 @@ export function removeCandidatura(candidatoId: number, vagaId: number): boolean 
   }
 }
 
-export function toggleCandidatura(candidatoId: number, vaga: any): { applied: boolean; changed: boolean } {
+export function toggleCandidatura(candidatoId: number, vaga: Vaga): { applied: boolean; changed: boolean } {
   if (isVagaApplied(candidatoId, vaga.id)) {
     const removed = removeCandidatura(candidatoId, vaga.id);
     return { applied: !removed, changed: removed };

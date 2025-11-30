@@ -2,14 +2,15 @@
 import CustomSelect from '../../components/common/CustomSelect';
 import { formatPhone } from '../../utils/formatters';
 
+import type { Candidato } from '../../types';
 type Props = {
   avatarPreview: string | null;
-  candidato: any;
+  candidato: Partial<Candidato>;
   fileRef: React.RefObject<HTMLInputElement | null>;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeAvatar: () => void;
-  form: any;
-  handleInput: (key: string, value: any) => void;
+  form: Partial<Candidato> & { areasFormacaoDisponiveis?: { id: number; nome: string }[]; areasFormacao?: number[]; username?: string };
+  handleInput: (key: keyof (Candidato & { areasFormacaoDisponiveis?: { id: number; nome: string }[]; areasFormacao?: number[]; username?: string }), value: string | number | number[]) => void;
   errors: Record<string,string>;
 };
 
