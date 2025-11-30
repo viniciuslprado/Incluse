@@ -1,3 +1,42 @@
+/* Botões verdes no modo escuro para o menu de acessibilidade */
+.dark .accessibility-menu-panel button,
+.dark .accessibility-menu-panel .bg-gray-100,
+.dark .accessibility-menu-panel .bg-gray-700 {
+  background-color: #22c55e !important; /* Tailwind green-500 */
+  color: #fff !important;
+  border-color: #16a34a !important; /* Tailwind green-600 */
+}
+
+.dark .accessibility-menu-panel button:hover {
+  background-color: #16a34a !important; /* Tailwind green-600 */
+}
+/* Responsividade para o menu de acessibilidade */
+.accessibility-menu-panel {
+  transition: width 0.2s;
+}
+@media (max-width: 600px) {
+  .accessibility-menu-panel {
+    right: 50% !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 95vw !important;
+    min-width: 0 !important;
+    max-width: 95vw !important;
+    padding: 1rem !important;
+  }
+}
+[vw], [vw] * {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+}
+/* Customização da posição do menu VLibras */
+[vw] {
+  left: 20px !important;
+  right: auto !important;
+  bottom: 20px !important;
+  top: 50%;
+}
 #root {
   width: 100%;
   min-height: 100vh;

@@ -126,7 +126,7 @@ export default function VagaAcessibilidadesForm({ vagaId }: Props) {
         <button
           onClick={() => setSelecionadas([])}
           disabled={loading || selecionadas.length === 0}
-          className="px-3 py-2 bg-incluse-primary/10 text-incluse-primary rounded-md hover:bg-incluse-primary/20 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:ring-offset-2"
+          className="px-3 py-2 bg-incluse-primary/10 text-incluse-primary rounded-md hover:bg-incluse-primary/20 dark:bg-green-600/80 dark:text-white dark:hover:bg-green-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary dark:focus:ring-green-600 focus:ring-offset-2"
         >
           Limpar seleção
         </button>
@@ -134,7 +134,7 @@ export default function VagaAcessibilidadesForm({ vagaId }: Props) {
         <button
           onClick={handleSalvar}
           disabled={loading || selecionadas.length === 0}
-          className="px-4 py-2 bg-incluse-primary text-white rounded-md hover:bg-incluse-primary-dark disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:ring-offset-2"
+          className="px-4 py-2 bg-incluse-primary text-white rounded-md hover:bg-incluse-primary-dark dark:bg-green-600 dark:hover:bg-green-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary dark:focus:ring-green-600 focus:ring-offset-2"
         >
           {loading ? "Salvando..." : "Salvar acessibilidades"}
         </button>

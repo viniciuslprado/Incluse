@@ -128,7 +128,7 @@ export default function VagaSubtiposForm({ vagaId, onChange, onUpdated }: Props)
             <button
               onClick={handleSalvar}
               disabled={loading}
-              className="px-4 py-2 bg-incluse-primary text-white rounded-md hover:bg-incluse-primary-dark disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:ring-offset-2"
+              className="px-4 py-2 bg-incluse-primary text-white rounded-md hover:bg-incluse-primary-dark dark:bg-green-600 dark:hover:bg-green-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-incluse-primary dark:focus:ring-green-600 focus:ring-offset-2"
             >
               {loading ? "Salvando..." : "Salvar subtipos"}
             </button>

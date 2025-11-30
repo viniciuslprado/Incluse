@@ -45,13 +45,13 @@ export default function FAQContent() {
         <p className="text-sm text-gray-700 dark:text-gray-300">Encontre respostas para as principais dúvidas sobre o Incluse.</p>
       </div>
 
-      <div className="bg-white dark:bg-transparent rounded-lg shadow-md border border-gray-300 dark:border-gray-700 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-300 dark:border-gray-700 p-4 mb-6">
         <div className="flex flex-wrap gap-2">
           {(['todos', 'candidato', 'empresa', 'geral'] as const).map((categoria) => (
             <button
               key={categoria}
               onClick={() => setFiltroCategoria(categoria)}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${filtroCategoria === categoria ? 'bg-gradient-to-r from-incluse-primary to-incluse-secondary text-white shadow-md' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-incluse-primary/10 border border-gray-300 dark:border-gray-600'}`}
+              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${filtroCategoria === categoria ? 'bg-gradient-to-r from-incluse-primary to-incluse-secondary text-white shadow-md' : 'bg-gray-200 dark:bg-gray-900 text-gray-800 dark:text-gray-300 hover:bg-incluse-primary/10 border border-gray-300 dark:border-gray-700'}`}
             >
               {getCategoriaLabel(categoria)}
             </button>

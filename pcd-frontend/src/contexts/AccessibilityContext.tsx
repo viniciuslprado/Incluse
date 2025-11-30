@@ -1,14 +1,13 @@
 import React, { createContext, useState, useEffect } from "react";
 
-export type FontSize = "normal" | "large" | "extra-large";
-export type FontFamily = "default" | "readable" | "serif";
-export type Theme = "light" | "dark";
-export type MotionPreference = "normal" | "reduced";
+
+export type ColorMode = "default" | "high-contrast" | "high-saturation" | "monochrome" | "low-saturation";
 
 interface AccessibilitySettings {
   fontSize: FontSize;
   fontFamily: FontFamily;
   theme: Theme;
+  colorMode: ColorMode;
 }
 
 interface AccessibilityContextType {
@@ -17,6 +16,7 @@ interface AccessibilityContextType {
   setFontFamily: (family: FontFamily) => void;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  setColorMode: (mode: ColorMode) => void;
   resetSettings: () => void;
 }
 
@@ -24,6 +24,7 @@ const defaultSettings: AccessibilitySettings = {
   fontSize: "normal",
   fontFamily: "default", 
   theme: "light",
+  colorMode: "default",
 };
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
@@ -51,9 +52,9 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
   const applySettings = (settings: AccessibilitySettings) => {
     const root = document.documentElement;
-    
-  // Limpar classes anteriores
-    
+    // Limpar classes anteriores de tema e cor
+    root.classList.remove('light', 'dark', 'high-contrast', 'high-saturation', 'monochrome', 'low-saturation');
+
     // Aplicar tamanho da fonte
     switch (settings.fontSize) {
       case "normal":
@@ -80,9 +81,16 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         break;
     }
 
-  // Aplicar tema
-  root.classList.remove('light', 'dark');
-  root.classList.add(settings.theme);
+    // Aplicar tema
+    root.classList.add(settings.theme);
+
+    // Aplicar modo de cor
+    if (settings.colorMode && settings.colorMode !== 'default') {
+      root.classList.add(settings.colorMode);
+    }
+  };
+  const setColorMode = (colorMode: ColorMode) => {
+    setSettings(prev => ({ ...prev, colorMode }));
   };
 
   const setFontSize = (fontSize: FontSize) => {
@@ -116,7 +124,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         setFontSize,
         setFontFamily, 
         setTheme,
-  toggleTheme,
+        toggleTheme,
+        setColorMode,
         resetSettings,
       }}
     >

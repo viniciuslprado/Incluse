@@ -49,6 +49,7 @@ import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { ToastProvider } from "./components/common/Toast";
 import AccessibilityMenu from "./components/AccessibilityMenu";
 import FaqFloating from "./components/FaqFloating";
+import VLibrasLoader from "./components/VLibrasLoader";
 
 
 
@@ -165,11 +166,14 @@ function AppRoutes() {
   );
 }
 
+// useVlibras removido: VLibras é carregado via HTML estático
+
 export default function App() {
   return (
     <AccessibilityProvider>
       <ToastProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+          <VLibrasLoader />
           <AccessibilityMenu />
           <BrowserRouter>
             <AppRoutes />

@@ -1,3 +1,48 @@
+/* ===== MODOS DE COR DE ACESSIBILIDADE ===== */
+.high-contrast {
+  filter: none !important;
+  background: #000 !important;
+  color: #fff !important;
+}
+.high-contrast *, .high-contrast *:before, .high-contrast *:after {
+  background: transparent !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.high-saturation {
+  filter: saturate(2) !important;
+}
+
+.monochrome {
+  filter: grayscale(1) contrast(1.2) !important;
+}
+
+.low-saturation {
+  filter: saturate(0.5) !important;
+}
+/* Força o VLibras a aparecer SEMPRE no canto inferior direito, acima de tudo */
+[vw] {
+  z-index: 2147483647 !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+/* Garante que NENHUM overlay do React sobreponha o VLibras */
+body > div:not([vw]):not(#root):not(#vlibras-root) {
+  z-index: auto !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { FaWheelchair, FaFileAlt, FaLock, FaCheck, FaTag, FaShieldAlt, FaExclamationTriangle } from 'react-icons/fa';
+import { FaWheelchair, FaTag, FaShieldAlt, FaExclamationTriangle } from 'react-icons/fa';
 import CandidatoSubtiposForm from '../../components/candidato/CandidatoSubtiposForm';
 import CandidatoBarreirasForm from '../../components/candidato/CandidatoBarreirasForm';
 import { api } from '../../lib/api';

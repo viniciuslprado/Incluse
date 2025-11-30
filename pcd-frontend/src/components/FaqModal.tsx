@@ -22,7 +22,7 @@ export default function FaqModal() {
         <button
           aria-label="Fechar FAQ"
           onClick={() => setOpen(false)}
-          className="absolute top-4 right-4 z-50 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:border-red-500 dark:hover:border-red-500 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-500 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400"
+          className="absolute top-4 right-4 z-50 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-700 hover:border-red-500 dark:hover:border-red-500 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-500 rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400"
         >
           <span className="text-xl font-bold leading-none" style={{ marginTop: '-2px' }}>×</span>
         </button>
