@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { FiAlertCircle, FiSave, FiX } from 'react-icons/fi';
@@ -241,7 +242,7 @@ export default function EditarVagaPage() {
       await api.atualizarVaga(Number(vagaId), updateData);
       setSucesso(true);
       setTimeout(() => {
-        navigate(`/empresa/${empresaId}/vagas`);
+        navigate(`/empresa/${empresaId}/gestao-vagas`);
       }, 1500);
     } catch (error: any) {
       console.error('Erro ao salvar:', error);
@@ -391,14 +392,15 @@ export default function EditarVagaPage() {
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
                   placeholder="40"
                 />
-                <select
+                <CustomSelect
                   value={jornadaPeriodo}
-                  onChange={(e) => setJornadaPeriodo(e.target.value as 'semanal' | 'mensal')}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="semanal">horas/semana</option>
-                  <option value="mensal">horas/mês</option>
-                </select>
+                  onChange={val => setJornadaPeriodo(val as 'semanal' | 'mensal')}
+                  options={[
+                    { value: 'semanal', label: 'horas/semana' },
+                    { value: 'mensal', label: 'horas/mês' },
+                  ]}
+                  className="w-full max-w-xs"
+                />
               </div>
             </div>
 
@@ -592,7 +594,7 @@ export default function EditarVagaPage() {
         {/* Botões de Ação */}
         <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => navigate(`/empresa/${empresaId}/vagas`)}
+            onClick={() => navigate(`/empresa/${empresaId}/gestao-vagas`)}
             className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
           >
             <FiX className="w-4 h-4" />

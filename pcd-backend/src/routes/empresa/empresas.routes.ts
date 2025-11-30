@@ -1,9 +1,13 @@
 import { Router } from "express";
 import { EmpresasController } from "../../controllers/empresa/empresas.controller";
+import empresaConfig from "./empresa-config.routes";
+import empresaNotificacoes from "./empresa-notificacoes.routes";
 import { verifyJWT, ensureRole } from "../../middleware/auth";
 import { uploadLogo } from "../../middleware/upload";
 
 const r = Router();
+r.use("/preferencias", empresaConfig);
+r.use("/notificacoes", empresaNotificacoes);
 
 // Rotas públicas (ordem importa: rotas específicas antes de ":id")
 r.get("/", EmpresasController.listar);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { FiSearch, FiUser, FiCalendar, FiMessageSquare, FiX, FiCheckCircle, FiFileText, FiDownload } from 'react-icons/fi';
@@ -169,16 +170,15 @@ export default function CandidatosGeralPage() {
 
           {/* Filtro de Etapa */}
           <div className="w-full md:w-64">
-            <select
+            <CustomSelect
               value={filtroEtapa}
-              onChange={(e) => setFiltroEtapa(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="todas">Todas as Etapas</option>
-              {etapas.map(etapa => (
-                <option key={etapa} value={etapa}>{etapa}</option>
-              ))}
-            </select>
+              onChange={val => setFiltroEtapa(val)}
+              options={[
+                { value: 'todas', label: 'Todas as Etapas' },
+                ...etapas.map(etapa => ({ value: etapa, label: etapa }))
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
       </div>

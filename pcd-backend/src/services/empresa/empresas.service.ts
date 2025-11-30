@@ -1,5 +1,6 @@
 import { EmpresasRepo } from "../../repositories/empresa/empresas.repo";
 import bcrypt from 'bcryptjs';
+import { sendNotificationEmail } from "../common/email.service";
 
 export const EmpresasService = {
   async criarEmpresa(
@@ -26,7 +27,7 @@ export const EmpresasService = {
       if (existe) throw new Error("E-mail já cadastrado");
     }
     const senhaHash = senha ? bcrypt.hashSync(senha, 8) : undefined;
-    return EmpresasRepo.create(
+    const empresa = await EmpresasRepo.create(
       nome.trim(),
       cnpj?.replace(/\D/g, ''),
       email?.trim().toLowerCase(),
@@ -37,6 +38,19 @@ export const EmpresasService = {
       descricao,
       logoUrl
     );
+
+    // Enviar e-mail de boas-vindas se houver e-mail
+    if (empresa?.email) {
+      await sendNotificationEmail({
+        to: empresa.email,
+        subject: 'Bem-vindo à Incluse!',
+        title: 'Bem-vindo à Incluse',
+        message: `Olá ${empresa.nome},<br><br>Sua empresa foi cadastrada com sucesso na plataforma Incluse!<br>Agora você pode publicar vagas e encontrar talentos PCD.<br><br>Seja bem-vindo!`,
+        actionUrl: process.env.APP_BASE_URL || 'http://localhost:5173',
+        actionText: 'Acessar plataforma'
+      });
+    }
+    return empresa;
   },
 
   async checkCnpjExists(cnpj: string): Promise<boolean> {

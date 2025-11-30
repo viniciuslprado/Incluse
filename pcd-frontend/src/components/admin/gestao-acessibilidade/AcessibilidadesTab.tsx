@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import CustomSelect from '../../common/CustomSelect';
 import { api } from '../../../lib/api';
 import type { Acessibilidade, Barreira, SubtipoDeficiencia, TipoDeficiencia } from '../../../types';
 import CrudModal from './CrudModal';
@@ -16,6 +17,8 @@ export default function AcessibilidadesTab() {
   const [barreiraId, setBarreiraId] = useState<number | null>(null);
   const [acessibilidades, setAcessibilidades] = useState<Acessibilidade[]>([]);
   const [loading, setLoading] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editAcess, setEditAcess] = useState<Acessibilidade | null>(null);
   const [descricao, setDescricao] = useState("");
@@ -29,7 +32,12 @@ export default function AcessibilidadesTab() {
 
   useEffect(() => {
     if (tipoId) {
-      api.listarSubtiposPorTipo(tipoId).then(setSubtipos).catch(() => toast.addToast({ message: "Erro ao carregar subtipos", type: "error" }));
+      api.listarTiposComSubtiposPublico()
+        .then((tiposComSubtipos) => {
+          const tipo = tiposComSubtipos.find((t: any) => t.id === tipoId);
+          setSubtipos(tipo ? tipo.subtipos : []);
+        })
+        .catch(() => toast.addToast({ message: "Erro ao carregar subtipos", type: "error" }));
     } else {
       setSubtipos([]);
       setSubtipoId(null);
@@ -38,7 +46,9 @@ export default function AcessibilidadesTab() {
 
   useEffect(() => {
     if (subtipoId) {
-      api.listarBarreiras().then(data => setBarreiras(data.filter((b: any) => b.subtipoId === subtipoId))).catch(() => toast.addToast({ message: "Erro ao carregar barreiras", type: "error" }));
+      api.listarBarreirasPorSubtipo(subtipoId)
+        .then(setBarreiras)
+        .catch(() => toast.addToast({ message: "Erro ao carregar barreiras", type: "error" }));
     } else {
       setBarreiras([]);
       setBarreiraId(null);
@@ -118,47 +128,64 @@ export default function AcessibilidadesTab() {
       <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
         <strong>Instrução:</strong> Cadastre recursos de acessibilidade e vincule a barreiras. Exemplo: Rampa, Elevador, Sinalização tátil...
       </div>
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-end gap-2 mb-4">
         <div>
           <label className="block mb-1 font-medium">Tipo de Deficiência</label>
-          <select
-            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-            value={tipoId ?? ''}
-            onChange={e => setTipoId(Number(e.target.value) || null)}
-          >
-            <option value="">Selecione...</option>
-            {tipos.map(t => (
-              <option key={t.id} value={t.id}>{t.nome}</option>
-            ))}
-          </select>
+          <CustomSelect
+            value={tipoId?.toString() ?? ''}
+            onChange={v => setTipoId(v ? Number(v) : null)}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...tipos.map(t => ({ value: t.id.toString(), label: t.nome }))
+            ]}
+            className="w-full max-w-xs"
+          />
         </div>
         <div>
           <label className="block mb-1 font-medium">Subtipo</label>
-          <select
-            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-            value={subtipoId ?? ''}
-            onChange={e => setSubtipoId(Number(e.target.value) || null)}
+          <CustomSelect
+            value={subtipoId?.toString() ?? ''}
+            onChange={v => setSubtipoId(v ? Number(v) : null)}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...subtipos.map(s => ({ value: s.id.toString(), label: s.nome }))
+            ]}
+            className="w-full max-w-xs"
             disabled={!tipoId}
-          >
-            <option value="">Selecione...</option>
-            {subtipos.map(s => (
-              <option key={s.id} value={s.id}>{s.nome}</option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="block mb-1 font-medium">Barreira</label>
-          <select
-            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-            value={barreiraId ?? ''}
-            onChange={e => setBarreiraId(Number(e.target.value) || null)}
+          <CustomSelect
+            value={barreiraId?.toString() ?? ''}
+            onChange={v => setBarreiraId(v ? Number(v) : null)}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...barreiras.map(b => ({ value: b.id.toString(), label: b.descricao }))
+            ]}
+            className="w-full max-w-xs"
             disabled={!subtipoId}
-          >
-            <option value="">Selecione...</option>
-            {barreiras.map(b => (
-              <option key={b.id} value={b.id}>{b.descricao}</option>
-            ))}
-          </select>
+          />
+        </div>
+        <div className="flex-1 flex gap-2 items-end">
+          <div className="relative w-full">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <input
+              type="text"
+              className="pl-10 pr-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white"
+              placeholder="Buscar acessibilidade..."
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              disabled={loading || acessibilidades.length === 0}
+              onKeyDown={e => { if (e.key === 'Enter') setBuscaAplicada(busca); }}
+            />
+          </div>
+          <button
+            className="ml-1 px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
+            onClick={() => setBuscaAplicada(busca)}
+            disabled={loading || acessibilidades.length === 0}
+            title="Buscar"
+          >Buscar</button>
         </div>
       </div>
       <div className="card p-0 overflow-x-auto">
@@ -174,7 +201,9 @@ export default function AcessibilidadesTab() {
               <tr><td colSpan={2} className="text-center py-6">Carregando...</td></tr>
             ) : acessibilidades.length === 0 ? (
               <tr><td colSpan={2} className="text-center py-6">Nenhuma acessibilidade cadastrada</td></tr>
-            ) : acessibilidades.map(acess => (
+            ) : acessibilidades.filter(a => a.descricao.toLowerCase().includes(buscaAplicada.toLowerCase())).length === 0 ? (
+              <tr><td colSpan={2} className="text-center py-6">Nenhum resultado encontrado</td></tr>
+            ) : acessibilidades.filter(a => a.descricao.toLowerCase().includes(buscaAplicada.toLowerCase())).map(acess => (
               <tr key={acess.id} className="border-b last:border-0">
                 <td className="px-4 py-2">{acess.descricao}</td>
                 <td className="px-4 py-2 flex gap-2">

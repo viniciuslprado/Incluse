@@ -8,7 +8,7 @@ function getMatchThreshold(): number {
 }
 
 export const MatchService = {
-    // --- Compatibilidade: área, localidade, disponibilidade ---
+    // --- Compatibilidade: área, localidade ---
     calculateAreaScore(candidato: any, vaga: any): number {
       const candidatoAreas = candidato.areasFormacao || [];
       const vagaArea = vaga.area;
@@ -20,33 +20,14 @@ export const MatchService = {
     },
 
     calculateLocalidadeScore(candidato: any, vaga: any): number {
-      const disponibilidade = candidato.disponibilidadeGeografica;
       const candidatoCidade = candidato.cidade;
       const candidatoEstado = candidato.estado;
       const vagaCidade = vaga.cidade;
       const vagaEstado = vaga.estado;
-      // Se aceita mudança, recebe 10 direto
-      if ([
-        'Em todo o Brasil', 'Disponível internacional', 'Em todo o estado', 'Na minha região (cidades próximas)'
-      ].includes(disponibilidade)) return 10;
       if (candidatoCidade && vagaCidade && candidatoCidade === vagaCidade) return 10;
       if (candidatoEstado && vagaEstado && candidatoEstado === vagaEstado) return 7;
       if (vagaCidade && candidatoCidade) return 5;
       return 0;
-    },
-
-    calculateDisponibilidadeScore(candidato: any): number {
-      let score = 0;
-      const disponibilidade = candidato.disponibilidadeGeografica;
-      if (["Em todo o Brasil", "Disponível internacional", "Em todo o estado", "Na minha região (cidades próximas)"].includes(disponibilidade)) {
-        score += 2.5;
-      }
-      if (disponibilidade === "Disponível internacional" || disponibilidade === "Em todo o Brasil") {
-        score += 2.5;
-      } else if (disponibilidade === "Aceita viagens") {
-        score += 2.5;
-      }
-      return Math.min(5, score);
     },
   // Lógica de MATCH: etapa eliminatória (acessibilidade + escolaridade) e preparação para compatibilidade
   async matchVagasForCandidato(candidatoId: number) {
@@ -73,14 +54,13 @@ export const MatchService = {
       );
       if (!escolaridadeMatch) continue;
 
-      // 4. Compatibilidade (área, localidade, disponibilidade)
+      // 4. Compatibilidade (área, localidade)
       const areaScore = this.calculateAreaScore(candidato, vaga);
       const localidadeScore = this.calculateLocalidadeScore(candidato, vaga);
-      const disponibilidadeScore = this.calculateDisponibilidadeScore(candidato);
 
       // Score final
       const matchScore = 35 + 30;
-      const compatibilityScore = areaScore + localidadeScore + disponibilidadeScore;
+      const compatibilityScore = areaScore + localidadeScore;
       const totalScore = matchScore + compatibilityScore;
 
       results.push({
@@ -103,7 +83,7 @@ export const MatchService = {
           escolaridade: 30,
           area: areaScore,
           localidade: localidadeScore,
-          disponibilidade: disponibilidadeScore
+          // disponibilidade removida
         },
         acessibilidadeMatch,
       });

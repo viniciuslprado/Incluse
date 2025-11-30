@@ -74,18 +74,15 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
         <label className="block text-sm font-medium mb-1">
           Escolaridade <span className="text-red-600">*</span>
         </label>
-        <select
+        <CustomSelect
           value={escolaridade}
-          onChange={(e) => setEscolaridade(e.target.value as Escolaridade)}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value="">Selecione...</option>
-          {escolaridades.map((esc) => (
-            <option key={esc} value={esc}>
-              {esc}
-            </option>
-          ))}
-        </select>
+          onChange={setEscolaridade}
+          options={[
+            { value: '', label: 'Selecione...' },
+            ...escolaridades.map(esc => ({ value: esc, label: esc }))
+          ]}
+          className="w-full"
+        />
         {errors.escolaridade && <p className="text-sm text-red-600 mt-1">{errors.escolaridade}</p>}
       </div>
 
@@ -123,14 +120,15 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
             <label className="block text-sm font-medium mb-1">
               Situação <span className="text-red-600">*</span>
             </label>
-              <select
+              <CustomSelect
                 value={situacao}
-                onChange={e => setSituacao(e.target.value as 'concluido' | 'cursando')}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              >
-                <option value="concluido">Concluído</option>
-                <option value="cursando">Cursando</option>
-              </select>
+                onChange={v => setSituacao(v as 'concluido' | 'cursando')}
+                options={[
+                  { value: 'concluido', label: 'Concluído' },
+                  { value: 'cursando', label: 'Cursando' }
+                ]}
+                className="mt-1 block w-full"
+              />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

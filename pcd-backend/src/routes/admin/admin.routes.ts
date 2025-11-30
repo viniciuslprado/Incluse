@@ -9,6 +9,7 @@ import adminJobsRoutes from "./adminJobsRoutes";
 
 import adminDeficienciasRoutes from "./adminDeficienciasRoutes";
 import adminCompaniesRoutes from "./adminCompaniesRoutes";
+import adminLogsRoutes from "./adminLogsRoutes";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use(adminCandidatesRoutes);
 router.use(adminJobsRoutes);
 router.use("/deficiencias", adminDeficienciasRoutes);
 router.use(adminCompaniesRoutes);
+router.use(adminLogsRoutes);
 
 export default router;

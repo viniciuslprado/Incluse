@@ -1,6 +1,13 @@
+
 import prisma from "../../prismaClient";
 
 export const CandidatosRepo = {
+  listarAreasFormacao(id: number) {
+    return prisma.candidato.findUnique({
+      where: { id },
+      select: { areasFormacao: true }
+    }).then(c => c?.areasFormacao || []);
+  },
   findById(id: number) {
     return prisma.candidato.findUnique({
       where: { id },

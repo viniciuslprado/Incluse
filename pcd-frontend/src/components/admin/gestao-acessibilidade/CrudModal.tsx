@@ -2,6 +2,8 @@ import React from "react";
 import Modal from "../../common/Modal";
 import Button from "../../common/Button";
 
+import CustomSelect from '../../common/CustomSelect';
+
 interface CrudModalProps {
   open: boolean;
   title: string;
@@ -41,21 +43,19 @@ export default function CrudModal({
           <div key={f.name + i}>
             <label className="block mb-1 font-medium">{f.label}</label>
             {f.as === "select" ? (
-              <select
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-                value={f.value}
-                onChange={e => f.onChange(e.target.value)}
+              <CustomSelect
+                value={f.value?.toString() ?? ''}
+                onChange={f.onChange}
+                options={[
+                  { value: '', label: 'Selecione...' },
+                  ...(f.options || []).map(opt => ({ value: opt.value.toString(), label: opt.label }))
+                ]}
                 disabled={f.disabled}
-                required={f.required}
-              >
-                <option value="">Selecione...</option>
-                {f.options?.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+                className="w-full max-w-xs"
+              />
             ) : (
               <input
-                className="input w-full"
+                className={`input w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${f.name === 'descricao' || f.name === 'nome' ? '' : ''}`}
                 value={f.value}
                 onChange={e => f.onChange(e.target.value)}
                 type={f.type || "text"}

@@ -32,7 +32,7 @@ export default function VagasFavoritasPage() {
             console.warn('Não foi possível obter token dev:', devErr);
           }
         }
-        const backendFavoritos = await api.listarVagasFavoritas().catch(() => []);
+        const backendFavoritos = await api.listarVagasFavoritas(candidatoId).catch(() => []);
         // Buscar dados completos de cada vaga favorita
         const backendFormatadas = await Promise.all((backendFavoritos || []).map(async (item: any) => {
           try {
@@ -101,7 +101,12 @@ export default function VagasFavoritasPage() {
         [...backendFormatadas, ...localFavoritos].forEach(v => { if (!map.has(v.id)) map.set(v.id, v); });
         if (mounted) setVagas(Array.from(map.values()));
       } catch (err: any) {
-        if (mounted) setErro(err?.message ?? 'Erro ao carregar vagas favoritas');
+        // Se o erro for de ID do candidato ausente ou inválido, trata como lista vazia
+        if (err?.message?.includes('ID do candidato ausente ou inválido')) {
+          if (mounted) setVagas([]);
+        } else {
+          if (mounted) setErro(err?.message ?? 'Erro ao carregar vagas favoritas');
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -135,11 +140,16 @@ export default function VagasFavoritasPage() {
         {vagas.length > 0 && (
           <div className="flex items-center gap-2 text-xs sm:text-sm flex-wrap">
             <label className="text-gray-600 dark:text-gray-400 shrink-0">Ordenar:</label>
-            <select value={sort} onChange={e => setSort(e.target.value as any)} className="border rounded px-2 py-1 bg-white dark:bg-gray-800 text-xs sm:text-sm">
-              <option value="recent">Recentes</option>
-              <option value="titulo">Título</option>
-              <option value="empresa">Empresa</option>
-            </select>
+            <CustomSelect
+              value={sort}
+              onChange={v => setSort(v as any)}
+              options={[
+                { value: 'recent', label: 'Recentes' },
+                { value: 'titulo', label: 'Título' },
+                { value: 'empresa', label: 'Empresa' },
+              ]}
+              className="text-xs sm:text-sm"
+            />
             <button onClick={handleBulkRemove} className="px-2 sm:px-3 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 border text-xs" title="Remover todas">
               Limpar tudo
             </button>

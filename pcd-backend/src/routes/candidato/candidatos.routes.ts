@@ -56,6 +56,9 @@ router.put("/:id", verifyJWT, ensureSelfCandidate, CandidatosController.atualiza
 // GET /candidatos/:id/subtipos (temporário sem auth para desenvolvimento)
 router.get("/:id/subtipos", CandidatosController.listarSubtipos);
 
+// GET /candidatos/:id/areas-formacao
+router.get("/:id/areas-formacao", CandidatosController.listarAreasFormacao);
+
 // POST /candidatos/:id/subtipos
 router.post("/:id/subtipos", CandidatosController.vincularSubtipos);
 

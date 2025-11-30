@@ -49,8 +49,8 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-sky-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div className="flex max-w-[1600px] mx-auto">
+    <div className="min-h-screen flex flex-col bg-sky-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="flex-1 flex flex-col md:flex-row max-w-[1600px] mx-auto w-full min-h-0">
         {/* Mobile top bar */}
         <div className="md:hidden w-full mb-1 flex items-center justify-between py-1 px-2">
           <div>
@@ -66,12 +66,16 @@ export default function DashboardLayout() {
 
         {/* Drawer (mobile) */}
         {isDrawerOpen && (
-          <div className="md:hidden fixed inset-0 bg-black/40 z-50" onClick={() => setIsDrawerOpen(false)}>
-            <div className="w-72 bg-white dark:bg-gray-900 h-full p-3" onClick={(e) => e.stopPropagation()}>
+          <div className="md:hidden fixed inset-0 bg-black/40 z-[60]" onClick={() => setIsDrawerOpen(false)}>
+            <div
+              className="w-72 max-w-full bg-white dark:bg-gray-900 h-full flex flex-col p-3 pb-24 fixed left-0 top-0 bottom-0 z-[61]"
+              style={{ maxHeight: '100vh', paddingBottom: '5.5rem' }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="mb-4">
                 <div className="text-sm text-gray-600">Menu</div>
               </div>
-              <nav className="space-y-2">
+              <nav className="space-y-2 flex-1 overflow-y-auto">
                 <NavLink to={`/candidato/${candidatoId}`} end onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
                 <NavLink to={`/candidato/${candidatoId}/favoritas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBookmark/> Vagas Favoritas</NavLink>
                 <NavLink to={`/candidato/${candidatoId}/minhas-candidaturas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBriefcase/> Minhas Candidaturas</NavLink>
@@ -81,9 +85,9 @@ export default function DashboardLayout() {
                 <NavLink to={`/candidato/${candidatoId}/faq`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> FAQ</NavLink>
                 <NavLink to={`/candidato/${candidatoId}/configuracoes`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiSettings/> Configurações</NavLink>
               </nav>
-                <div className="mt-4 border-t pt-3">
-                  <button onClick={() => { setIsDrawerOpen(false); handleLogout(); }} className="w-full text-left px-3 py-2 rounded text-sm text-red-600">Sair</button>
-                </div>
+              <div className="mt-4 border-t pt-3">
+                <button onClick={() => { setIsDrawerOpen(false); handleLogout(); }} className="w-full text-left px-3 py-2 rounded text-sm text-red-600">Sair</button>
+              </div>
             </div>
           </div>
         )}
@@ -115,8 +119,8 @@ export default function DashboardLayout() {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 md:p-6 pb-20 md:pb-6">
+        <main className="flex-1 min-h-0 overflow-auto">
+          <div className="p-4 md:p-6 pb-24 md:pb-6">
             <CandidateProvider candidatoId={candidatoId}>
               <Outlet />
             </CandidateProvider>

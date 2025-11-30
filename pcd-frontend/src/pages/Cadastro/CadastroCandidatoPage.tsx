@@ -430,16 +430,21 @@ export default function CadastroCandidatoPage() {
             <form onSubmit={handleStep2Submit} className="space-y-6">
               <div>
                 <label htmlFor="escolaridade" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Escolaridade *</label>
-                <select name="escolaridade" id="escolaridade" value={formData.escolaridade} onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100">
-                  <option value="">Selecione...</option>
-                  <option value="Ensino Fundamental Incompleto">Ensino Fundamental Incompleto</option>
-                  <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
-                  <option value="Ensino Médio Incompleto">Ensino Médio Incompleto</option>
-                  <option value="Ensino Médio Completo">Ensino Médio Completo</option>
-                  <option value="Ensino Superior Incompleto">Ensino Superior Incompleto</option>
-                  <option value="Ensino Superior Completo">Ensino Superior Completo</option>
-                </select>
+                <CustomSelect
+                  name="escolaridade"
+                  value={formData.escolaridade}
+                  onChange={v => handleInputChange({ target: { name: 'escolaridade', value: v } })}
+                  options={[
+                    { value: '', label: 'Selecione...' },
+                    { value: 'Ensino Fundamental Incompleto', label: 'Ensino Fundamental Incompleto' },
+                    { value: 'Ensino Fundamental Completo', label: 'Ensino Fundamental Completo' },
+                    { value: 'Ensino Médio Incompleto', label: 'Ensino Médio Incompleto' },
+                    { value: 'Ensino Médio Completo', label: 'Ensino Médio Completo' },
+                    { value: 'Ensino Superior Incompleto', label: 'Ensino Superior Incompleto' },
+                    { value: 'Ensino Superior Completo', label: 'Ensino Superior Completo' },
+                  ]}
+                  className="mt-1 block w-full"
+                />
               </div>
 
               <div>
@@ -477,18 +482,29 @@ export default function CadastroCandidatoPage() {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Deficiência *</label>
-                <select value={selectedTipoId ?? ''} onChange={(e) => setSelectedTipoId(e.target.value ? Number(e.target.value) : null)} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md">
-                  <option value="">Selecione...</option>
-                  {tiposDeficiencia.map(t => (<option key={t.id} value={t.id}>{t.nome}</option>))}
-                </select>
+                <CustomSelect
+                  value={selectedTipoId ?? ''}
+                  onChange={v => setSelectedTipoId(v ? Number(v) : null)}
+                  options={[
+                    { value: '', label: 'Selecione...' },
+                    ...tiposDeficiencia.map(t => ({ value: t.id.toString(), label: t.nome }))
+                  ]}
+                  className="mt-1 block w-full"
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtipo de Deficiência *</label>
-                <select value={selectedSubtipoId ?? ''} onChange={(e) => setSelectedSubtipoId(e.target.value ? Number(e.target.value) : null)} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md" disabled={!selectedTipoId}>
-                  <option value="">Selecione...</option>
-                  {tiposDeficiencia.filter(t => t.id === selectedTipoId).flatMap(t => t.subtipos ?? []).map(s => (<option key={s.id} value={s.id}>{s.nome}</option>))}
-                </select>
+                <CustomSelect
+                  value={selectedSubtipoId ?? ''}
+                  onChange={v => setSelectedSubtipoId(v ? Number(v) : null)}
+                  options={[
+                    { value: '', label: 'Selecione...' },
+                    ...tiposDeficiencia.filter(t => t.id === selectedTipoId).flatMap(t => (t.subtipos ?? []).map(s => ({ value: s.id.toString(), label: s.nome })))
+                  ]}
+                  className="mt-1 block w-full"
+                  disabled={!selectedTipoId}
+                />
               </div>
 
               <div>

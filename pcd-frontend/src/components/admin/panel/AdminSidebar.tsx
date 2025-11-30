@@ -1,6 +1,6 @@
 
 import { NavLink } from "react-router-dom";
-import { FiHome, FiUsers, FiBriefcase } from 'react-icons/fi';
+import { FiHome, FiUsers, FiBriefcase, FiFileText } from 'react-icons/fi';
 
 export default function AdminSidebar() {
   const itemClass = (isActive: boolean) =>
@@ -18,6 +18,7 @@ export default function AdminSidebar() {
         <NavLink to="/admin/vagas" className={({ isActive }) => itemClass(isActive)}><FiBriefcase />Vagas</NavLink>
         <hr className="my-2 border-gray-300 dark:border-gray-700" />
         <NavLink to="/admin/gestao-acessibilidade" className={({ isActive }) => itemClass(isActive)}>Gestão de Acessibilidade</NavLink>
+        <NavLink to="/admin/logs" className={({ isActive }) => itemClass(isActive)}><FiFileText />Logs do Sistema</NavLink>
         <button onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }} className="w-full text-left block px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">Sair</button>
       </div>
     </aside>

@@ -54,21 +54,16 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
         <form onSubmit={handleSubmit} className="card space-y-3">
             <div>
                 <label className="label">Subtipo</label>
-                <select
-                    className="input"
-                    value={subtipoId}
-                    onChange={(e) =>
-                        setSubtipoId(e.target.value ? Number(e.target.value) : "")
-                    } // transforma em numero 
+                <CustomSelect
+                    value={subtipoId?.toString() ?? ''}
+                    onChange={v => setSubtipoId(v ? Number(v) : '')}
+                    options={[
+                        { value: '', label: 'Selecione...' },
+                        ...subtipos.map(s => ({ value: s.id.toString(), label: s.nome }))
+                    ]}
                     disabled={loading}
-                >
-                    <option value="">Selecione...</option>
-                    {subtipos.map((s) => (
-                        <option key={s.id} value={s.id}>
-                            {s.nome}
-                        </option>
-                    ))}
-                </select>
+                    className="input"
+                />
             </div>
             <div>
                 <label className="label">Barreiras</label>

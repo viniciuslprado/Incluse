@@ -72,17 +72,16 @@ export default function VincularAcessibilidadeForm({ onLinked }: Props) {
       
       <div>
         <label className="label">Selecione a barreira</label>
-        <select 
-          className="input" 
-          value={barreiraId || ""} 
-          onChange={(e) => setBarreiraId(Number(e.target.value))}
+        <CustomSelect
+          value={barreiraId?.toString() ?? ''}
+          onChange={v => setBarreiraId(v ? Number(v) : null)}
+          options={[
+            { value: '', label: 'Escolha uma barreira...' },
+            ...barreiras.map(b => ({ value: b.id.toString(), label: b.descricao }))
+          ]}
           disabled={loading}
-        >
-          <option value="">Escolha uma barreira...</option>
-            {barreiras.map((b) => (
-              <option key={b.id} value={b.id}>{b.descricao}</option>
-          ))}
-        </select>
+          className="input"
+        />
       </div>
 
       <div>

@@ -1,3 +1,4 @@
+// Função movida para dentro do export const CandidatosController
 import { Request, Response } from "express";
 import { CandidatosService } from "../../services/candidato/candidatos.service";
 
@@ -5,6 +6,12 @@ import { CandidatosService } from "../../services/candidato/candidatos.service";
 // DELETE /candidatos/:id/laudo - Excluir laudo do candidato
 
 export const CandidatosController = {
+  async listarAreasFormacao(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+    const areas = await CandidatosService.listarAreasFormacao(id);
+    res.json(areas);
+  },
   async getLaudo(req: Request, res: Response) {
     try {
       const id = Number(req.params.id);

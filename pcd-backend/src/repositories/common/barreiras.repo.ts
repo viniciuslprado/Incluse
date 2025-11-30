@@ -2,10 +2,16 @@ import prisma from '../../prismaClient';
 
 export const BarreirasRepo = {
   list() {
-    return prisma.barreira.findMany({ orderBy: { id: "asc" } });
+    return prisma.barreira.findMany({ orderBy: { descricao: "asc" } });
   },
   create(descricao: string) {
     return prisma.barreira.create({ data: { descricao } });
+  },
+  update(id: number, descricao: string) {
+    return prisma.barreira.update({ where: { id }, data: { descricao } });
+  },
+  delete(id: number) {
+    return prisma.barreira.delete({ where: { id } });
   },
   findById(id: number) {
     return prisma.barreira.findUnique({ where: { id } });

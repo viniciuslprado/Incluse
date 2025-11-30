@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../components/common/Toast";
 import { api } from "../../lib/api";
 import type { Vaga } from "../../types";
 import { FiArrowLeft, FiMapPin, FiSend } from "react-icons/fi";
-import { useToast } from "../../components/common/Toast";
 import { addCandidatura, isVagaApplied, removeCandidatura } from "../../lib/localStorage";
 
 export default function VagaPublicaPage() {
@@ -13,29 +14,28 @@ export default function VagaPublicaPage() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const { addToast } = useToast();
-
-  // Pegar candidatoId do localStorage (token ou ID armazenado)
-  const candidatoId = (() => {
-    const userType = localStorage.getItem('userType');
-    const userId = localStorage.getItem('userId');
-    
-    // Só retorna o ID se for um candidato
-    if (userType === 'candidato' && userId) {
-      return Number(userId);
+  const { user, loading: authLoading } = useAuth();
+  // Redireciona para /login se não estiver autenticado
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
     }
-    return null;
-  })();
+  }, [authLoading, user, navigate]);
 
+  // Usa o contexto de autenticação para obter o id do candidato
+  const candidatoId = user && user.tipo === 'candidato' ? user.id : null;
   const [applied, setApplied] = useState(false);
 
   useEffect(() => {
-    if (candidatoId && vagaId) {
-      setApplied(isVagaApplied(candidatoId, Number(vagaId)));
+    if (!candidatoId || !vagaId) {
+      setApplied(false);
+      return;
     }
+    setApplied(isVagaApplied(candidatoId, Number(vagaId)));
   }, [candidatoId, vagaId]);
 
   function handleToggleApply() {
-    if (!candidatoId) {
+    if (!candidatoId || !user || user.tipo !== 'candidato') {
       addToast({ type: 'error', title: 'Não autenticado', message: 'Você precisa estar logado como candidato para se candidatar.' });
       return;
     }
@@ -76,7 +76,7 @@ export default function VagaPublicaPage() {
     carregar();
   }, [vagaId]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="container mx-auto px-4">

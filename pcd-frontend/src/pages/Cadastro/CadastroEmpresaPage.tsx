@@ -329,22 +329,14 @@ export default function CadastroEmpresaPage() {
               <label htmlFor="quantidadeFuncionarios" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Quantidade de Funcionários *
               </label>
-              <select
-                name="quantidadeFuncionarios"
-                id="quantidadeFuncionarios"
-                required
+              <CustomSelect
+                options={opcoesQuantidadeFuncionarios}
                 value={formData.quantidadeFuncionarios}
-                onChange={handleInputChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                onChange={v => handleInputChange({ target: { name: 'quantidadeFuncionarios', value: v } })}
+                placeholder="Selecione..."
                 disabled={loading}
-              >
-                <option value="">Selecione...</option>
-                {opcoesQuantidadeFuncionarios.map((opcao) => (
-                  <option key={opcao.value} value={opcao.value}>
-                    {opcao.label}
-                  </option>
-                ))}
-              </select>
+                className="mt-1 block w-full sm:text-sm"
+              />
             </div>
 
             {/* Cargo */}

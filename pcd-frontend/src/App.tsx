@@ -23,6 +23,7 @@ import CandidatosPorVagaPage from "./pages/empresa/CandidatosPorVagaPage";
 import VisualizarCandidatoPage from "./pages/empresa/VisualizarCandidatoPage";
 import AvaliarEmpresaPage from "./pages/empresa/AvaliarEmpresaPage";
 import DashboardPage from "./pages/empresa/DashboardPage";
+import EmpresaNotificacoesPage from "./pages/empresa/EmpresaNotificacoesPage";
 import EstatisticasPage from "./pages/empresa/EstatisticasPage";
 import MinhaContaPage from "./pages/empresa/MinhaContaPage";
 import DadosEmpresaPage from "./pages/empresa/DadosEmpresaPage";
@@ -63,6 +64,10 @@ import AdminCompanies from "./components/admin/panel/AdminCompanies";
 import AdminCandidates from "./components/admin/panel/AdminCandidates";
 import AdminJobs from "./components/admin/panel/AdminJobs";
 import GestaoAcessibilidadePage from "./pages/admin/GestaoAcessibilidadePage";
+import AdminLogsPage from "./pages/admin/AdminLogsPage";
+import VisualizarCurriculoPage from "./pages/empresa/VisualizarCurriculoPage";
+import Erro403Page from "./pages/public/Erro403Page";
+import TermosDeUsoPage from "./pages/public/TermosDeUsoPage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -77,10 +82,14 @@ function AppRoutes() {
               <Route path="/" element={<Navigate to="/inicio" replace />} />
               <Route path="/vagas" element={<VagasPage />} />
               <Route path="/vagas/:vagaId" element={<VagaPublicaPage />} />
+              {/* Redireciona /vaga/:vagaId para /login */}
+              <Route path="/vaga/:vagaId" element={<Navigate to="/login" replace />} />
               <Route path="/empresa" element={<EmpresasParceirasPage />} />
               <Route path="/quem-somos" element={<QuemSomosPage />} />
               <Route path="/acessibilidade" element={<AcessibilidadePage />} />
               <Route path="/politica-privacidade" element={<PoliticaPrivacidadePage />} />
+              <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
+              <Route path="/erro403" element={<Erro403Page />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/recuperar-senha" element={<RecoverPasswordPage />} />
               <Route path="/cadastro" element={<CadastroPage />} />
@@ -96,6 +105,7 @@ function AppRoutes() {
                   <Route path="candidatos" element={<AdminCandidates />} />
                   <Route path="vagas" element={<AdminJobs />} />
                   <Route path="gestao-acessibilidade" element={<GestaoAcessibilidadePage />} />
+                  <Route path="logs" element={<AdminLogsPage />} />
                 </Route>
               </Route>
               {/* Rotas antigas de acessibilidade removidas. Use apenas a tela de Gestão de Acessibilidade. */}
@@ -104,6 +114,7 @@ function AppRoutes() {
                 <Route index element={<DashboardPage />} />
                 <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="gestao-vagas" element={<GestaoVagasPage />} />
+                <Route path="notificacoes" element={<EmpresaNotificacoesPage />} />
                 <Route path="vagas/nova" element={<NovaVagaPage />} />
                 <Route path="vagas/:vagaId/editar" element={<EditarVagaPage />} />
                 <Route path="faq" element={<FAQPage />} />
@@ -113,6 +124,7 @@ function AppRoutes() {
                 <Route path="vagas/:vagaId/candidatos" element={<CandidatosPorVagaPage />} />
                 <Route path="candidatos/:candidatoId" element={<PerfilCandidatoPage />} />
                 <Route path="visualizar-candidato/:candidatoId" element={<VisualizarCandidatoPage />} />
+                <Route path="visualizar-curriculo/:candidatoId" element={<VisualizarCurriculoPage />} />
                 <Route path="vagas/:vagaId" element={<VagaDetalhePage />} />
                 <Route path="seguidores" element={<SeguidoresPage />} />
                 <Route path="estatisticas" element={<EstatisticasPage />} />

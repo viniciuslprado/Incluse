@@ -20,9 +20,18 @@ export const EmpresasRepo = {
       select: {
         id: true,
         nome: true,
+        nomeContato: true,
+        quantidadeFuncionarios: true,
+        cargo: true,
         cnpj: true,
         email: true,
         telefone: true,
+        cep: true,
+        rua: true,
+        numero: true,
+        bairro: true,
+        cidade: true,
+        estado: true,
         endereco: true,
         areaAtuacao: true,
         descricao: true,
@@ -71,8 +80,10 @@ export const EmpresasRepo = {
 
   update(id: number, data: any) {
     const allowedFields = [
-      'nome', 'cnpj', 'email', 'telefone', 'endereco', 
-      'areaAtuacao', 'descricao', 'logoUrl'
+      'nome', 'nomeContato', 'cnpj', 'email', 'telefone',
+      'quantidadeFuncionarios', 'cargo',
+      'cep', 'rua', 'numero', 'bairro', 'cidade', 'estado',
+      'endereco', 'areaAtuacao', 'descricao', 'logoUrl'
     ];
     const updateData: any = {};
     for (const field of allowedFields) {

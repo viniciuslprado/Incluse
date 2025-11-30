@@ -100,21 +100,16 @@ export default function VagaForm({ empresaId, onCreated }: VagaFormProps) {
           >
             Escolaridade
           </label>
-          <select
-            id="escolaridade"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
+          <CustomSelect
             value={escolaridade}
-            onChange={(e) => setEscolaridade(e.target.value)}
+            onChange={setEscolaridade}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...ESCOLARIDADE_OPTIONS.map(opcao => ({ value: opcao, label: opcao }))
+            ]}
             disabled={loading}
-            required
-          >
-            <option value="">Selecione...</option>
-            {ESCOLARIDADE_OPTIONS.map((opcao) => (
-              <option key={opcao} value={opcao}>
-                {opcao}
-              </option>
-            ))}
-          </select>
+            className="w-full"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

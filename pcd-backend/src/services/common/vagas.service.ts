@@ -63,7 +63,33 @@ export const VagasService = {
       processedData.acessibilidadeIds = vagaData.acessibilidadeIds.map((id: any) => Number(id));
     }
 
-    return VagasRepo.createComplete(processedData);
+    // Cria a vaga
+    const vaga = await VagasRepo.createComplete(processedData);
+
+    // Notificar candidatos compatíveis
+    if (processedData.subtipoIds && processedData.subtipoIds.length) {
+      // Buscar todos candidatos que tenham pelo menos um subtipo compatível
+      const prisma = require('../../prismaClient').prisma;
+      const candidatos = await prisma.candidato.findMany({
+        where: {
+          subtipos: {
+            some: {
+              subtipoId: { in: processedData.subtipoIds }
+            }
+          }
+        },
+        select: { id: true }
+      });
+      const { NotificacoesService } = require('./notificacoes.service');
+      for (const c of candidatos) {
+        try {
+          await NotificacoesService.criarNotificacaoNovaVaga(c.id, vaga.id, vaga.titulo);
+        } catch (err) {
+          console.error('Erro ao notificar candidato', c.id, err);
+        }
+      }
+    }
+    return vaga;
   },
 
   async listarVagas(empresaId?: number, filters?: any, page = 1, limit = 10) {
@@ -193,7 +219,19 @@ export const VagasService = {
         throw new Error("Status inválido. Use: pendente, em_analise, aprovado ou rejeitado");
       }
     }
-    return VagasRepo.updateCandidatoStatus(vagaId, candidatoId, data);
+    const updated = await VagasRepo.updateCandidatoStatus(vagaId, candidatoId, data);
+    // Notificar candidato sobre atualização de status
+    if (status) {
+      const prisma = require('../../prismaClient').prisma;
+      const vaga = await prisma.vaga.findUnique({ where: { id: vagaId }, select: { titulo: true } });
+      const { NotificacoesService } = require('./notificacoes.service');
+      try {
+        await NotificacoesService.criarNotificacaoAtualizacao(candidatoId, vagaId, vaga?.titulo || '', status);
+      } catch (err) {
+        console.error('Erro ao notificar candidato sobre atualização de status', candidatoId, err);
+      }
+    }
+    return updated;
   },
 
   async duplicarVaga(vagaId: number, empresaId: number) {

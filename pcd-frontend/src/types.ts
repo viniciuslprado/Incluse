@@ -121,7 +121,6 @@ export type Candidato = {
   situacao?: 'concluido' | 'cursando';
   cidade?: string;
   estado?: string;
-  disponibilidadeGeografica?: string;
   aceitaMudanca?: boolean;
   aceitaViajar?: boolean;
   pretensaoSalarialMin?: number;

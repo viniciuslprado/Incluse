@@ -6,54 +6,55 @@ export class CandidaturasController {
   static async criar(req: Request, res: Response) {
     const vagaId = Number(req.params.id);
     const { candidatoId } = req.body;
-    
+
     console.log('[CandidaturasController.criar] ====== INÍCIO ======');
     console.log('[CandidaturasController.criar] req.params:', req.params);
     console.log('[CandidaturasController.criar] req.body:', req.body);
     console.log('[CandidaturasController.criar] vagaId:', vagaId, 'candidatoId:', candidatoId);
     console.log('[CandidaturasController.criar] vagaId type:', typeof vagaId, 'candidatoId type:', typeof candidatoId);
-    
+
     if (!vagaId || !candidatoId) {
       console.log('[CandidaturasController.criar] Dados inválidos - retornando erro 400');
       return res.status(400).json({ error: "Dados inválidos" });
     }
-    
+
     try {
       console.log('[CandidaturasController.criar] Verificando candidatura existente...');
 
       const existingActive = await prisma.candidatura.findFirst({
-        where: { 
-          vagaId, 
-          candidatoId: Number(candidatoId), 
-          isActive: true 
+        where: {
+          vagaId,
+          candidatoId: Number(candidatoId),
+          isActive: true
         }
       });
-      
+
       console.log('[CandidaturasController.criar] Candidatura existente:', existingActive);
-      
+
       if (existingActive) {
         console.log('[CandidaturasController.criar] Candidatura já ativa - retornando erro');
         return res.status(400).json({ error: "Você já se candidatou a esta vaga" });
       }
-      
+
       console.log('[CandidaturasController.criar] Buscando vaga...');
       // Verificar se a vaga existe
       const vaga = await prisma.vaga.findUnique({
-        where: { id: vagaId }
+        where: { id: vagaId },
+        include: { empresa: { select: { id: true, email: true, nome: true } } }
       });
-      
+
       console.log('[CandidaturasController.criar] Vaga encontrada:', vaga ? { id: vaga.id, titulo: vaga.titulo, isActive: vaga.isActive, status: vaga.status } : null);
-      
+
       if (!vaga) {
         console.log('[CandidaturasController.criar] Vaga não encontrada - retornando erro 404');
         return res.status(404).json({ error: "Vaga não encontrada" });
       }
-      
+
       const statusInicial = (!vaga.isActive || vaga.status !== 'ativa') ? 'dispensado' : 'pendente';
       console.log('[CandidaturasController.criar] Status inicial definido:', statusInicial);
-      
+
       console.log('[CandidaturasController.criar] Chamando upsert com:', { vagaId, candidatoId: Number(candidatoId), statusInicial });
-      
+
       const created = await prisma.candidatura.upsert({
         where: {
           vagaId_candidatoId: {
@@ -73,15 +74,25 @@ export class CandidaturasController {
           isActive: true
         }
       });
-      
+
       console.log('[CandidaturasController.criar] Candidatura processada:', JSON.stringify(created, null, 2));
-      
+
+      // Notificar empresa (respeitando preferências)
+      try {
+        const { notificarEmpresaNovaCandidatura } = await import("../../services/empresa/notificacoes-empresa.service");
+        if (vaga.empresa && vaga.empresa.id && vaga.empresa.email) {
+          await notificarEmpresaNovaCandidatura(vaga.empresa.id, vaga.empresa.email, vaga.titulo);
+        }
+      } catch (notifErr) {
+        console.error('[CandidaturasController.criar] Erro ao notificar empresa:', notifErr);
+      }
+
       // Verificar imediatamente após criar
       const verificacao = await prisma.candidatura.findFirst({
         where: { vagaId, candidatoId: Number(candidatoId), isActive: true }
       });
       console.log('[CandidaturasController.criar] Verificação imediata:', JSON.stringify(verificacao, null, 2));
-      
+
       return res.status(201).json({ id: created.id, vagaId: created.vagaId, candidatoId: created.candidatoId });
     } catch (err: any) {
       console.error('[CandidaturasController.criar] Erro:', err);

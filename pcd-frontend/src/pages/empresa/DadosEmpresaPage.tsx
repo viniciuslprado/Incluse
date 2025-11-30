@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CustomSelect from '../../components/common/CustomSelect';
 import { useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 
@@ -161,9 +162,31 @@ export default function DadosEmpresaPage() {
       return;
     }
 
+    // Normaliza todos os campos para garantir que todos sejam enviados
+    const empresaPayload = {
+      id: empresa.id,
+      nome: empresa.nome || '',
+      nomeContato: empresa.nomeContato || '',
+      cnpj: empresa.cnpj || '',
+      email: empresa.email || '',
+      telefone: empresa.telefone || '',
+      quantidadeFuncionarios: empresa.quantidadeFuncionarios || '',
+      cargo: empresa.cargo || '',
+      cep: empresa.cep || '',
+      rua: empresa.rua || '',
+      numero: empresa.numero || '',
+      bairro: empresa.bairro || '',
+      cidade: empresa.cidade || '',
+      estado: empresa.estado || '',
+      endereco: empresa.endereco || '',
+      areaAtuacao: empresa.areaAtuacao || '',
+      descricao: empresa.descricao || '',
+      logoUrl: empresa.logoUrl || '',
+    };
+
     setSaving(true);
     try {
-      await api.atualizarEmpresaAutenticada(empresa);
+      await api.atualizarEmpresaAutenticada(empresaPayload);
       setSucesso(true);
       setTimeout(() => setSucesso(false), 3000);
     } catch (error) {
@@ -221,7 +244,20 @@ export default function DadosEmpresaPage() {
               {/* Quantidade de Funcionários */}
               <div>
                 <label htmlFor="quantidadeFuncionarios" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantidade de Funcionários *</label>
-                <input type="text" id="quantidadeFuncionarios" name="quantidadeFuncionarios" value={empresa.quantidadeFuncionarios || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Ex: 1-10, 11-50, 51-200..." required />
+                <CustomSelect
+                  value={empresa.quantidadeFuncionarios || ''}
+                  onChange={val => handleInputChange({ target: { name: 'quantidadeFuncionarios', value: val } })}
+                  options={[
+                    { value: '', label: 'Selecione...' },
+                    { value: '1-10', label: '1 a 10 funcionários' },
+                    { value: '11-50', label: '11 a 50 funcionários' },
+                    { value: '51-200', label: '51 a 200 funcionários' },
+                    { value: '201-1000', label: '201 a 1000 funcionários' },
+                    { value: '1000+', label: 'Mais de 1000 funcionários' },
+                  ]}
+                  placeholder="Selecione..."
+                  className="w-full"
+                />
               </div>
               {/* Cargo */}
               <div>

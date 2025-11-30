@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import { FiSearch } from 'react-icons/fi';
 import { api } from '../../../lib/api';
 import type { SubtipoDeficiencia, TipoDeficiencia } from '../../../types';
 import CrudModal from './CrudModal';
@@ -7,11 +8,15 @@ import ConfirmModal from '../../common/ConfirmModal';
 import Button from '../../common/Button';
 import { useToast } from '../../common/Toast';
 
+import CustomSelect from '../../common/CustomSelect';
+
 export default function SubtiposTab() {
   const [tipos, setTipos] = useState<TipoDeficiencia[]>([]);
   const [tipoId, setTipoId] = useState<number | null>(null);
   const [subtipos, setSubtipos] = useState<SubtipoDeficiencia[]>([]);
   const [loading, setLoading] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editSubtipo, setEditSubtipo] = useState<SubtipoDeficiencia | null>(null);
   const [nome, setNome] = useState("");
@@ -23,11 +28,15 @@ export default function SubtiposTab() {
     api.listarTipos().then(setTipos).catch(() => toast.addToast({ message: "Erro ao carregar tipos", type: "error" }));
   }, []);
 
+
   useEffect(() => {
     if (tipoId) {
       setLoading(true);
-      api.listarSubtiposPorTipo(tipoId)
-        .then(setSubtipos)
+      api.listarTiposComSubtiposPublico()
+        .then((tiposComSubtipos) => {
+          const tipo = tiposComSubtipos.find((t: any) => t.id === tipoId);
+          setSubtipos(tipo ? tipo.subtipos : []);
+        })
         .catch(() => toast.addToast({ message: "Erro ao carregar subtipos", type: "error" }))
         .finally(() => setLoading(false));
     } else {
@@ -97,18 +106,39 @@ export default function SubtiposTab() {
       <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
         <strong>Instrução:</strong> Cadastre subtipos para cada tipo de deficiência. Exemplo: Paraplegia, Surdez, Baixa visão...
       </div>
-      <div className="mb-4">
-        <label className="block mb-1 font-medium">Tipo de Deficiência</label>
-        <select
-          className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-          value={tipoId ?? ''}
-          onChange={e => setTipoId(Number(e.target.value) || null)}
-        >
-          <option value="">Selecione...</option>
-          {tipos.map(t => (
-            <option key={t.id} value={t.id}>{t.nome}</option>
-          ))}
-        </select>
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-2">
+        <div>
+          <label className="block mb-1 font-medium">Tipo de Deficiência</label>
+          <CustomSelect
+            value={tipoId?.toString() ?? ''}
+            onChange={v => setTipoId(v ? Number(v) : null)}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...tipos.map(t => ({ value: t.id.toString(), label: t.nome }))
+            ]}
+            className="w-full max-w-xs"
+          />
+        </div>
+        <div className="flex-1 flex gap-2 items-end">
+          <div className="relative w-full">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><FiSearch /></span>
+            <input
+              type="text"
+              className="pl-10 pr-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white"
+              placeholder="Buscar subtipo..."
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              disabled={loading || subtipos.length === 0}
+              onKeyDown={e => { if (e.key === 'Enter') setBuscaAplicada(busca); }}
+            />
+          </div>
+          <button
+            className="ml-1 px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
+            onClick={() => setBuscaAplicada(busca)}
+            disabled={loading || subtipos.length === 0}
+            title="Buscar"
+          >Buscar</button>
+        </div>
       </div>
       <div className="card p-0 overflow-x-auto">
         <table className="min-w-full text-sm">
@@ -123,7 +153,9 @@ export default function SubtiposTab() {
               <tr><td colSpan={2} className="text-center py-6">Carregando...</td></tr>
             ) : subtipos.length === 0 ? (
               <tr><td colSpan={2} className="text-center py-6">Nenhum subtipo cadastrado</td></tr>
-            ) : subtipos.map(subtipo => (
+            ) : subtipos.filter(s => s.nome.toLowerCase().includes(buscaAplicada.toLowerCase())).length === 0 ? (
+              <tr><td colSpan={2} className="text-center py-6">Nenhum resultado encontrado</td></tr>
+            ) : subtipos.filter(s => s.nome.toLowerCase().includes(buscaAplicada.toLowerCase())).map(subtipo => (
               <tr key={subtipo.id} className="border-b last:border-0">
                 <td className="px-4 py-2">{subtipo.nome}</td>
                 <td className="px-4 py-2 flex gap-2">

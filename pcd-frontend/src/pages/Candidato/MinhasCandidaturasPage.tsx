@@ -45,6 +45,10 @@ const statusColors = {
 export default function MinhasCandidaturasPage() {
   const { id } = useParams();
   const candidatoId = Number(id);
+  // Checa se o usuário está autenticado e é candidato
+  const storedUserId = localStorage.getItem('userId');
+  const storedUserType = localStorage.getItem('userType');
+  const isCandidatoAutenticado = storedUserId && storedUserType === 'candidato' && Number(storedUserId) === candidatoId;
   const [candidaturas, setCandidaturas] = useState<Candidatura[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,37 +58,21 @@ export default function MinhasCandidaturasPage() {
   const { addToast } = useToast();
 
   const carregarDados = async () => {
+    if (!isCandidatoAutenticado) {
+      addToast({ type: 'error', message: 'Usuário não autenticado. Faça login novamente.' });
+      setTimeout(() => window.location.href = '/login', 2000);
+      return;
+    }
     try {
       setLoading(true);
-      
-      // Verificar se token corresponde ao candidato da URL
-      const storedUserId = localStorage.getItem('userId');
-      const storedUserType = localStorage.getItem('userType');
-      
-      // Se não há token ou userId não corresponde, obter novo token
-      if (!storedUserId || Number(storedUserId) !== candidatoId || storedUserType !== 'candidato') {
-        try {
-          const devAuth = await api.getDevToken(candidatoId);
-          localStorage.setItem('token', devAuth.token);
-          localStorage.setItem('userType', 'candidato');
-          localStorage.setItem('userId', String(candidatoId));
-        } catch (devErr: any) {
-          if ((import.meta as any).env?.DEV) console.warn('Não foi possível obter token dev:', devErr);
-          setLoading(false);
-          return;
-        }
-      }
-      
       const candidaturasData = await api.listarCandidaturas(candidatoId).catch(err => {
         if ((import.meta as any).env?.DEV && err?.status !== 401 && err?.status !== 403) console.error('Erro ao listar candidaturas:', err);
         return [];
       });
-      
       const dashboardData = await api.obterDashboardCandidaturas(candidatoId).catch(err => {
         if ((import.meta as any).env?.DEV && err?.status !== 401 && err?.status !== 403) console.error('Erro ao obter dashboard:', err);
         return { candidaturasEnviadas: 0, emAnalise: 0, preSelecionado: 0, entrevistaMarcada: 0 };
       });
-      
       setCandidaturas(candidaturasData);
       setDashboard(dashboardData);
     } catch (err: any) {
@@ -107,20 +95,16 @@ export default function MinhasCandidaturasPage() {
     if (candidatoId) {
       carregarDados();
     }
-    
     // Listener para atualizar quando nova candidatura for criada
     const handleCandidaturaCreated = () => {
       carregarDados();
     };
-    
     // Listener para quando a página fica visível novamente
     const handleFocus = () => {
       carregarDados();
     };
-    
     window.addEventListener('candidaturaCreated', handleCandidaturaCreated);
     window.addEventListener('focus', handleFocus);
-    
     return () => {
       window.removeEventListener('candidaturaCreated', handleCandidaturaCreated);
       window.removeEventListener('focus', handleFocus);
@@ -174,8 +158,6 @@ export default function MinhasCandidaturasPage() {
         </div>
       )}
 
-
-
       {/* Lista de Candidaturas */}
       <div className="space-y-4">
         {candidaturas.length === 0 ? (
@@ -196,12 +178,10 @@ export default function MinhasCandidaturasPage() {
                     Candidatura em: {new Date(candidatura.createdAt).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
-                
                 <div className="flex flex-col items-end gap-2">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[candidatura.status as keyof typeof statusColors]}`}>
                     {statusLabels[candidatura.status as keyof typeof statusLabels]}
                   </span>
-                  
                   <div className="flex gap-2">
                     <button 
                       onClick={() => window.open(`/vagas/${candidatura.vaga.id}`, '_blank')}

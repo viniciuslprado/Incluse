@@ -45,17 +45,16 @@ export default function SubtipoForm({ pedro }: Props) {
       <div className="grid gap-3 md:grid-cols-2">
         <div>
           <label className="label">Tipo</label>
-          <select
-            className="input"
-            value={tipoId}
-            onChange={(e) => setTipoId(e.target.value ? Number(e.target.value) : "")}
+          <CustomSelect
+            value={tipoId?.toString() ?? ''}
+            onChange={v => setTipoId(v ? Number(v) : '')}
+            options={[
+              { value: '', label: 'Selecione um tipo...' },
+              ...tipos.map(t => ({ value: t.id.toString(), label: t.nome }))
+            ]}
             disabled={loading || !tipos.length}
-          >
-            <option value="">Selecione um tipo...</option>
-            {tipos.map((t) => (
-              <option key={t.id} value={t.id}>{t.nome}</option>
-            ))}
-          </select>
+            className="input"
+          />
         </div>
 
         <div>

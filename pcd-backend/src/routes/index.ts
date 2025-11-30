@@ -10,7 +10,6 @@ import vagas from "./common/vagas.routes";
 import empresa from "./empresa/empresas.routes";
 import candidato from "./candidato/candidatos.routes";
 import candidaturas from "./candidato/candidaturas.routes";
-import match from "./common/match.routes";
 import auth from "./public/auth.routes";
 import publicTipos from "./public/tipos.routes";
 import areasFormacao from "./common/areas-formacao.routes";
@@ -28,7 +27,6 @@ router.use("/vagas", vagas);
 router.use("/empresa", empresa);
 router.use("/candidato", candidato);
 router.use("/candidaturas", candidaturas);
-router.use("/match", match);
 router.use("/areas-formacao", areasFormacao);
 router.use("/", vinculos); // rotas de vínculo
 

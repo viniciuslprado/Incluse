@@ -66,11 +66,29 @@ export const AuthController = {
       console.log('[AuthController] senha recebida:', senha, '| senhaHash:', senhaHash, '| ok:', ok);
       if (!ok) return res.status(401).json({ error: 'Senha inválida' });
 
+
       // Reativar conta se estiver desativada
       if (userType === 'candidato' && user.isActive === false) {
         await prisma.candidato.update({ where: { id: user.id }, data: { isActive: true } });
       } else if (userType === 'empresa' && user.isActive === false) {
         await prisma.empresa.update({ where: { id: user.id }, data: { isActive: true } });
+      }
+
+      // Notificação de boas-vindas no primeiro login do candidato
+      if (userType === 'candidato') {
+        const notificacoes = await prisma.notificacao.findMany({
+          where: { candidatoId: user.id, tipo: 'boas_vindas' }
+        });
+        if (notificacoes.length === 0) {
+          await prisma.notificacao.create({
+            data: {
+              candidatoId: user.id,
+              tipo: 'boas_vindas',
+              titulo: 'Bem-vindo ao Incluse!',
+              mensagem: 'Sua jornada de inclusão começa agora. Explore vagas, atualize seu perfil e aproveite todas as oportunidades!'
+            }
+          });
+        }
       }
 
       const token = jwt.sign({ sub: user.id, role, name: user.nome || user.nomeContato || user.nome }, JWT_SECRET, { expiresIn: '15m' });

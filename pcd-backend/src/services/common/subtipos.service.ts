@@ -44,4 +44,13 @@ export const SubtiposService = {
 
     return SubtiposRepo.create(final, tipoId);
   },
+  async update(id: number, nome: string) {
+    const final = (nome ?? "").trim();
+    if (!final) throw Object.assign(new Error("O campo 'nome' é obrigatório"), { status: 400 });
+    return SubtiposRepo.update(id, final);
+  },
+  async delete(id: number) {
+    // Pode adicionar validações extras se necessário
+    return SubtiposRepo.delete(id);
+  },
 };

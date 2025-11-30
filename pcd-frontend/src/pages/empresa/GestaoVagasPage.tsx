@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { FiSearch, FiEdit, FiCopy, FiUsers, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiSearch, FiEdit, FiUsers, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import ResponsiveCardList from '../../components/common/ResponsiveCardList';
 
 interface Vaga {
@@ -51,19 +51,7 @@ export default function GestaoVagasPage() {
     }
   }
 
-  async function duplicarVaga(vagaId: number) {
-    try {
-      const vaga = vagas.find(v => v.id === vagaId);
-      if (!vaga) return;
-      
-      // Implementar lógica de duplicação via API
-      alert('Funcionalidade de duplicar vaga será implementada');
-      // await api.duplicarVaga(vagaId);
-      // carregarVagas();
-    } catch (error) {
-      console.error('Erro ao duplicar vaga:', error);
-    }
-  }
+
 
   async function alterarStatus(vagaId: number, status: 'ativa' | 'encerrada') {
     try {
@@ -268,13 +256,7 @@ export default function GestaoVagasPage() {
                         >
                           <FiUsers className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => duplicarVaga(vaga.id)}
-                          className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                          title="Duplicar"
-                        >
-                          <FiCopy className="w-4 h-4" />
-                        </button>
+
                       </div>
                     </td>
                   </tr>
@@ -298,7 +280,7 @@ export default function GestaoVagasPage() {
                   actions: [
                     { label: 'Editar', onClick: () => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/editar`), variant: 'blue' },
                     { label: 'Ver candidatos', onClick: () => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/candidatos`), variant: 'purple' },
-                    { label: 'Duplicar', onClick: () => duplicarVaga(vaga.id), variant: 'green', full: true },
+
                     vaga.status === 'ativa'
                       ? { label: 'Arquivar', onClick: () => alterarStatus(vaga.id, 'encerrada'), variant: 'yellow', full: true }
                       : { label: 'Reativar', onClick: () => alterarStatus(vaga.id, 'ativa'), variant: 'green', full: true },

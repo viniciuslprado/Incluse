@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { CurriculoBasico } from '../../types';
@@ -43,7 +44,13 @@ export default function CandidatosPorVagaPage() {
     async function carregarCandidatos() {
       try {
         const data = await api.listarCandidatosPorVaga(vagaIdNum);
-        setCandidatos(data.map((c: any) => ({ ...c, status: c.status || 'novo' })));
+        if (Array.isArray(data)) {
+          setCandidatos(data.map((c: any) => ({ ...c, status: c.status || 'novo' })));
+        } else if (data && Array.isArray(data.data)) {
+          setCandidatos(data.data.map((c: any) => ({ ...c, status: c.status || 'novo' })));
+        } else {
+          setCandidatos([]);
+        }
       } catch (error) {
         setErro('Erro ao carregar candidatos');
         console.error(error);
@@ -131,56 +138,66 @@ export default function CandidatosPorVagaPage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Escolaridade
             </label>
-            <select
+            <CustomSelect
               value={filtros.escolaridade}
-              onChange={(e) => setFiltros(prev => ({ ...prev, escolaridade: e.target.value }))}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-            >
-              <option value="">Todas</option>
-              <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
-              <option value="Ensino Médio Completo">Ensino Médio Completo</option>
-              <option value="Ensino Superior Completo">Ensino Superior Completo</option>
-            </select>
+              onChange={val => setFiltros(prev => ({ ...prev, escolaridade: val }))}
+              options={[
+                { value: '', label: 'Todas' },
+                { value: 'Ensino Fundamental Completo', label: 'Ensino Fundamental Completo' },
+                { value: 'Ensino Médio Completo', label: 'Ensino Médio Completo' },
+                { value: 'Ensino Superior Completo', label: 'Ensino Superior Completo' },
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Status
             </label>
-            <select
+            <CustomSelect
               value={filtros.status}
-              onChange={(e) => setFiltros(prev => ({ ...prev, status: e.target.value }))}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-            >
-              <option value="">Todos</option>
-              <option value="novo">Novo</option>
-              <option value="analisado">Analisado</option>
-              <option value="aprovado">Aprovado</option>
-              <option value="reprovado">Reprovado</option>
-            </select>
+              onChange={val => setFiltros(prev => ({ ...prev, status: val }))}
+              options={[
+                { value: '', label: 'Todos' },
+                { value: 'novo', label: 'Novo' },
+                { value: 'analisado', label: 'Analisado' },
+                { value: 'aprovado', label: 'Aprovado' },
+                { value: 'reprovado', label: 'Reprovado' },
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Tipo de Deficiência
             </label>
-            <select
+            <CustomSelect
               value={filtros.tipoDeficiencia}
-              onChange={(e) => setFiltros(prev => ({ ...prev, tipoDeficiencia: e.target.value }))}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-            >
-              <option value="">Todos</option>
-              <option value="motora">Deficiência Motora</option>
-              <option value="auditiva">Deficiência Auditiva</option>
-              <option value="visual">Deficiência Visual</option>
-            </select>
+              onChange={val => setFiltros(prev => ({ ...prev, tipoDeficiencia: val }))}
+              options={[
+                { value: '', label: 'Todos' },
+                { value: 'motora', label: 'Deficiência Motora' },
+                { value: 'auditiva', label: 'Deficiência Auditiva' },
+                { value: 'visual', label: 'Deficiência Visual' },
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
       </div>
 
+
       {erro && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
           <p className="text-sm text-red-700 dark:text-red-300">{erro}</p>
+        </div>
+      )}
+
+      {!loading && !erro && candidatos.length === 0 && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6 text-center">
+          <p className="text-yellow-800 dark:text-yellow-200 font-medium">Sem candidatos</p>
         </div>
       )}
 
@@ -235,16 +252,17 @@ export default function CandidatosPorVagaPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <select
+                      <CustomSelect
                         value={candidato.status || 'novo'}
-                        onChange={(e) => handleStatusChange(candidato.id, e.target.value)}
-                        className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-gray-100"
-                      >
-                        <option value="novo">Novo</option>
-                        <option value="analisado">Analisado</option>
-                        <option value="aprovado">Aprovado</option>
-                        <option value="reprovado">Reprovado</option>
-                      </select>
+                        onChange={val => handleStatusChange(candidato.id, val)}
+                        options={[
+                          { value: 'novo', label: 'Novo' },
+                          { value: 'analisado', label: 'Analisado' },
+                          { value: 'aprovado', label: 'Aprovado' },
+                          { value: 'reprovado', label: 'Reprovado' },
+                        ]}
+                        className="w-full"
+                      />
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                       {candidato.escolaridade}
@@ -308,16 +326,17 @@ export default function CandidatosPorVagaPage() {
               description: (
                 <div>
                   <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
-                  <select
+                  <CustomSelect
                     value={candidato.status || 'novo'}
-                    onChange={(e) => handleStatusChange(candidato.id, e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm dark:bg-gray-700 dark:text-gray-100"
-                  >
-                    <option value="novo">Novo</option>
-                    <option value="analisado">Analisado</option>
-                    <option value="aprovado">Aprovado</option>
-                    <option value="reprovado">Reprovado</option>
-                  </select>
+                    onChange={val => handleStatusChange(candidato.id, val)}
+                    options={[
+                      { value: 'novo', label: 'Novo' },
+                      { value: 'analisado', label: 'Analisado' },
+                      { value: 'aprovado', label: 'Aprovado' },
+                      { value: 'reprovado', label: 'Reprovado' },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
               ),
               meta: [

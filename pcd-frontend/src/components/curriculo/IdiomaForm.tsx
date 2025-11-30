@@ -51,26 +51,23 @@ export default function IdiomaForm({ idioma, onSave, onCancel }: Props) {
         <label className="block text-sm font-medium mb-1">
           Nível <span className="text-red-600">*</span>
         </label>
-        <select
+        <CustomSelect
           value={nivel}
-          onChange={(e) => setNivel(e.target.value as any)}
-          className="w-full border rounded px-3 py-2"
-        >
-          <optgroup label="CEFR">
-            <option value="A1">A1 - Iniciante</option>
-            <option value="A2">A2 - Básico</option>
-            <option value="B1">B1 - Intermediário</option>
-            <option value="B2">B2 - Intermediário-Avançado</option>
-            <option value="C1">C1 - Avançado</option>
-            <option value="C2">C2 - Proficiência</option>
-          </optgroup>
-          <optgroup label="Geral">
-            <option value="Básico">Básico</option>
-            <option value="Intermediário">Intermediário</option>
-            <option value="Avançado">Avançado</option>
-            <option value="Fluente">Fluente</option>
-          </optgroup>
-        </select>
+          onChange={setNivel}
+          options={[
+            { value: 'A1', label: 'A1 - Iniciante' },
+            { value: 'A2', label: 'A2 - Básico' },
+            { value: 'B1', label: 'B1 - Intermediário' },
+            { value: 'B2', label: 'B2 - Intermediário-Avançado' },
+            { value: 'C1', label: 'C1 - Avançado' },
+            { value: 'C2', label: 'C2 - Proficiência' },
+            { value: 'Básico', label: 'Básico' },
+            { value: 'Intermediário', label: 'Intermediário' },
+            { value: 'Avançado', label: 'Avançado' },
+            { value: 'Fluente', label: 'Fluente' },
+          ]}
+          className="w-full"
+        />
       </div>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="px-4 py-2 border rounded">

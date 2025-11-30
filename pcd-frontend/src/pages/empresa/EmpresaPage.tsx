@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Outlet, NavLink, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import type { Empresa } from "../../types";
-import { FiHome, FiUsers, FiSettings, FiFileText, FiMenu, FiPlusCircle, FiList, FiLogOut } from "react-icons/fi";
+import { FiHome, FiUsers, FiSettings, FiFileText, FiMenu, FiPlusCircle, FiList, FiLogOut, FiBell } from "react-icons/fi";
 
 export default function EmpresaPage() {
   const { id } = useParams();
@@ -72,6 +72,8 @@ export default function EmpresaPage() {
     { to: `/empresa/${empresaId}/anunciar`, icon: FiPlusCircle, label: 'Anunciar Vaga' },
     { to: `/empresa/${empresaId}/gestao-vagas`, icon: FiList, label: 'Gestão de Vagas' },
     { to: `/empresa/${empresaId}/candidatos`, icon: FiUsers, label: 'Candidatos' },
+    // Notificações acima de Dados da Empresa
+    { to: `/empresa/${empresaId}/notificacoes`, icon: FiBell, label: 'Notificações' },
     { to: `/empresa/${empresaId}/dados`, icon: FiFileText, label: 'Dados da Empresa' },
     { to: `/empresa/${empresaId}/configuracoes`, icon: FiSettings, label: 'Configurações' },
   ];
@@ -81,12 +83,16 @@ export default function EmpresaPage() {
       <div className="flex max-w-[1600px] mx-auto">
         {/* Drawer (mobile) */}
         {isDrawerOpen && (
-          <div className="md:hidden fixed inset-0 bg-black/40 z-50" onClick={() => setIsDrawerOpen(false)}>
-            <div className="w-72 bg-white dark:bg-gray-900 h-full p-3" onClick={(e) => e.stopPropagation()}>
+          <div className="md:hidden fixed inset-0 bg-black/40 z-[60]" onClick={() => setIsDrawerOpen(false)}>
+            <div
+              className="w-72 max-w-full bg-white dark:bg-gray-900 h-full flex flex-col p-3 pb-24 fixed left-0 top-0 bottom-0 z-[61]"
+              style={{ maxHeight: '100vh', paddingBottom: '5.5rem' }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="mb-4">
                 <div className="text-sm text-gray-600 dark:text-gray-400">Menu</div>
               </div>
-              <nav className="space-y-2">
+              <nav className="space-y-2 flex-1 overflow-y-auto">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   return (

@@ -1,3 +1,5 @@
+
+import CustomSelect from '../../components/common/CustomSelect';
 import { formatPhone } from '../../utils/formatters';
 
 type Props = {
@@ -66,23 +68,24 @@ export default function MeuPerfil({ avatarPreview, candidato, fileRef, handleFil
         </div>
         <div>
           <label className="block text-sm font-medium">Escolaridade <span className="text-red-600">*</span></label>
-          <select 
-            aria-required="true" 
-            value={form.escolaridade || ''} 
-            onChange={e => handleInput('escolaridade', e.target.value)} 
-            className="p-3 border rounded w-full"
-          >
-            <option value="">Selecione sua escolaridade</option>
-            <option value="Ensino Fundamental Incompleto">Ensino Fundamental Incompleto</option>
-            <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
-            <option value="Ensino Médio Incompleto">Ensino Médio Incompleto</option>
-            <option value="Ensino Médio Completo">Ensino Médio Completo</option>
-            <option value="Ensino Superior Incompleto">Ensino Superior Incompleto</option>
-            <option value="Ensino Superior Completo">Ensino Superior Completo</option>
-            <option value="Pós-graduação">Pós-graduação</option>
-            <option value="Mestrado">Mestrado</option>
-            <option value="Doutorado">Doutorado</option>
-          </select>
+          <CustomSelect
+            value={form.escolaridade || ''}
+            onChange={val => handleInput('escolaridade', val)}
+            options={[
+              { value: '', label: 'Selecione sua escolaridade' },
+              { value: 'Ensino Fundamental Incompleto', label: 'Ensino Fundamental Incompleto' },
+              { value: 'Ensino Fundamental Completo', label: 'Ensino Fundamental Completo' },
+              { value: 'Ensino Médio Incompleto', label: 'Ensino Médio Incompleto' },
+              { value: 'Ensino Médio Completo', label: 'Ensino Médio Completo' },
+              { value: 'Ensino Superior Incompleto', label: 'Ensino Superior Incompleto' },
+              { value: 'Ensino Superior Completo', label: 'Ensino Superior Completo' },
+              { value: 'Pós-graduação', label: 'Pós-graduação' },
+              { value: 'Mestrado', label: 'Mestrado' },
+              { value: 'Doutorado', label: 'Doutorado' },
+            ]}
+            placeholder="Selecione sua escolaridade"
+            className="w-full"
+          />
           {errors.escolaridade && <div className="text-xs text-red-600 mt-1">{errors.escolaridade}</div>}
         </div>
         {form.escolaridade && /superior|pós|mestrado|doutorado/i.test(form.escolaridade) && (

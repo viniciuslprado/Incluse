@@ -6,6 +6,9 @@ import { SubtiposRepo } from "../../repositories/common/subtipos.repo";
 import { BarreirasRepo } from "../../repositories/common/barreiras.repo";
 
 export const CandidatosService = {
+  async listarAreasFormacao(id: number) {
+    return CandidatosRepo.listarAreasFormacao(id);
+  },
   async getCandidato(id: number) {
     const c = await CandidatosRepo.findById(id);
     if (!c) throw Object.assign(new Error("Candidato não encontrado"), { status: 404 });
@@ -117,7 +120,6 @@ export const CandidatosService = {
     if (data.situacao !== undefined) updateData.situacao = data.situacao;
     if (data.cidade !== undefined) updateData.cidade = data.cidade;
     if (data.estado !== undefined) updateData.estado = data.estado;
-    if (data.disponibilidadeGeografica !== undefined) updateData.disponibilidadeGeografica = data.disponibilidadeGeografica;
     if (data.aceitaMudanca !== undefined) updateData.aceitaMudanca = Boolean(data.aceitaMudanca);
     if (data.aceitaViajar !== undefined) updateData.aceitaViajar = Boolean(data.aceitaViajar);
     if (data.pretensaoSalarialMin !== undefined && data.pretensaoSalarialMin !== null && data.pretensaoSalarialMin !== '') {

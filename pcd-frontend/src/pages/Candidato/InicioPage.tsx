@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import VagaCardCandidate from "../../components/candidato/VagaCard";
 import { api } from "../../lib/api";
 import { useCandidate } from '../../contexts/CandidateContext';
+import CustomSelect from '../../components/common/CustomSelect';
 import { useToast } from "../../components/common/Toast";
 import { addCandidatura, isVagaApplied, isVagaFavorited, toggleFavoriteVaga, removeCandidatura } from '../../lib/localStorage';
 import PerfilIncompletoAlert from '../../components/candidato/PerfilIncompletoAlert';
@@ -164,32 +165,35 @@ export default function InicioPage() {
         
         {/* Filtros Compactos */}
         <div className="flex flex-wrap gap-2 items-center">
-          <select 
-            value={filters.sortBy} 
-            onChange={(e)=>setFilters(f=>({...f, sortBy: e.target.value as any}))} 
-            className="text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="relevancia">Relevância</option>
-            <option value="data">Mais recentes</option>
-          </select>
+          <CustomSelect
+            value={filters.sortBy}
+            onChange={val => setFilters(f => ({ ...f, sortBy: val as any }))}
+            options={[
+              { value: 'relevancia', label: 'Relevância' },
+              { value: 'data', label: 'Mais recentes' },
+            ]}
+            className="text-sm w-full"
+          />
 
-          <select 
-            value={filters.cidade || ''} 
-            onChange={(e)=>setFilters(f=>({...f, cidade: e.target.value || undefined}))} 
-            className="text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todas as cidades</option>
-            {options.cidades.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <CustomSelect
+            value={filters.cidade || ''}
+            onChange={val => setFilters(f => ({ ...f, cidade: val || undefined }))}
+            options={[
+              { value: '', label: 'Todas as cidades' },
+              ...options.cidades.map((c: string) => ({ value: c, label: c }))
+            ]}
+            className="text-sm w-full"
+          />
 
-          <select 
-            value={filters.empresaId ?? ''} 
-            onChange={(e)=>setFilters(f=>({...f, empresaId: e.target.value ? Number(e.target.value) : undefined}))} 
-            className="text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todas as empresas</option>
-            {options.empresas.map((em:any) => <option key={em.id} value={em.id}>{em.nome}</option>)}
-          </select>
+          <CustomSelect
+            value={filters.empresaId ?? ''}
+            onChange={val => setFilters(f => ({ ...f, empresaId: val ? Number(val) : undefined }))}
+            options={[
+              { value: '', label: 'Todas as empresas' },
+              ...options.empresas.map((em: any) => ({ value: String(em.id), label: em.nome }))
+            ]}
+            className="text-sm w-full"
+          />
 
           <button 
             onClick={clearFilters} 

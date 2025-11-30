@@ -78,15 +78,16 @@ export default function CompetenciaForm({ competencia, onSave, onCancel }: Props
         <label className="block text-sm font-medium mb-1">
           Nível <span className="text-red-600">*</span>
         </label>
-        <select
+        <CustomSelect
           value={nivel}
-          onChange={e => setNivel(e.target.value as 'Básico' | 'Intermediário' | 'Avançado')}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value="Básico">Básico</option>
-          <option value="Intermediário">Intermediário</option>
-          <option value="Avançado">Avançado</option>
-        </select>
+          onChange={v => setNivel(v as 'Básico' | 'Intermediário' | 'Avançado')}
+          options={[
+            { value: 'Básico', label: 'Básico' },
+            { value: 'Intermediário', label: 'Intermediário' },
+            { value: 'Avançado', label: 'Avançado' }
+          ]}
+          className="w-full"
+        />
       </div>
 
       <div className="flex justify-end gap-2">

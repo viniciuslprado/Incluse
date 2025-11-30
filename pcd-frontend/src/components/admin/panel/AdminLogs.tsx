@@ -45,12 +45,10 @@ export default function AdminLogs() {
     setLoading(true);
     setErro(null);
     import('../../../lib/api').then(({ api }) => {
-      // @ts-ignore acessar axiosInstance interno
-      const axiosInstance = api.__proto__.constructor.prototype.constructor().constructor();
-      axiosInstance.get('/admin/logs', { params: { page, limit, tipo: tipo || undefined } })
+      api.listarLogsAdmin({ page, limit, tipo: tipo || undefined })
         .then((res: any) => {
-          setLogs(res.data.data || res.data.logs || []);
-          setTotal(res.data.pagination?.total || res.data.total || 0);
+          setLogs(res.data || res.logs || []);
+          setTotal(res.pagination?.total || res.total || 0);
         })
         .catch((e: any) => setErro(e.message || 'Erro ao carregar logs'))
         .finally(() => setLoading(false));

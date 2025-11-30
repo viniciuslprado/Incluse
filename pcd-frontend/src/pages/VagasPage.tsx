@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import CustomSelect from "../components/common/CustomSelect";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { api } from "../lib/api";
 import type { Vaga, TipoDeficiencia, Acessibilidade, Empresa } from "../types";
 // import Loading from "../components/Loading";
@@ -47,23 +49,22 @@ function FiltrosPanel({
       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
         Filtrar Vagas
       </h3>
-      
       <div className="space-y-4">
         {/* Filtro por Escolaridade */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Escolaridade
           </label>
-          <select 
+          <CustomSelect
             value={filtros.escolaridade}
-            onChange={(e) => setFiltros({ ...filtros, escolaridade: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-          >
-            <option value="">Todas</option>
-            {escolaridades.map((esc) => (
-              <option key={esc} value={esc}>{esc}</option>
-            ))}
-          </select>
+            onChange={val => setFiltros({ ...filtros, escolaridade: val })}
+            options={[
+              { value: '', label: 'Todas' },
+              ...escolaridades.map(esc => ({ value: esc, label: esc }))
+            ]}
+            placeholder="Todas"
+            className="w-full"
+          />
         </div>
 
         {/* Filtro por Tipo de Deficiência */}
@@ -71,16 +72,16 @@ function FiltrosPanel({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Tipo de Deficiência
           </label>
-          <select 
+          <CustomSelect
             value={filtros.tipoDeficiencia}
-            onChange={(e) => setFiltros({ ...filtros, tipoDeficiencia: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-          >
-            <option value="">Todos</option>
-            {tipos.map((tipo) => (
-              <option key={tipo.id} value={tipo.id}>{tipo.nome}</option>
-            ))}
-          </select>
+            onChange={val => setFiltros({ ...filtros, tipoDeficiencia: val })}
+            options={[
+              { value: '', label: 'Todos' },
+              ...tipos.map(tipo => ({ value: String(tipo.id), label: tipo.nome }))
+            ]}
+            placeholder="Todos"
+            className="w-full"
+          />
         </div>
 
         {/* Filtro por Acessibilidade */}
@@ -88,16 +89,16 @@ function FiltrosPanel({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Acessibilidade
           </label>
-          <select 
+          <CustomSelect
             value={filtros.acessibilidade}
-            onChange={(e) => setFiltros({ ...filtros, acessibilidade: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-          >
-            <option value="">Todas</option>
-            {acessibilidades.map((acess) => (
-              <option key={acess.id} value={acess.id}>{acess.descricao}</option>
-            ))}
-          </select>
+            onChange={val => setFiltros({ ...filtros, acessibilidade: val })}
+            options={[
+              { value: '', label: 'Todas' },
+              ...acessibilidades.map(acess => ({ value: String(acess.id), label: acess.descricao }))
+            ]}
+            placeholder="Todas"
+            className="w-full"
+          />
         </div>
 
         {/* Filtro por Empresa */}
@@ -105,16 +106,16 @@ function FiltrosPanel({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Empresa
           </label>
-          <select 
+          <CustomSelect
             value={filtros.empresa}
-            onChange={(e) => setFiltros({ ...filtros, empresa: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-          >
-            <option value="">Todas</option>
-            {empresas.map((empresa) => (
-              <option key={empresa.id} value={empresa.id}>{empresa.nome}</option>
-            ))}
-          </select>
+            onChange={val => setFiltros({ ...filtros, empresa: val })}
+            options={[
+              { value: '', label: 'Todas' },
+              ...empresas.map(empresa => ({ value: String(empresa.id), label: empresa.nome }))
+            ]}
+            placeholder="Todas"
+            className="w-full"
+          />
         </div>
 
         {/* Botão limpar filtros */}
@@ -130,6 +131,14 @@ function FiltrosPanel({
 }
 
 function VagaCard({ vaga }: { vaga: VagaPublica }) {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const handleVerDetalhes = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      navigate('/login');
+    }
+  };
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Header */}
@@ -195,6 +204,7 @@ function VagaCard({ vaga }: { vaga: VagaPublica }) {
         {/* Botão de ação */}
         <Link
           to={`/vaga/${vaga.id}`}
+          onClick={handleVerDetalhes}
           className="block w-full bg-gradient-to-r from-incluse-primary to-incluse-accent hover:from-incluse-primary-dark hover:to-incluse-accent-dark text-white text-center font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:ring-offset-2"
         >
           <div className="flex items-center justify-center">
@@ -209,6 +219,7 @@ function VagaCard({ vaga }: { vaga: VagaPublica }) {
     </div>
   );
 }
+
 
 export default function VagasPage() {
   const [vagas, setVagas] = useState<VagaPublica[]>([]);
@@ -225,6 +236,10 @@ export default function VagasPage() {
   const [tipos, setTipos] = useState<TipoDeficiencia[]>([]);
   const [acessibilidades, setAcessibilidades] = useState<Acessibilidade[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
+
+  // Move hooks to top level
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function carregarDados() {
@@ -338,19 +353,34 @@ export default function VagasPage() {
               {/* Mobile cards */}
               <div className="md:hidden">
                 <ResponsiveCardList
-                  items={vagasFiltradas.map((vaga) => ({
-                    id: vaga.id,
-                    title: vaga.titulo || vaga.descricao,
-                    subtitle: vaga.empresa?.nome,
-                    meta: [
-                      { label: 'Escolaridade', value: vaga.escolaridade },
-                      ...(vaga.cidade || vaga.estado ? [{ label: 'Localização', value: vaga.cidade && vaga.estado ? `${vaga.cidade}, ${vaga.estado}` : (vaga.cidade || vaga.estado) }] : []),
-                      ...(vaga.empresa?.email ? [{ label: 'Contato', value: vaga.empresa.email }] : []),
-                    ],
-                    actions: [
-                      { label: 'Ver detalhes da vaga', to: `/vaga/${vaga.id}`, variant: 'blue', full: true },
-                    ],
-                  }))}
+                  items={vagasFiltradas.map((vaga) => {
+                    // Define a stable handler for each vaga
+                    const handleVerDetalhes = (e: React.MouseEvent) => {
+                      if (!isAuthenticated) {
+                        e.preventDefault();
+                        navigate('/login');
+                      }
+                    };
+                    return {
+                      id: vaga.id,
+                      title: vaga.titulo || vaga.descricao,
+                      subtitle: vaga.empresa?.nome,
+                      meta: [
+                        { label: 'Escolaridade', value: vaga.escolaridade },
+                        ...(vaga.cidade || vaga.estado ? [{ label: 'Localização', value: vaga.cidade && vaga.estado ? `${vaga.cidade}, ${vaga.estado}` : (vaga.cidade || vaga.estado) }] : []),
+                        ...(vaga.empresa?.email ? [{ label: 'Contato', value: vaga.empresa.email }] : []),
+                      ],
+                      actions: [
+                        {
+                          label: 'Ver detalhes da vaga',
+                          to: `/vaga/${vaga.id}`,
+                          variant: 'blue',
+                          full: true,
+                          onClick: handleVerDetalhes,
+                        },
+                      ],
+                    };
+                  })}
                 />
               </div>
             </>

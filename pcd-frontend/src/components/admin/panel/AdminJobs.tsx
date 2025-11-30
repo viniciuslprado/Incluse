@@ -61,7 +61,7 @@ export default function AdminJobs() {
   const [empresaFilter, setEmpresaFilter] = useState('');
   const [dataFilter, setDataFilter] = useState('');
   const [selected, setSelected] = useState<Vaga & { empresa?: { nome: string } } | null>(null);
-  const [candidatos, setCandidatos] = useState<any[]>([]);
+  const [candidatos, setCandidatos] = useState<any[]>([]); // sempre array
   const [loadingModal, setLoadingModal] = useState(false);
   const [showPauseModal, setShowPauseModal] = useState<number|null>(null);
   const [pauseReason, setPauseReason] = useState('');
@@ -89,7 +89,7 @@ export default function AdminJobs() {
     setSelected(vaga);
     setLoadingModal(true);
     api.listarCandidatosPorVaga(vaga.id)
-      .then((data) => setCandidatos(data || []))
+      .then((data) => setCandidatos(Array.isArray(data) ? data : (data && Array.isArray(data.candidatos) ? data.candidatos : [])))
       .catch(() => setCandidatos([]))
       .finally(() => setLoadingModal(false));
   }
@@ -105,13 +105,9 @@ export default function AdminJobs() {
   }, [page, statusFilter, areaFilter, empresaFilter, dataFilter]);
 
   function handleSetStatus(id: number, status: string) {
-    import('../../../lib/api').then(({ api }) => {
-      // @ts-ignore acessar axiosInstance interno
-      const axiosInstance = api.__proto__.constructor.prototype.constructor().constructor();
-      axiosInstance.patch(`/admin/vagas/${id}/status`, { status })
-        .then(() => fetchVagas())
-        .catch((e: any) => alert(e.message || 'Erro ao alterar status da vaga'));
-    });
+    api.atualizarStatusVaga(id, status)
+      .then(() => fetchVagas())
+      .catch((e: any) => alert(e.message || 'Erro ao alterar status da vaga'));
   }
 
   // Contadores
@@ -181,59 +177,59 @@ export default function AdminJobs() {
                     Verificar vaga
                   </button>
                 </td>
-                    {/* Modal para justificar desativação ou exclusão */}
-                    {showPauseModal && (
-                      <Modal open={true} onClose={() => { setShowPauseModal(null); setPauseReason(''); }}>
-                        <div>
-                          <h2 className="text-lg font-bold mb-2">
-                            {showPauseModal > 0 ? 'Justificar desativação da vaga' : 'Justificar exclusão da vaga'}
-                          </h2>
-                          <p className="mb-2 text-sm text-gray-700">
-                            {showPauseModal > 0
-                              ? 'Explique o motivo da desativação/pausa da vaga. Uma notificação será enviada para a empresa.'
-                              : 'Explique o motivo da exclusão da vaga. Uma notificação será enviada para a empresa.'}
-                          </p>
-                          <textarea
-                            className="w-full border rounded p-2 mb-2"
-                            rows={3}
-                            placeholder={showPauseModal > 0 ? 'Motivo da desativação/pausa...' : 'Motivo da exclusão...'}
-                            value={pauseReason}
-                            onChange={e => setPauseReason(e.target.value)}
-                          />
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400"
-                              onClick={() => { setShowPauseModal(null); setPauseReason(''); }}
-                            >Cancelar</button>
-                            {showPauseModal > 0 ? (
-                              <button
-                                className="px-3 py-1 rounded bg-yellow-500 text-white hover:bg-yellow-600"
-                                onClick={() => {
-                                  handleSetStatus(showPauseModal, 'pausada');
-                                  // TODO: Enviar notificação para a empresa com pauseReason
-                                  setShowPauseModal(null); setPauseReason('');
-                                  window.alert('Vaga pausada/desativada e notificação enviada para a empresa!');
-                                }}
-                              >Confirmar desativação</button>
-                            ) : (
-                              <button
-                                className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => {
-                                  api.excluirVaga(-showPauseModal).then(() => {
-                                    // TODO: Enviar notificação para a empresa com pauseReason
-                                    fetchVagas();
-                                    setShowPauseModal(null); setPauseReason('');
-                                    window.alert('Vaga excluída e notificação enviada para a empresa!');
-                                  });
-                                }}
-                              >Confirmar exclusão</button>
-                            )}
-                          </div>
-                        </div>
-                      </Modal>
-                    )}
               </tr>
             ))}
+                {/* Modal para justificar desativação ou exclusão - FORA da tabela! */}
+                {showPauseModal && (
+                  <Modal open={true} onClose={() => { setShowPauseModal(null); setPauseReason(''); }}>
+                    <div>
+                      <h2 className="text-lg font-bold mb-2">
+                        {showPauseModal > 0 ? 'Justificar desativação da vaga' : 'Justificar exclusão da vaga'}
+                      </h2>
+                      <p className="mb-2 text-sm text-gray-700">
+                        {showPauseModal > 0
+                          ? 'Explique o motivo da desativação/pausa da vaga. Uma notificação será enviada para a empresa.'
+                          : 'Explique o motivo da exclusão da vaga. Uma notificação será enviada para a empresa.'}
+                      </p>
+                      <textarea
+                        className="w-full border rounded p-2 mb-2"
+                        rows={3}
+                        placeholder={showPauseModal > 0 ? 'Motivo da desativação/pausa...' : 'Motivo da exclusão...'}
+                        value={pauseReason}
+                        onChange={e => setPauseReason(e.target.value)}
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400"
+                          onClick={() => { setShowPauseModal(null); setPauseReason(''); }}
+                        >Cancelar</button>
+                        {showPauseModal > 0 ? (
+                          <button
+                            className="px-3 py-1 rounded bg-yellow-500 text-white hover:bg-yellow-600"
+                            onClick={() => {
+                              handleSetStatus(showPauseModal, 'pausada');
+                              // TODO: Enviar notificação para a empresa com pauseReason
+                              setShowPauseModal(null); setPauseReason('');
+                              window.alert('Vaga pausada/desativada e notificação enviada para a empresa!');
+                            }}
+                          >Confirmar desativação</button>
+                        ) : (
+                          <button
+                            className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                            onClick={() => {
+                              api.excluirVaga(-showPauseModal).then(() => {
+                                // TODO: Enviar notificação para a empresa com pauseReason
+                                fetchVagas();
+                                setShowPauseModal(null); setPauseReason('');
+                                window.alert('Vaga excluída e notificação enviada para a empresa!');
+                              });
+                            }}
+                          >Confirmar exclusão</button>
+                        )}
+                      </div>
+                    </div>
+                  </Modal>
+                )}
           </tbody>
         </table>
       </div>

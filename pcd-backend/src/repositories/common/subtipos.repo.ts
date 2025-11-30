@@ -4,7 +4,7 @@ import { prisma } from "../../prismaClient";
 //que serão usadas no service
 export const SubtiposRepo = {
   list() {
-    return prisma.subtipoDeficiencia.findMany({ orderBy: { id: "asc" } });
+    return prisma.subtipoDeficiencia.findMany({ orderBy: { nome: "asc" } });
   },
   findById(id: number) {
     return prisma.subtipoDeficiencia.findUnique({ 
@@ -35,5 +35,11 @@ export const SubtiposRepo = {
 
   create(nome: string, tipoId: number) {
     return prisma.subtipoDeficiencia.create({ data: { nome, tipoId } });
+  },
+  update(id: number, nome: string) {
+    return prisma.subtipoDeficiencia.update({ where: { id }, data: { nome } });
+  },
+  delete(id: number) {
+    return prisma.subtipoDeficiencia.delete({ where: { id } });
   },
 };

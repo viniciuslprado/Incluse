@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 
@@ -265,34 +266,38 @@ export default function NovaVagaPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Tipo de Contrato *
                 </label>
-                <select
+                <CustomSelect
                   value={vagaData.tipo}
-                  onChange={(e) => handleInputChange('tipo', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                >
-                  <option value="">Selecione</option>
-                  <option value="CLT">CLT</option>
-                  <option value="PJ">PJ</option>
-                  <option value="Estágio">Estágio</option>
-                  <option value="Temporário">Temporário</option>
-                  <option value="Freelancer">Freelancer</option>
-                </select>
+                  onChange={val => handleInputChange('tipo', val)}
+                  options={[
+                    { value: '', label: 'Selecione' },
+                    { value: 'CLT', label: 'CLT' },
+                    { value: 'PJ', label: 'PJ' },
+                    { value: 'Estágio', label: 'Estágio' },
+                    { value: 'Temporário', label: 'Temporário' },
+                    { value: 'Freelancer', label: 'Freelancer' },
+                  ]}
+                  placeholder="Selecione"
+                  className="w-full"
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Modelo de Trabalho *
                 </label>
-                <select
+                <CustomSelect
                   value={vagaData.modelo}
-                  onChange={(e) => handleInputChange('modelo', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Presencial">Presencial</option>
-                  <option value="Remoto">Remoto</option>
-                  <option value="Híbrido">Híbrido</option>
-                </select>
+                  onChange={val => handleInputChange('modelo', val)}
+                  options={[
+                    { value: '', label: 'Selecione' },
+                    { value: 'Presencial', label: 'Presencial' },
+                    { value: 'Remoto', label: 'Remoto' },
+                    { value: 'Híbrido', label: 'Híbrido' },
+                  ]}
+                  placeholder="Selecione"
+                  className="w-full"
+                />
               </div>
             </div>
 
@@ -314,40 +319,42 @@ export default function NovaVagaPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Estado (UF) *
                 </label>
-                <select
+                <CustomSelect
                   value={vagaData.estado}
-                  onChange={(e) => handleInputChange('estado', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                >
-                  <option value="">Selecione</option>
-                  <option value="AC">AC</option>
-                  <option value="AL">AL</option>
-                  <option value="AP">AP</option>
-                  <option value="AM">AM</option>
-                  <option value="BA">BA</option>
-                  <option value="CE">CE</option>
-                  <option value="DF">DF</option>
-                  <option value="ES">ES</option>
-                  <option value="GO">GO</option>
-                  <option value="MA">MA</option>
-                  <option value="MT">MT</option>
-                  <option value="MS">MS</option>
-                  <option value="MG">MG</option>
-                  <option value="PA">PA</option>
-                  <option value="PB">PB</option>
-                  <option value="PR">PR</option>
-                  <option value="PE">PE</option>
-                  <option value="PI">PI</option>
-                  <option value="RJ">RJ</option>
-                  <option value="RN">RN</option>
-                  <option value="RS">RS</option>
-                  <option value="RO">RO</option>
-                  <option value="RR">RR</option>
-                  <option value="SC">SC</option>
-                  <option value="SP">SP</option>
-                  <option value="SE">SE</option>
-                  <option value="TO">TO</option>
-                </select>
+                  onChange={val => handleInputChange('estado', val)}
+                  options={[
+                    { value: '', label: 'Selecione' },
+                    { value: 'AC', label: 'AC' },
+                    { value: 'AL', label: 'AL' },
+                    { value: 'AP', label: 'AP' },
+                    { value: 'AM', label: 'AM' },
+                    { value: 'BA', label: 'BA' },
+                    { value: 'CE', label: 'CE' },
+                    { value: 'DF', label: 'DF' },
+                    { value: 'ES', label: 'ES' },
+                    { value: 'GO', label: 'GO' },
+                    { value: 'MA', label: 'MA' },
+                    { value: 'MT', label: 'MT' },
+                    { value: 'MS', label: 'MS' },
+                    { value: 'MG', label: 'MG' },
+                    { value: 'PA', label: 'PA' },
+                    { value: 'PB', label: 'PB' },
+                    { value: 'PR', label: 'PR' },
+                    { value: 'PE', label: 'PE' },
+                    { value: 'PI', label: 'PI' },
+                    { value: 'RJ', label: 'RJ' },
+                    { value: 'RN', label: 'RN' },
+                    { value: 'RS', label: 'RS' },
+                    { value: 'RO', label: 'RO' },
+                    { value: 'RR', label: 'RR' },
+                    { value: 'SC', label: 'SC' },
+                    { value: 'SP', label: 'SP' },
+                    { value: 'SE', label: 'SE' },
+                    { value: 'TO', label: 'TO' },
+                  ]}
+                  placeholder="Selecione"
+                  className="w-full"
+                />
               </div>
             </div>
 
@@ -355,18 +362,16 @@ export default function NovaVagaPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Área da Vaga *
               </label>
-              <select
-                  value={vagaData.areaId}
-                  onChange={(e) => handleInputChange('areaId', e.target.value ? Number(e.target.value) : '')}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              >
-                <option value="">Selecione</option>
-                {areasFormacao.map((area) => (
-                    <option key={area.id} value={area.id}>
-                    {area.nome}
-                  </option>
-                ))}
-              </select>
+              <CustomSelect
+                value={vagaData.areaId ? String(vagaData.areaId) : ''}
+                onChange={val => handleInputChange('areaId', val ? Number(val) : '')}
+                options={[
+                  { value: '', label: 'Selecione' },
+                  ...areasFormacao.map(area => ({ value: String(area.id), label: area.nome }))
+                ]}
+                placeholder="Selecione"
+                className="w-full"
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -498,42 +503,46 @@ export default function NovaVagaPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Formação Mínima *
               </label>
-              <select
+              <CustomSelect
                 value={vagaData.formacao}
-                onChange={(e) => handleInputChange('formacao', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              >
-                <option value="">Selecione</option>
-                <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
-                <option value="Ensino Fundamental Incompleto">Ensino Fundamental Incompleto</option>
-                <option value="Ensino Médio Completo">Ensino Médio Completo</option>
-                <option value="Ensino Médio Incompleto">Ensino Médio Incompleto</option>
-                <option value="Ensino Superior Completo">Ensino Superior Completo</option>
-                <option value="Ensino Superior Incompleto">Ensino Superior Incompleto</option>
-                <option value="Técnico">Técnico</option>
-                <option value="Pós-graduação">Pós-graduação</option>
-                <option value="Mestrado">Mestrado</option>
-                <option value="Doutorado">Doutorado</option>
-              </select>
+                onChange={val => handleInputChange('formacao', val)}
+                options={[
+                  { value: '', label: 'Selecione' },
+                  { value: 'Ensino Fundamental Completo', label: 'Ensino Fundamental Completo' },
+                  { value: 'Ensino Fundamental Incompleto', label: 'Ensino Fundamental Incompleto' },
+                  { value: 'Ensino Médio Completo', label: 'Ensino Médio Completo' },
+                  { value: 'Ensino Médio Incompleto', label: 'Ensino Médio Incompleto' },
+                  { value: 'Ensino Superior Completo', label: 'Ensino Superior Completo' },
+                  { value: 'Ensino Superior Incompleto', label: 'Ensino Superior Incompleto' },
+                  { value: 'Técnico', label: 'Técnico' },
+                  { value: 'Pós-graduação', label: 'Pós-graduação' },
+                  { value: 'Mestrado', label: 'Mestrado' },
+                  { value: 'Doutorado', label: 'Doutorado' },
+                ]}
+                placeholder="Selecione"
+                className="w-full"
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Experiência Necessária
               </label>
-              <select
+              <CustomSelect
                 value={vagaData.experiencia}
-                onChange={(e) => handleInputChange('experiencia', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              >
-                <option value="">Selecione</option>
-                <option value="Sem experiência">Sem experiência</option>
-                <option value="1 ano">1 ano</option>
-                <option value="2 anos">2 anos</option>
-                <option value="3 anos">3 anos</option>
-                <option value="5 anos">5 anos</option>
-                <option value="Mais de 5 anos">Mais de 5 anos</option>
-              </select>
+                onChange={val => handleInputChange('experiencia', val)}
+                options={[
+                  { value: '', label: 'Selecione' },
+                  { value: 'Sem experiência', label: 'Sem experiência' },
+                  { value: '1 ano', label: '1 ano' },
+                  { value: '2 anos', label: '2 anos' },
+                  { value: '3 anos', label: '3 anos' },
+                  { value: '5 anos', label: '5 anos' },
+                  { value: 'Mais de 5 anos', label: 'Mais de 5 anos' },
+                ]}
+                placeholder="Selecione"
+                className="w-full"
+              />
             </div>
 
             <div>

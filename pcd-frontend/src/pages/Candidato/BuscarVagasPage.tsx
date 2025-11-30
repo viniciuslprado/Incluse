@@ -130,34 +130,45 @@ export default function BuscarVagasPage() {
 
           <div>
             <label className="text-sm font-medium">Cidade</label>
-            <select value={filters.cidade || ''} onChange={(e)=>setFilters(f=>({...f, cidade: e.target.value || undefined}))} className="mt-2 w-full px-3 py-2 border rounded bg-inherit">
-              <option value="">Todas</option>
-              {options.cidades.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <CustomSelect
+              value={filters.cidade || ''}
+              onChange={v => setFilters(f => ({ ...f, cidade: v || undefined }))}
+              options={[{ value: '', label: 'Todas' }, ...options.cidades.map(c => ({ value: c, label: c }))]}
+              className="mt-2 w-full"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Empresa</label>
-            <select value={filters.empresaId ?? ''} onChange={(e)=>setFilters(f=>({...f, empresaId: e.target.value ? Number(e.target.value) : undefined}))} className="mt-2 w-full px-3 py-2 border rounded bg-inherit">
-              <option value="">Todas</option>
-              {options.empresas.map((em:any) => <option key={em.id} value={em.id}>{em.nome}</option>)}
-            </select>
+            <CustomSelect
+              value={filters.empresaId ? String(filters.empresaId) : ''}
+              onChange={v => setFilters(f => ({ ...f, empresaId: v ? Number(v) : undefined }))}
+              options={[{ value: '', label: 'Todas' }, ...options.empresas.map((em: any) => ({ value: String(em.id), label: em.nome }))]}
+              className="mt-2 w-full"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Tipo</label>
-            <select value={filters.tipoContrato ?? ''} onChange={(e)=>setFilters(f=>({...f, tipoContrato: e.target.value || undefined}))} className="mt-2 w-full px-3 py-2 border rounded bg-inherit">
-              <option value="">Todos</option>
-              {options.tipos.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <CustomSelect
+              value={filters.tipoContrato ?? ''}
+              onChange={v => setFilters(f => ({ ...f, tipoContrato: v || undefined }))}
+              options={[{ value: '', label: 'Todos' }, ...options.tipos.map(t => ({ value: t, label: t }))]}
+              className="mt-2 w-full"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Ordenar por</label>
-            <select value={filters.sortBy} onChange={(e)=>setFilters(f=>({...f, sortBy: e.target.value as any}))} className="mt-2 w-full px-3 py-2 border rounded bg-inherit">
-              <option value="relevancia">Relevância</option>
-              <option value="data">Data de publicação</option>
-            </select>
+            <CustomSelect
+              value={filters.sortBy}
+              onChange={v => setFilters(f => ({ ...f, sortBy: v as any }))}
+              options={[
+                { value: 'relevancia', label: 'Relevância' },
+                { value: 'data', label: 'Data de publicação' },
+              ]}
+              className="mt-2 w-full"
+            />
           </div>
 
           <div className="flex gap-2">
@@ -189,34 +200,45 @@ export default function BuscarVagasPage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <label className="sr-only">Cidade</label>
-            <select value={filters.cidade || ''} onChange={(e)=>setFilters(f=>({...f, cidade: e.target.value || undefined}))} className="text-sm px-2 py-1 border rounded bg-inherit">
-              <option value="">Todas</option>
-              {options.cidades.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <CustomSelect
+              value={filters.cidade || ''}
+              onChange={v => setFilters(f => ({ ...f, cidade: v || undefined }))}
+              options={[{ value: '', label: 'Todas' }, ...options.cidades.map(c => ({ value: c, label: c }))]}
+              className="text-sm min-w-[100px]"
+            />
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             <label className="sr-only">Empresa</label>
-            <select value={filters.empresaId ?? ''} onChange={(e)=>setFilters(f=>({...f, empresaId: e.target.value ? Number(e.target.value) : undefined}))} className="text-sm px-2 py-1 border rounded bg-inherit">
-              <option value="">Todas</option>
-              {options.empresas.map((em:any) => <option key={em.id} value={em.id}>{em.nome}</option>)}
-            </select>
+            <CustomSelect
+              value={filters.empresaId ? String(filters.empresaId) : ''}
+              onChange={v => setFilters(f => ({ ...f, empresaId: v ? Number(v) : undefined }))}
+              options={[{ value: '', label: 'Todas' }, ...options.empresas.map((em: any) => ({ value: String(em.id), label: em.nome }))]}
+              className="text-sm min-w-[100px]"
+            />
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             <label className="sr-only">Tipo</label>
-            <select value={filters.tipoContrato ?? ''} onChange={(e)=>setFilters(f=>({...f, tipoContrato: e.target.value || undefined}))} className="text-sm px-2 py-1 border rounded bg-inherit">
-              <option value="">Todos</option>
-              {options.tipos.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <CustomSelect
+              value={filters.tipoContrato ?? ''}
+              onChange={v => setFilters(f => ({ ...f, tipoContrato: v || undefined }))}
+              options={[{ value: '', label: 'Todos' }, ...options.tipos.map(t => ({ value: t, label: t }))]}
+              className="text-sm min-w-[100px]"
+            />
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             <label className="sr-only">Ordenar por</label>
-            <select value={filters.sortBy} onChange={(e)=>setFilters(f=>({...f, sortBy: e.target.value as any}))} className="text-sm px-2 py-1 border rounded bg-inherit">
-              <option value="relevancia">Relevância</option>
-              <option value="data">Data</option>
-            </select>
+            <CustomSelect
+              value={filters.sortBy}
+              onChange={v => setFilters(f => ({ ...f, sortBy: v as any }))}
+              options={[
+                { value: 'relevancia', label: 'Relevância' },
+                { value: 'data', label: 'Data' },
+              ]}
+              className="text-sm min-w-[100px]"
+            />
           </div>
 
           

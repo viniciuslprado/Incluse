@@ -1,3 +1,39 @@
+model NotificacaoEmpresa {
+  id         Int      @id @default(autoincrement())
+  empresaId  Int
+  titulo     String
+  mensagem   String
+  lida       Boolean  @default(false)
+  vagaId     Int?
+  createdAt  DateTime @default(now())
+
+  empresa    Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  vaga       Vaga?    @relation(fields: [vagaId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId])
+  @@index([lida])
+}
+model EmpresaConfig {
+  empresaId           Int       @id
+
+  // Notificações por E-mail
+  emailNovasCandidaturas     Boolean   @default(true)
+  emailStatusProcesso        Boolean   @default(true)
+  emailMensagens             Boolean   @default(true)
+
+  // Notificações no Aplicativo
+  appNovasCandidaturas       Boolean   @default(true)
+  appStatusProcesso          Boolean   @default(true)
+  appMensagens               Boolean   @default(true)
+
+  // Idioma
+  idioma                String    @default("pt-BR")
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  empresa               Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+}
 model Administrador {
   id         Int      @id @default(autoincrement())
   nome       String
@@ -41,6 +77,8 @@ model Empresa {
   senhaHash  String?
   avaliacoes Avaliacao[]
   vagas      Vaga[]
+  notificacoesEmpresa NotificacaoEmpresa[]
+  config              EmpresaConfig?
 }
 
 model TipoDeficiencia {
@@ -136,6 +174,7 @@ model Vaga {
   subtiposAceitos    VagaSubtipo[]
   favoritos          CandidatoVagaFavorita[]
   notificacoes       Notificacao[]
+  notificacoesEmpresa NotificacaoEmpresa[]
 
   @@index([empresaId])
   @@index([status])
@@ -214,7 +253,6 @@ model Candidato {
   situacao     String?                    // cursando, concluído
   cidade       String?                    // Obrigatória para perfil completo (validada em app)
   estado       String?                    // Obrigatória para perfil completo (validada em app)
-  disponibilidadeGeografica String?       // Ex: Apenas na cidade, Estado, Brasil, Remoto
   aceitaMudanca          Boolean?         @default(false)
   aceitaViajar           Boolean?         @default(false)
   pretensaoSalarialMin   Int?             // Valor mínimo desejado (opcional)

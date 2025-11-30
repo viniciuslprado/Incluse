@@ -7,6 +7,8 @@ import ConfirmModal from '../../common/ConfirmModal';
 import Button from '../../common/Button';
 import { useToast } from '../../common/Toast';
 
+import CustomSelect from '../../common/CustomSelect';
+
 export default function BarreirasTab() {
   const [tipos, setTipos] = useState<TipoDeficiencia[]>([]);
   const [tipoId, setTipoId] = useState<number | null>(null);
@@ -14,6 +16,8 @@ export default function BarreirasTab() {
   const [subtipoId, setSubtipoId] = useState<number | null>(null);
   const [barreiras, setBarreiras] = useState<Barreira[]>([]);
   const [loading, setLoading] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editBarreira, setEditBarreira] = useState<Barreira | null>(null);
   const [descricao, setDescricao] = useState("");
@@ -27,7 +31,12 @@ export default function BarreirasTab() {
 
   useEffect(() => {
     if (tipoId) {
-      api.listarSubtiposPorTipo(tipoId).then(setSubtipos).catch(() => toast.addToast({ message: "Erro ao carregar subtipos", type: "error" }));
+      api.listarTiposComSubtiposPublico()
+        .then((tiposComSubtipos) => {
+          const tipo = tiposComSubtipos.find((t: any) => t.id === tipoId);
+          setSubtipos(tipo ? tipo.subtipos : []);
+        })
+        .catch(() => toast.addToast({ message: "Erro ao carregar subtipos", type: "error" }));
     } else {
       setSubtipos([]);
       setSubtipoId(null);
@@ -107,33 +116,52 @@ export default function BarreirasTab() {
       <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
         <strong>Instrução:</strong> Cadastre barreiras e vincule a subtipos. Exemplo: Escada, Falta de intérprete, Iluminação inadequada...
       </div>
-      <div className="flex gap-4 mb-4">
+      {/* Filtros antigos removidos, mantendo apenas o layout novo com busca */}
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-end gap-2">
         <div>
           <label className="block mb-1 font-medium">Tipo de Deficiência</label>
-          <select
-            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-            value={tipoId ?? ''}
-            onChange={e => setTipoId(Number(e.target.value) || null)}
-          >
-            <option value="">Selecione...</option>
-            {tipos.map(t => (
-              <option key={t.id} value={t.id}>{t.nome}</option>
-            ))}
-          </select>
+          <CustomSelect
+            value={tipoId?.toString() ?? ''}
+            onChange={v => setTipoId(v ? Number(v) : null)}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...tipos.map(t => ({ value: t.id.toString(), label: t.nome }))
+            ]}
+            className="w-full max-w-xs"
+          />
         </div>
         <div>
           <label className="block mb-1 font-medium">Subtipo</label>
-          <select
-            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
-            value={subtipoId ?? ''}
-            onChange={e => setSubtipoId(Number(e.target.value) || null)}
+          <CustomSelect
+            value={subtipoId?.toString() ?? ''}
+            onChange={v => setSubtipoId(v ? Number(v) : null)}
+            options={[
+              { value: '', label: 'Selecione...' },
+              ...subtipos.map(s => ({ value: s.id.toString(), label: s.nome }))
+            ]}
+            className="w-full max-w-xs"
             disabled={!tipoId}
-          >
-            <option value="">Selecione...</option>
-            {subtipos.map(s => (
-              <option key={s.id} value={s.id}>{s.nome}</option>
-            ))}
-          </select>
+          />
+        </div>
+        <div className="flex-1 flex gap-2 items-end">
+          <div className="relative w-full">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <input
+              type="text"
+              className="pl-10 pr-3 py-2 w-full rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white"
+              placeholder="Buscar barreira..."
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              disabled={loading || barreiras.length === 0}
+              onKeyDown={e => { if (e.key === 'Enter') setBuscaAplicada(busca); }}
+            />
+          </div>
+          <button
+            className="ml-1 px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
+            onClick={() => setBuscaAplicada(busca)}
+            disabled={loading || barreiras.length === 0}
+            title="Buscar"
+          >Buscar</button>
         </div>
       </div>
       <div className="card p-0 overflow-x-auto">
@@ -149,7 +177,9 @@ export default function BarreirasTab() {
               <tr><td colSpan={2} className="text-center py-6">Carregando...</td></tr>
             ) : barreiras.length === 0 ? (
               <tr><td colSpan={2} className="text-center py-6">Nenhuma barreira cadastrada</td></tr>
-            ) : barreiras.map(barreira => (
+            ) : barreiras.filter(b => b.descricao.toLowerCase().includes(buscaAplicada.toLowerCase())).length === 0 ? (
+              <tr><td colSpan={2} className="text-center py-6">Nenhum resultado encontrado</td></tr>
+            ) : barreiras.filter(b => b.descricao.toLowerCase().includes(buscaAplicada.toLowerCase())).map(barreira => (
               <tr key={barreira.id} className="border-b last:border-0">
                 <td className="px-4 py-2">{barreira.descricao}</td>
                 <td className="px-4 py-2 flex gap-2">
