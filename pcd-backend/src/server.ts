@@ -48,7 +48,7 @@ app.use("/vinculos", vinculosRoutes)
 app.use("/barreiras", barreirasRoutes);
 app.use("/acessibilidades", acessibilidadesRoutes);
 app.use("/empresa", empresasRoutes);
-app.use("/candidato", candidatosRoutes);
+app.use("/candidatos", candidatosRoutes);
 app.use("/vagas", vagasRoutes);
 app.use("/processo-seletivo", processoSeletivoRoutes);
 app.use("/auth", authRoutes);

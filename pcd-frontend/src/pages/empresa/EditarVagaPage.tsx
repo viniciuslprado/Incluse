@@ -3,6 +3,7 @@ import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { FiAlertCircle, FiSave, FiX } from 'react-icons/fi';
+import { FaCheck } from 'react-icons/fa';
 
 interface VagaData {
   id: number;
@@ -287,8 +288,9 @@ export default function EditarVagaPage() {
       )}
 
       {sucesso && (
-        <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-          <p className="text-sm text-green-700 dark:text-green-300">✓ Alterações salvas com sucesso!</p>
+        <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-2">
+          <FaCheck className="text-green-700 dark:text-green-300" />
+          <p className="text-sm text-green-700 dark:text-green-300">Alterações salvas com sucesso!</p>
         </div>
       )}
 

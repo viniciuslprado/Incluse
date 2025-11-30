@@ -35,9 +35,15 @@ export default function InicioPage() {
       setLoading(false);
       return;
     }
-    // Aqui você pode implementar a lógica de listagem de vagas usando outro endpoint, se necessário.
-    setLoading(false);
-  }, [candidatoId]);
+    // Busca dados do candidato e vagas recomendadas em uma única chamada
+    api.getCandidato(candidatoId)
+      .then((data) => setVagas(data?.vagasRecomendadas || []))
+      .catch((err) => {
+        setVagas([]);
+        addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao buscar vagas recomendadas.' });
+      })
+      .finally(() => setLoading(false));
+  }, [candidatoId, addToast]);
 
   const options = useMemo(() => {
     const cidades = Array.from(new Set(vagas.map(v=>v.cidade).filter(Boolean)));

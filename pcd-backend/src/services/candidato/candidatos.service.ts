@@ -6,6 +6,12 @@ import { SubtiposRepo } from "../../repositories/common/subtipos.repo";
 import { BarreirasRepo } from "../../repositories/common/barreiras.repo";
 
 export const CandidatosService = {
+  // Lista as barreiras vinculadas a um subtipo para um candidato
+  async listarBarreirasVinculadas(candidatoId: number, subtipoId: number) {
+    // Busca todas as barreiras vinculadas ao candidato e subtipo
+    const barreiras = await CandidatosRepo.listarBarreirasVinculadas(candidatoId, subtipoId);
+    return barreiras;
+  },
   async listarAreasFormacao(id: number) {
     return CandidatosRepo.listarAreasFormacao(id);
   },

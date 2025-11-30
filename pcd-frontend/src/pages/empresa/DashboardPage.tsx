@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { FiBriefcase, FiCheckCircle, FiXCircle, FiClock, FiUsers, FiTrendingUp, FiAlertCircle, FiEdit } from 'react-icons/fi';
+import { FaExclamationTriangle, FaTrophy, FaChartLine } from 'react-icons/fa';
 
 interface DashboardStats {
   vagasAtivas: number;
@@ -80,13 +81,13 @@ export default function DashboardPage() {
         // Gerar insights
         const newInsights: string[] = [];
         if (vagasAtivas === 0 && vagasArray.length > 0) {
-          newInsights.push('⚠️ Você não tem vagas ativas no momento. Considere reabrir alguma vaga.');
+          newInsights.push({ icon: <FaExclamationTriangle className="inline mr-1 text-yellow-600" />, text: 'Você não tem vagas ativas no momento. Considere reabrir alguma vaga.' });
         }
         if (totalCandidatos > 50) {
-          newInsights.push(`🎉 Parabéns! Você já recebeu ${totalCandidatos} candidaturas no total.`);
+          newInsights.push({ icon: <FaTrophy className="inline mr-1 text-green-600" />, text: `Parabéns! Você já recebeu ${totalCandidatos} candidaturas no total.` });
         }
         if (vagasAtivas > 5) {
-          newInsights.push('📈 Você está com várias vagas ativas. Organize seu processo seletivo.');
+          newInsights.push({ icon: <FaChartLine className="inline mr-1 text-blue-600" />, text: 'Você está com várias vagas ativas. Organize seu processo seletivo.' });
         }
         setInsights(newInsights);
         setStats({
@@ -232,7 +233,7 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Insights Automáticos</h2>
               <ul className="space-y-2">
                 {insights.map((insight, index) => (
-                  <li key={index} className="text-sm text-blue-800 dark:text-blue-200">{insight}</li>
+                  <li key={index} className="text-sm text-blue-800 dark:text-blue-200 flex items-center">{insight.icon}{insight.text}</li>
                 ))}
               </ul>
             </div>

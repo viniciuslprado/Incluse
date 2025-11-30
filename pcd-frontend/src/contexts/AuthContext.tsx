@@ -80,10 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: 'admin',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar dados do usuário:', error);
-      sessionStorage.removeItem('auth_user');
-      setUser(null);
+      // Se for erro 404, limpar storage e usuário
+      if (error?.status === 404) {
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        setUser(null);
+        // Opcional: redirecionar para login/cadastro se desejar
+        // window.location.href = '/login';
+      } else {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }

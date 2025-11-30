@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from 'react';
+import { FaWheelchair, FaFileAlt, FaLock, FaCheck, FaTag, FaShieldAlt, FaExclamationTriangle } from 'react-icons/fa';
 import CandidatoSubtiposForm from '../../components/candidato/CandidatoSubtiposForm';
 import CandidatoBarreirasForm from '../../components/candidato/CandidatoBarreirasForm';
 import { api } from '../../lib/api';
@@ -21,8 +23,8 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
   const [openTipo, setOpenTipo] = useState(true);
   const [openBarreiras, setOpenBarreiras] = useState(true);
   const [tiposComSubtipos, setTiposComSubtipos] = useState<any[]>([]);
-  // Map subtipoId -> all public barriers for that subtipo
-  const [allBarreirasBySubtipo, setAllBarreirasBySubtipo] = useState<Record<number, any[]>>({});
+  // Map tipoId -> all public barriers for that tipo
+  const [allBarreirasByTipo, setAllBarreirasByTipo] = useState<Record<number, any[]>>({});
   const [selectedTipoIds, setSelectedTipoIds] = useState<number[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -36,7 +38,6 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
           const tiposIds = new Set<number>();
           candidateSubtipos.forEach((subtipo: any) => {
             const subtipoId = typeof subtipo === 'number' ? subtipo : subtipo.id;
-            // Procurar qual tipo contém este subtipo
             r.forEach((tipo: any) => {
               if (tipo.subtipos?.some((s: any) => s.id === subtipoId)) {
                 tiposIds.add(tipo.id);
@@ -45,23 +46,6 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
           });
           setSelectedTipoIds(Array.from(tiposIds));
         }
-        // Fetch all barriers for all subtipos in parallel
-        const allSubtipos = r.flatMap((tipo: any) => tipo.subtipos || []);
-        const barrierResults = await Promise.all(
-          allSubtipos.map(async (subtipo: any) => {
-            try {
-              const barreiras = await api.listarBarreirasPorSubtipo(subtipo.id);
-              return [subtipo.id, barreiras];
-            } catch {
-              return [subtipo.id, []];
-            }
-          })
-        );
-        const barreirasMap: Record<number, any[]> = {};
-        barrierResults.forEach(([subtipoId, barreiras]) => {
-          barreirasMap[subtipoId] = barreiras;
-        });
-        setAllBarreirasBySubtipo(barreirasMap);
         setLoadingData(false);
       })
       .catch((err) => {
@@ -70,6 +54,35 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
         setLoadingData(false);
       });
   }, []);
+
+  // Fetch barriers for selected types
+  useEffect(() => {
+    if (selectedTipoIds.length === 0) {
+      setAllBarreirasByTipo({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const results = await Promise.all(
+        selectedTipoIds.map(async (tipoId) => {
+          try {
+            const barreiras = await api.listarBarreirasPorTipo(tipoId);
+            return [tipoId, barreiras];
+          } catch {
+            return [tipoId, []];
+          }
+        })
+      );
+      if (!cancelled) {
+        const map: Record<number, any[]> = {};
+        results.forEach(([tipoId, barreiras]) => {
+          map[tipoId] = barreiras;
+        });
+        setAllBarreirasByTipo(map);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedTipoIds]);
 
   // Atualizar selectedTipoIds quando candidateSubtipos mudar
   useEffect(() => {
@@ -114,7 +127,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
     <section id="acessibilidade" className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <span className="text-blue-600 text-lg">♿</span>
+          <FaWheelchair className="text-blue-600 text-lg" />
         </div>
         <div>
           <h3 className="text-xl font-semibold text-gray-900">Informações de Acessibilidade</h3>
@@ -136,7 +149,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 text-sm">📄</span>
+                <FaFileAlt className="text-green-600 text-sm" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">Laudo Médico</h4>
@@ -158,7 +171,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-blue-500 text-lg">🔒</span>
+                  <FaLock className="text-blue-500 text-lg" />
                   <div>
                     <p className="text-sm font-medium text-blue-900">Privacidade garantida</p>
                     <p className="text-xs text-blue-700 mt-1">Seu laudo é mantido em sigilo e usado apenas para avaliar adaptações necessárias no ambiente de trabalho.</p>
@@ -182,7 +195,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                   <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <span className="text-green-600">✓</span>
+                        <FaCheck className="text-green-600" />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-medium text-gray-900">{laudoName}</p>
@@ -209,7 +222,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-600 text-sm">🏷️</span>
+                <FaTag className="text-purple-600 text-sm" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">Tipo de Deficiência <span className="text-red-500">*</span></h4>
@@ -246,11 +259,12 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
               )}
 
               <div className="border-t pt-4">
+                {/* Filtra subtipos apenas dos tipos selecionados */}
                 <CandidatoSubtiposForm
                   candidatoId={candidatoId}
                   disableActions={false}
                   autoSync={true}
-                  allSubtipos={tiposComSubtipos.flatMap((tipo: any) => tipo.subtipos || [])}
+                  allSubtipos={tiposComSubtipos.filter((tipo: any) => selectedTipoIds.includes(tipo.id)).flatMap((tipo: any) => tipo.subtipos || [])}
                   initialSelected={candidateSubtipos && candidateSubtipos.length > 0
                     ? candidateSubtipos.map((s: any) => (typeof s === 'number' ? s : s.id))
                     : []}
@@ -261,12 +275,12 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
           )}
         </div>
 
-        {/* Barreiras / Necessidades */}
+        {/* Barreiras / Necessidades (por tipo) */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-orange-600 text-sm">🛡️</span>
+                <FaShieldAlt className="text-orange-600 text-sm" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">Barreiras e Necessidades <span className="text-red-500">*</span></h4>
@@ -283,13 +297,12 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
               </svg>
             </button>
           </div>
-          
           {openBarreiras && (
             <div className="space-y-4">
-              {(!candidateSubtipos || candidateSubtipos.length === 0) ? (
+              {selectedTipoIds.length === 0 ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-yellow-600">⚠️</span>
+                    <FaExclamationTriangle className="text-yellow-600" />
                     <div>
                       <p className="text-sm font-medium text-yellow-800">Selecione primeiro os tipos de deficiência</p>
                       <p className="text-xs text-yellow-700 mt-1">Para ver as barreiras disponíveis, é necessário selecionar pelo menos um tipo de deficiência acima.</p>
@@ -298,27 +311,27 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {candidateSubtipos.map((s: any) => {
-                    const subtipoObj = typeof s === 'number' ? { id: s, nome: `Subtipo ${s}` } : s;
+                  {selectedTipoIds.map((tipoId) => {
+                    const tipoObj = tiposComSubtipos.find((t) => t.id === tipoId);
+                    if (!tipoObj) return null;
                     return (
-                      <div key={`barreira-${subtipoObj.id}`} className="border border-gray-200 rounded-lg p-4">
+                      <div key={`barreira-tipo-${tipoObj.id}`} className="border border-gray-200 rounded-lg p-4">
                         <h5 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                           <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                          {subtipoObj.nome}
+                          {tipoObj.nome}
                         </h5>
                         <CandidatoBarreirasForm
                           candidatoId={candidatoId}
-                          subtipo={subtipoObj}
+                          subtipo={{ id: tipoObj.id, nome: tipoObj.nome }}
                           disableActions={false}
                           autoSync={true}
-                          initialSelecionadas={candidateBarreiras?.[subtipoObj.id]?.selecionadas ?? []}
-                          initialNiveis={candidateBarreiras?.[subtipoObj.id]?.niveis ?? {}}
-                          barreirasOverride={barreirasBySubtipo ? barreirasBySubtipo[subtipoObj.id] : undefined}
-                          allBarreiras={allBarreirasBySubtipo[subtipoObj.id] || []}
+                          initialSelecionadas={candidateBarreiras?.[tipoObj.id]?.selecionadas ?? []}
+                          initialNiveis={candidateBarreiras?.[tipoObj.id]?.niveis ?? {}}
+                          allBarreiras={allBarreirasByTipo[tipoObj.id] || []}
                           onChange={(selecionadas, niveis) => {
                             setCandidateBarreiras((prev: any) => ({
                               ...(prev || {}),
-                              [subtipoObj.id]: { selecionadas, niveis },
+                              [tipoObj.id]: { selecionadas, niveis },
                             }));
                           }}
                         />

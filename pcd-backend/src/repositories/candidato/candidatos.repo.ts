@@ -1,7 +1,13 @@
-
 import prisma from "../../prismaClient";
 
 export const CandidatosRepo = {
+  // Lista as barreiras vinculadas a um subtipo para um candidato
+  listarBarreirasVinculadas(candidatoId: number, subtipoId: number) {
+    return prisma.candidatoSubtipoBarreira.findMany({
+      where: { candidatoId, subtipoId },
+      include: { barreira: true },
+    }).then(arr => arr.map(item => item.barreira));
+  },
   listarAreasFormacao(id: number) {
     return prisma.candidato.findUnique({
       where: { id },

@@ -4,6 +4,16 @@ import { Request, Response } from "express";
 import { TiposService } from "../../services/common/tipos.service";
 
 export const TiposController = {
+  async listBarreirasPorTipo(req: Request, res: Response) {
+    const tipoId = Number(req.params.id);
+    if (!tipoId) return res.status(400).json({ error: 'ID do tipo obrigatório' });
+    try {
+      const barreiras = await TiposService.listBarreirasPorTipo(tipoId);
+      res.json(barreiras);
+    } catch (e: any) {
+      res.status(e.status || 500).json({ error: e.message });
+    }
+  },
   async list(_req: Request, res: Response) {
     const data = await TiposService.list();
     res.json(data);

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FaWheelchair, FaSearch, FaBuilding, FaRegFileAlt } from 'react-icons/fa';
 
 export default function CadastroPage() {
   return (
@@ -45,10 +46,10 @@ export default function CadastroPage() {
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
-                      ♿ Pessoa com Deficiência
+                      <FaWheelchair className="inline mr-1" /> Pessoa com Deficiência
                     </span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
-                      🔍 Buscar Vagas
+                      <FaSearch className="inline mr-1" /> Buscar Vagas
                     </span>
                   </div>
                 </div>
@@ -75,10 +76,10 @@ export default function CadastroPage() {
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
-                      🏢 Recrutamento
+                      <FaBuilding className="inline mr-1" /> Recrutamento
                     </span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400">
-                      📝 Publicar Vagas
+                      <FaRegFileAlt className="inline mr-1" /> Publicar Vagas
                     </span>
                   </div>
                 </div>

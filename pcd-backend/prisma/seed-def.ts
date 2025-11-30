@@ -1,426 +1,525 @@
 
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+
+
 
 export async function seedDeficiencia() {
-	// Tipos
-	const motora = await prisma.tipoDeficiencia.create({ data: { nome: "Deficiência Física/Motora" } });
-	const auditiva = await prisma.tipoDeficiencia.create({ data: { nome: "Deficiência Auditiva" } });
-	const visual = await prisma.tipoDeficiencia.create({ data: { nome: "Deficiência Visual" } });
-	const intelectual = await prisma.tipoDeficiencia.create({ data: { nome: "Deficiência Intelectual" } });
-	const psicossocial = await prisma.tipoDeficiencia.create({ data: { nome: "Deficiência Psicossocial" } });
-	const tea = await prisma.tipoDeficiencia.create({ data: { nome: "Transtorno do Espectro Autista (TEA)" } });
+  const prisma = new PrismaClient();
 
-	// SUBTIPOS – Deficiência Física/Motora (Lista Final)
-	const subtiposMotora = await prisma.$transaction([
-			// SUBTIPOS – Deficiência Auditiva
-			const subtiposAuditiva = await prisma.$transaction([
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Neurossensorial Leve", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Neurossensorial Moderada", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Neurossensorial Severa", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Profunda", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Condutiva Leve", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Condutiva Moderada", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Surdez Condutiva Severa", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Perda Auditiva Unilateral Leve", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Perda Auditiva Unilateral Severa", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Usuário de Aparelho Auditivo (AASI)", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Usuário de Implante Coclear", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Pessoa que se comunica prioritariamente por Libras", tipoId: auditiva.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Pessoa bilíngue (Libras + Português)", tipoId: auditiva.id } }),
-			]);
+  // Função utilitária para upsert de barreiras
+  async function upsertBarreira(descricao) {
+    return prisma.barreira.upsert({
+      where: { descricao },
+      update: {},
+      create: { descricao }
+    });
+  }
 
-			// SUBTIPOS – Deficiência Visual
-			const subtiposVisual = await prisma.$transaction([
-				prisma.subtipoDeficiencia.create({ data: { nome: "Cegueira Total", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Baixa Visão Leve", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Baixa Visão Moderada", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Baixa Visão Severa", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Visão Tubular", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Visão Central Preservada com Periférica Reduzida", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Visão Periférica Preservada com Central Reduzida", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Pessoa usuária de Bengala", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Pessoa usuária de Cão-guia", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Pessoa com fotossensibilidade grave", tipoId: visual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Deficiência visual progressiva (ex.: glaucoma avançado)", tipoId: visual.id } }),
-			]);
+  // Função utilitária para upsert de acessibilidade
+  async function upsertAcessibilidade(descricao) {
+    return prisma.acessibilidade.upsert({
+      where: { descricao },
+      update: {},
+      create: { descricao }
+    });
+  }
 
-			// SUBTIPOS – Deficiência Intelectual
-			const subtiposIntelectual = await prisma.$transaction([
-				prisma.subtipoDeficiencia.create({ data: { nome: "Deficiência Intelectual Leve", tipoId: intelectual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Deficiência Intelectual Moderada", tipoId: intelectual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Deficiência Intelectual com boa autonomia social", tipoId: intelectual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Deficiência Intelectual com limitação cognitiva leve", tipoId: intelectual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Transtorno Global do Desenvolvimento com prejuízo cognitivo leve", tipoId: intelectual.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Condições genéticas associadas (ex.: Síndrome de Down – leve/moderada)", tipoId: intelectual.id } }),
-			]);
+  // --- BARREIRAS E ACESSIBILIDADES AUDITIVA ---
+  const barreirasAuditiva = await Promise.all([
+    upsertBarreira("Falta de intérprete de Libras"),
+    upsertBarreira("Falta de legendas em vídeos"),
+    upsertBarreira("Avisos apenas sonoros (alarme, chamada, sinal)"),
+    upsertBarreira("Falta de comunicação visual"),
+    upsertBarreira("Máscaras que escondem boca (prejudicam leitura labial)"),
+    upsertBarreira("Ambientes muito barulhentos (dificultam AASI/IC)"),
+    // Barreiras Gerais de Comunicação (1–13) já estão cobertas em barreirasGerais
+  ]);
 
-			// SUBTIPOS – Deficiência Psicossocial
-			const subtiposPsicossocial = await prisma.$transaction([
-				prisma.subtipoDeficiencia.create({ data: { nome: "Transtorno Bipolar estabilizado", tipoId: psicossocial.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Esquizofrenia estabilizada", tipoId: psicossocial.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Transtorno Esquizoafetivo", tipoId: psicossocial.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Transtorno Depressivo Maior recorrente", tipoId: psicossocial.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Transtorno de Ansiedade Generalizada severa", tipoId: psicossocial.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "TOC severo estabilizado", tipoId: psicossocial.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Transtorno de Personalidade com prejuízo funcional leve e controlado", tipoId: psicossocial.id } }),
-			]);
+  const acessAuditiva = await Promise.all([
+    upsertAcessibilidade("Intérprete de Libras"),
+    upsertAcessibilidade("Legendas automáticas/humanas"),
+    upsertAcessibilidade("Avisos luminosos (alarme visual)"),
+    upsertAcessibilidade("Painéis informativos"),
+    upsertAcessibilidade("Máscara transparente em atendimentos"),
+    upsertAcessibilidade("Treinamento da equipe para comunicação acessível"),
+    upsertAcessibilidade("Chamadas por display eletrônico"),
+    upsertAcessibilidade("Ambientes com menor ruído"), // Específica para AASI/IC
+    upsertAcessibilidade("Microfone direcional (para reuniões)"), // Específica para AASI/IC
+    upsertAcessibilidade("Sistemas FM / Bluetooth"), // Específica para AASI/IC
+  ]);
 
-			// SUBTIPOS – TEA
-			const subtiposTEA = await prisma.$transaction([
-				prisma.subtipoDeficiencia.create({ data: { nome: "TEA Nível 1 de suporte (leve)", tipoId: tea.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "TEA Nível 2 moderado", tipoId: tea.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Autistas com comunicação verbal funcional", tipoId: tea.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Autistas com sensibilidade sensorial acentuada", tipoId: tea.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Autistas com dificuldade de interação social", tipoId: tea.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Autistas com hiperfoco e habilidade analítica", tipoId: tea.id } }),
-				prisma.subtipoDeficiencia.create({ data: { nome: "Autistas com rotinas rígidas", tipoId: tea.id } }),
-			]);
+  // --- BARREIRAS E ACESSIBILIDADES VISUAL ---
+  const barreirasVisual = await Promise.all([
+    upsertBarreira("Falta de sinalização tátil"),
+    upsertBarreira("Falta de contraste visual"),
+    upsertBarreira("Escadas sem piso tátil"),
+    upsertBarreira("Objetos suspensos ou obstáculos inesperados"),
+    upsertBarreira("Sites/aplicações sem acessibilidade digital"),
+    upsertBarreira("Documentos apenas impressos"),
+    upsertBarreira("Ambientes pouco iluminados"),
+    upsertBarreira("Mudanças frequentes no layout (desorientação)"),
+  ]);
 
-			// BARREIRAS E ACESSIBILIDADES para cada tipo (exemplo: auditiva)
-			// Barreiras Auditiva
-			const barreirasAuditiva = await prisma.$transaction([
-				prisma.barreira.create({ data: { descricao: "Falta de intérprete de Libras" } }),
-				prisma.barreira.create({ data: { descricao: "Falta de legendas em vídeos" } }),
-				prisma.barreira.create({ data: { descricao: "Avisos apenas sonoros (alarme, chamada, sinal)" } }),
-				prisma.barreira.create({ data: { descricao: "Falta de comunicação visual" } }),
-				prisma.barreira.create({ data: { descricao: "Máscaras que escondem boca (prejudicam leitura labial)" } }),
-				prisma.barreira.create({ data: { descricao: "Ambientes muito barulhentos (dificultam AASI/IC)" } }),
-			]);
-			// Barreiras Visual
-			const barreirasVisual = await prisma.$transaction([
-				prisma.barreira.create({ data: { descricao: "Falta de sinalização tátil" } }),
-				prisma.barreira.create({ data: { descricao: "Falta de contraste visual" } }),
-				prisma.barreira.create({ data: { descricao: "Escadas sem piso tátil" } }),
-				prisma.barreira.create({ data: { descricao: "Objetos suspensos ou obstáculos inesperados" } }),
-				prisma.barreira.create({ data: { descricao: "Sites/aplicações sem acessibilidade digital" } }),
-				prisma.barreira.create({ data: { descricao: "Documentos apenas impressos" } }),
-				prisma.barreira.create({ data: { descricao: "Ambientes pouco iluminados" } }),
-				prisma.barreira.create({ data: { descricao: "Mudanças frequentes no layout (desorientação)" } }),
-			]);
-			// Barreiras Intelectual
-			const barreirasIntelectual = await prisma.$transaction([
-				prisma.barreira.create({ data: { descricao: "Instruções complexas sem apoio visual" } }),
-				prisma.barreira.create({ data: { descricao: "Treinamentos rápidos demais" } }),
-				prisma.barreira.create({ data: { descricao: "Rotinas sem previsibilidade" } }),
-				prisma.barreira.create({ data: { descricao: "Ambientes com muitas distrações" } }),
-				prisma.barreira.create({ data: { descricao: "Excesso de etapas sem acompanhamento" } }),
-				prisma.barreira.create({ data: { descricao: "Comunicação abstrata ou ambígua" } }),
-			]);
-			// Barreiras Psicossocial
-			const barreirasPsicossocial = await prisma.$transaction([
-				prisma.barreira.create({ data: { descricao: "Ambientes muito estressantes" } }),
-				prisma.barreira.create({ data: { descricao: "Pressão excessiva e comunicação agressiva" } }),
-				prisma.barreira.create({ data: { descricao: "Falta de previsibilidade" } }),
-				prisma.barreira.create({ data: { descricao: "Jornadas muito extensas" } }),
-				prisma.barreira.create({ data: { descricao: "Falta de pausas programadas" } }),
-				prisma.barreira.create({ data: { descricao: "Exposição a gatilhos sensoriais (ruído, luz intensa)" } }),
-			]);
-			// Barreiras TEA
-			const barreirasTEA = await prisma.$transaction([
-				prisma.barreira.create({ data: { descricao: "Ruído excessivo" } }),
-				prisma.barreira.create({ data: { descricao: "Iluminação forte/fluorescente" } }),
-				prisma.barreira.create({ data: { descricao: "Mudanças de rotina sem aviso" } }),
-				prisma.barreira.create({ data: { descricao: "Comunicação ambígua" } }),
-				prisma.barreira.create({ data: { descricao: "Regras implícitas de convivência" } }),
-				prisma.barreira.create({ data: { descricao: "Demandas multitarefa" } }),
-				prisma.barreira.create({ data: { descricao: "Ambientes caóticos" } }),
-			]);
+  const acessVisual = await Promise.all([
+    upsertAcessibilidade("Piso tátil direcional e de alerta"),
+    upsertAcessibilidade("Corrimão bilateral com indicação Braille"),
+    upsertAcessibilidade("Alto contraste nas sinalizações"),
+    upsertAcessibilidade("Mapas táteis"),
+    upsertAcessibilidade("Etiquetas táteis/Braille"),
+    upsertAcessibilidade("Cão-guia permitido"),
+    upsertAcessibilidade("Layout previsível sem obstáculos"),
+    // Digitais
+    upsertAcessibilidade("Acessibilidade WCAG"),
+    upsertAcessibilidade("Leitor de tela"),
+    upsertAcessibilidade("Navegação por teclado"),
+    upsertAcessibilidade("Conteúdo com descrição textual"),
+    upsertAcessibilidade("Formularios acessíveis"),
+    upsertAcessibilidade("Opção de zoom e contraste"),
+  ]);
 
-			// ACESSIBILIDADES Auditiva
-			const acessAuditiva = await prisma.$transaction([
-				prisma.acessibilidade.create({ data: { descricao: "Intérprete de Libras" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Legendas automáticas/humanas" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Avisos luminosos (alarme visual)" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Painéis informativos" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Máscara transparente em atendimentos" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Treinamento da equipe para comunicação acessível" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Chamadas por display eletrônico" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Ambientes com menor ruído" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Microfone direcional (para reuniões)" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Sistemas FM / Bluetooth" } }),
-			]);
-			// ACESSIBILIDADES Visual
-			const acessVisual = await prisma.$transaction([
-				prisma.acessibilidade.create({ data: { descricao: "Piso tátil direcional e de alerta" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Corrimão bilateral com indicação Braille" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Alto contraste nas sinalizações" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Mapas táteis" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Etiquetas táteis/Braille" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Cão-guia permitido" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Layout previsível sem obstáculos" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Acessibilidade WCAG" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Leitor de tela" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Navegação por teclado" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Conteúdo com descrição textual" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Formularios acessíveis" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Opção de zoom e contraste" } }),
-			]);
-			// ACESSIBILIDADES Intelectual
-			const acessIntelectual = await prisma.$transaction([
-				prisma.acessibilidade.create({ data: { descricao: "Instruções passo a passo" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Apoio visual (ícones, placas, fluxos)" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Treinamento prático com demonstração" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Rotina organizada e previsível" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Checklists simples" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Mapa de tarefas" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Acompanhamento inicial (job coach temporário)" } }),
-			]);
-			// ACESSIBILIDADES Psicossocial
-			const acessPsicossocial = await prisma.$transaction([
-				prisma.acessibilidade.create({ data: { descricao: "Ambiente com estímulos reduzidos" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Pausas programadas" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Rotina estável" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Comunicação empática" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Política anti-assédio" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Treinamentos claros" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Feedback estruturado e previsível" } }),
-			]);
-			// ACESSIBILIDADES TEA
-			const acessTEA = await prisma.$transaction([
-				prisma.acessibilidade.create({ data: { descricao: "Espaço silencioso" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Iluminação suave" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Comunicação objetiva" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Previsibilidade e rotina clara" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Treinamentos estruturados" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Feedback direto" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Instruções escritas" } }),
-				prisma.acessibilidade.create({ data: { descricao: "Flexibilidade sensorial" } }),
-			]);
+  // --- BARREIRAS E ACESSIBILIDADES INTELECTUAL ---
+  const barreirasIntelectual = await Promise.all([
+    upsertBarreira("Instruções complexas sem apoio visual"),
+    upsertBarreira("Treinamentos rápidos demais"),
+    upsertBarreira("Rotinas sem previsibilidade"),
+    upsertBarreira("Ambientes com muitas distrações"),
+    upsertBarreira("Excesso de etapas sem acompanhamento"),
+    upsertBarreira("Comunicação abstrata ou ambígua"),
+  ]);
 
-			// VÍNCULOS (exemplo: todas as barreiras gerais para todos os subtipos daquele tipo)
-			await prisma.subtipoBarreira.createMany({
-				data: subtiposAuditiva.flatMap(sub => barreirasAuditiva.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.subtipoBarreira.createMany({
-				data: subtiposVisual.flatMap(sub => barreirasVisual.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.subtipoBarreira.createMany({
-				data: subtiposIntelectual.flatMap(sub => barreirasIntelectual.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.subtipoBarreira.createMany({
-				data: subtiposPsicossocial.flatMap(sub => barreirasPsicossocial.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.subtipoBarreira.createMany({
-				data: subtiposTEA.flatMap(sub => barreirasTEA.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
-				skipDuplicates: true,
-			});
+  const acessIntelectual = await Promise.all([
+    upsertAcessibilidade("Instruções passo a passo"),
+    upsertAcessibilidade("Apoio visual (ícones, placas, fluxos)"),
+    upsertAcessibilidade("Treinamento prático com demonstração"),
+    upsertAcessibilidade("Rotina organizada e previsível"),
+    upsertAcessibilidade("Checklists simples"),
+    upsertAcessibilidade("Mapa de tarefas"),
+    upsertAcessibilidade("Acompanhamento inicial (job coach temporário)"),
+  ]);
 
-			// VÍNCULOS barreira-acessibilidade (exemplo: todas as acessibilidades gerais para todas as barreiras gerais daquele tipo)
-			await prisma.barreiraAcessibilidade.createMany({
-				data: barreirasAuditiva.flatMap(bar => acessAuditiva.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.barreiraAcessibilidade.createMany({
-				data: barreirasVisual.flatMap(bar => acessVisual.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.barreiraAcessibilidade.createMany({
-				data: barreirasIntelectual.flatMap(bar => acessIntelectual.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.barreiraAcessibilidade.createMany({
-				data: barreirasPsicossocial.flatMap(bar => acessPsicossocial.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
-				skipDuplicates: true,
-			});
-			await prisma.barreiraAcessibilidade.createMany({
-				data: barreirasTEA.flatMap(bar => acessTEA.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
-				skipDuplicates: true,
-			});
-		// A) Amputações / Ausência de membros
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação Transfemoral (Acima do Joelho – AK)", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação Transtibial (Abaixo do Joelho – BK)", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação Parcial do Pé", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação Hemipelvectomia", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação de Membro Superior – Transumeral", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação de Membro Superior – Transradial", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Ausência Congênita de Membro Inferior", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Ausência Congênita de Membro Superior", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação unilateral — com uso de muletas", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação unilateral — sem muletas", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação bilateral — uso de prótese", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Amputação bilateral — uso de cadeira de rodas", tipoId: motora.id } }),
-		// B) Mobilidade Reduzida / Ortopédica
-		prisma.subtipoDeficiencia.create({ data: { nome: "Usuário de cadeira de rodas manual", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Usuário de cadeira de rodas motorizada", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Usuário de andador", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Usuário de muletas permanentes", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Hemiparesia (paralisia parcial de um lado)", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Paraparesia (fraqueza parcial em ambas as pernas)", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Tetraparesia leve", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Má formação ortopédica com limitação de mobilidade", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Artrose ou lesão grave com redução permanente", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Escoliose grave / deformidade que limita mobilidade", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Osteogênese Imperfeita (leve/moderada — capaz de trabalhar)", tipoId: motora.id } }),
-		// C) Deficiências Neuromotoras
-		prisma.subtipoDeficiencia.create({ data: { nome: "Paralisia Cerebral leve ou moderada (não cognitiva)", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Lesão Medular parcial (nível funcional)", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Espinha Bífida com mobilidade preservada parcial", tipoId: motora.id } }),
-		prisma.subtipoDeficiencia.create({ data: { nome: "Distrofias musculares leves/moderadas (com autonomia laboral)", tipoId: motora.id } }),
-	]);
+  // --- BARREIRAS E ACESSIBILIDADES PSICOSSOCIAL ---
+  const barreirasPsicossocial = await Promise.all([
+    upsertBarreira("Ambientes muito estressantes"),
+    upsertBarreira("Pressão excessiva e comunicação agressiva"),
+    upsertBarreira("Falta de previsibilidade"),
+    upsertBarreira("Jornadas muito extensas"),
+    upsertBarreira("Falta de pausas programadas"),
+    upsertBarreira("Exposição a gatilhos sensoriais (ruído, luz intensa)"),
+  ]);
 
-	// BARREIRAS GERAIS (aplicação: todos os subtipos)
-	const barreirasGerais = await prisma.$transaction([
-		prisma.barreira.create({ data: { descricao: "Escadas sem alternativa acessível" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de rampas" } }),
-		prisma.barreira.create({ data: { descricao: "Porta estreita" } }),
-		prisma.barreira.create({ data: { descricao: "Piso irregular" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de elevador acessível" } }),
-		prisma.barreira.create({ data: { descricao: "Desníveis no piso" } }),
-		prisma.barreira.create({ data: { descricao: "Banheiro sem barras" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de espaço de circulação" } }),
-		prisma.barreira.create({ data: { descricao: "Mobiliário bloqueando passagem" } }),
-		prisma.barreira.create({ data: { descricao: "Abertura de porta pesada" } }),
-		prisma.barreira.create({ data: { descricao: "Altura inadequada de interruptores" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de estacionamento PCD" } }),
-		prisma.barreira.create({ data: { descricao: "Rotas longas sem descanso" } }),
-	]);
+  const acessPsicossocial = await Promise.all([
+    upsertAcessibilidade("Ambiente com estímulos reduzidos"),
+    upsertAcessibilidade("Pausas programadas"),
+    upsertAcessibilidade("Rotina estável"),
+    upsertAcessibilidade("Comunicação empática"),
+    upsertAcessibilidade("Política anti-assédio"),
+    upsertAcessibilidade("Treinamentos claros"),
+    upsertAcessibilidade("Feedback estruturado e previsível"),
+  ]);
 
-	// BARREIRAS ESPECÍFICAS
-	const barreirasCadeiraRodas = await prisma.$transaction([
-		prisma.barreira.create({ data: { descricao: "Rampas com inclinação inadequada" } }),
-		prisma.barreira.create({ data: { descricao: "Elevador com botões inacessíveis" } }),
-		prisma.barreira.create({ data: { descricao: "Mesas sem espaço para encaixar cadeira" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de espaço de giro (1,50m)" } }),
-		prisma.barreira.create({ data: { descricao: "Banheiro com espaço frontal insuficiente" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de plataforma elevatória" } }),
-		prisma.barreira.create({ data: { descricao: "Balcões muito altos" } }),
-	]);
-	const barreirasMuletasAndadorProtese = await prisma.$transaction([
-		prisma.barreira.create({ data: { descricao: "Piso escorregadio" } }),
-		prisma.barreira.create({ data: { descricao: "Tapetes soltos" } }),
-		prisma.barreira.create({ data: { descricao: "Percurso longo sem pontos de descanso" } }),
-		prisma.barreira.create({ data: { descricao: "Rampas muito inclinadas (difícil com muletas)" } }),
-		prisma.barreira.create({ data: { descricao: "Portas pesadas" } }),
-		prisma.barreira.create({ data: { descricao: "Desníveis pequenos (2–3 cm) que atrapalham próteses" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de corrimão" } }),
-		prisma.barreira.create({ data: { descricao: "Cadeiras não ergonômicas" } }),
-	]);
-	const barreirasAmputacaoSup = await prisma.$transaction([
-		prisma.barreira.create({ data: { descricao: "Maçanetas redondas" } }),
-		prisma.barreira.create({ data: { descricao: "Portas sem alavanca" } }),
-		prisma.barreira.create({ data: { descricao: "Botões pequenos/difíceis" } }),
-		prisma.barreira.create({ data: { descricao: "Equipamentos que exigem força de pinça" } }),
-		prisma.barreira.create({ data: { descricao: "Torneiras manuais" } }),
-		prisma.barreira.create({ data: { descricao: "Sistemas que exigem digitação extensiva sem adaptação" } }),
-	]);
-	const barreirasNeuromotoras = await prisma.$transaction([
-		prisma.barreira.create({ data: { descricao: "Falta de corrimão duplo" } }),
-		prisma.barreira.create({ data: { descricao: "Falta de assentos de apoio nas rotas" } }),
-		prisma.barreira.create({ data: { descricao: "Trajetos longos sem pausas" } }),
-		prisma.barreira.create({ data: { descricao: "Portas rápidas que fecham sozinhas" } }),
-		prisma.barreira.create({ data: { descricao: "Estações de trabalho sem ergonomia ajustável" } }),
-	]);
+  // --- BARREIRAS E ACESSIBILIDADES TEA ---
+  const barreirasTEA = await Promise.all([
+    upsertBarreira("Ruído excessivo"),
+    upsertBarreira("Iluminação forte/fluorescente"),
+    upsertBarreira("Mudanças de rotina sem aviso"),
+    upsertBarreira("Comunicação ambígua"),
+    upsertBarreira("Regras implícitas de convivência"),
+    upsertBarreira("Demandas multitarefa"),
+    upsertBarreira("Ambientes caóticos"),
+  ]);
 
-	// ACESSIBILIDADES GERAIS
-	const acessGeral = await prisma.$transaction([
-		prisma.acessibilidade.create({ data: { descricao: "Rampas com inclinação correta (NBR 9050)" } }),
-		prisma.acessibilidade.create({ data: { descricao: "+80cm portas com maçaneta de alavanca" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Estacionamento PCD sinalizado" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Banheiro com barras verticais e horizontais" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Layout com no mínimo 90cm de circulação" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Espaço organizado sem obstáculos" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Sinalização visual clara" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Rotas acessíveis definidas" } }),
-	]);
-	// ACESSIBILIDADES CADEIRA DE RODAS
-	const acessCadeiraRodas = await prisma.$transaction([
-		prisma.acessibilidade.create({ data: { descricao: "Porta com 90cm" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Mesa com altura 73–85cm" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Espaço de giro (1,50m)" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Elevador com botões a 1,10m" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Plataforma elevatória" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Rampa com corrimão duplo" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Banheiro com 1,20m de aproximação frontal" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Estação de trabalho regulável" } }),
-	]);
-	// ACESSIBILIDADES MULETA/ANDADOR/PRÓTESE
-	const acessMuletaAndadorProtese = await prisma.$transaction([
-		prisma.acessibilidade.create({ data: { descricao: "Piso antiderrapante" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Tapete fixo com fita antiderrapante" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Corrimão bilateral" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Assentos de apoio ao longo do trajeto" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Rampa suave (máx. 8,33%)" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Portas leves ou automáticas" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Áreas de descanso acessíveis" } }),
-	]);
-	// ACESSIBILIDADES AMPUTAÇÃO SUPERIOR
-	const acessAmputacaoSup = await prisma.$transaction([
-		prisma.acessibilidade.create({ data: { descricao: "Maçaneta tipo alavanca" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Torneiras automáticas" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Botões grandes / touch / pedal" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Sistemas com acessibilidade digital (voz, atalho, ampliação)" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Equipamentos que não exigem força de pinça" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Automatização de portas" } }),
-	]);
-	// ACESSIBILIDADES NEUROMOTORAS
-	const acessNeuromotoras = await prisma.$transaction([
-		prisma.acessibilidade.create({ data: { descricao: "Corrimão duplo" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Assentos em rotas longas" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Estações reguláveis" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Ambientes com espaço para movimentação lenta" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Portas com fechamento suave" } }),
-		prisma.acessibilidade.create({ data: { descricao: "Sistemas para evitar quedas (apoios laterais)" } }),
-	]);
+  const acessTEA = await Promise.all([
+    upsertAcessibilidade("Espaço silencioso"),
+    upsertAcessibilidade("Iluminação suave"),
+    upsertAcessibilidade("Comunicação objetiva"),
+    upsertAcessibilidade("Previsibilidade e rotina clara"),
+    upsertAcessibilidade("Treinamentos estruturados"),
+    upsertAcessibilidade("Feedback direto"),
+    upsertAcessibilidade("Instruções escritas"),
+    upsertAcessibilidade("Flexibilidade sensorial"),
+  ]);
 
-	// Aqui você pode criar os vínculos subtipo-barreira e barreira-acessibilidade conforme a lógica desejada
-	// Exemplo: vincular todas as barreiras gerais a todos os subtipos
-	const allSubtipos = subtiposMotora;
-	const allBarreirasGerais = barreirasGerais;
-	await prisma.subtipoBarreira.createMany({
-		data: allSubtipos.flatMap(sub => allBarreirasGerais.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
-		skipDuplicates: true,
-	});
+  // Tipos
+  const motora = await prisma.tipoDeficiencia.upsert({
+    where: { nome: "Deficiência Física/Motora" },
+    update: {},
+    create: { nome: "Deficiência Física/Motora" }
+  });
+  const auditiva = await prisma.tipoDeficiencia.upsert({
+    where: { nome: "Deficiência Auditiva" },
+    update: {},
+    create: { nome: "Deficiência Auditiva" }
+  });
+  const visual = await prisma.tipoDeficiencia.upsert({
+    where: { nome: "Deficiência Visual" },
+    update: {},
+    create: { nome: "Deficiência Visual" }
+  });
+  const intelectual = await prisma.tipoDeficiencia.upsert({
+    where: { nome: "Deficiência Intelectual" },
+    update: {},
+    create: { nome: "Deficiência Intelectual" }
+  });
+  const psicossocial = await prisma.tipoDeficiencia.upsert({
+    where: { nome: "Deficiência Psicossocial" },
+    update: {},
+    create: { nome: "Deficiência Psicossocial" }
+  });
+  const tea = await prisma.tipoDeficiencia.upsert({
+    where: { nome: "Transtorno do Espectro Autista (TEA)" },
+    update: {},
+    create: { nome: "Transtorno do Espectro Autista (TEA)" }
+  });
 
-	// Exemplo: vincular barreiras específicas a grupos de subtipos (ajuste conforme sua lógica)
-	// ...
+  // Função utilitária para upsert de subtipos
+  async function upsertSubtipo(nome, tipoId) {
+    return prisma.subtipoDeficiencia.upsert({
+      where: { tipoId_nome: { tipoId, nome } },
+      update: {},
+      create: { nome, tipoId }
+    });
+  }
 
-	// Exemplo: vincular todas as acessibilidades gerais a todas as barreiras gerais
-	await prisma.barreiraAcessibilidade.createMany({
-		data: allBarreirasGerais.flatMap(bar => acessGeral.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
-		skipDuplicates: true,
-	});
+  // SUBTIPOS – Deficiência Física/Motora
+  const subtiposMotora = await Promise.all([
+    // A) Amputações / Ausência de membros
+    upsertSubtipo("Amputação Transfemoral (Acima do Joelho – AK)", motora.id),
+    upsertSubtipo("Amputação Transtibial (Abaixo do Joelho – BK)", motora.id),
+    upsertSubtipo("Amputação Parcial do Pé", motora.id),
+    upsertSubtipo("Amputação Hemipelvectomia", motora.id),
+    upsertSubtipo("Amputação de Membro Superior – Transumeral", motora.id),
+    upsertSubtipo("Amputação de Membro Superior – Transradial", motora.id),
+    upsertSubtipo("Ausência Congênita de Membro Inferior", motora.id),
+    upsertSubtipo("Ausência Congênita de Membro Superior", motora.id),
+    upsertSubtipo("Amputação unilateral — com uso de muletas", motora.id),
+    upsertSubtipo("Amputação unilateral — sem muletas", motora.id),
+    upsertSubtipo("Amputação bilateral — uso de prótese", motora.id),
+    upsertSubtipo("Amputação bilateral — uso de cadeira de rodas", motora.id),
+    // B) Mobilidade Reduzida / Ortopédica
+    upsertSubtipo("Usuário de cadeira de rodas manual", motora.id),
+    upsertSubtipo("Usuário de cadeira de rodas motorizada", motora.id),
+    upsertSubtipo("Usuário de andador", motora.id),
+    upsertSubtipo("Usuário de muletas permanentes", motora.id),
+    upsertSubtipo("Hemiparesia (paralisia parcial de um lado)", motora.id),
+    upsertSubtipo("Paraparesia (fraqueza parcial em ambas as pernas)", motora.id),
+    upsertSubtipo("Tetraparesia leve", motora.id),
+    upsertSubtipo("Má formação ortopédica com limitação de mobilidade", motora.id),
+    upsertSubtipo("Artrose ou lesão grave com redução permanente", motora.id),
+    upsertSubtipo("Escoliose grave / deformidade que limita mobilidade", motora.id),
+    upsertSubtipo("Osteogênese Imperfeita (leve/moderada — capaz de trabalhar)", motora.id),
+    // C) Deficiências Neuromotoras
+    upsertSubtipo("Paralisia Cerebral leve ou moderada (não cognitiva)", motora.id),
+    upsertSubtipo("Lesão Medular parcial (nível funcional)", motora.id),
+    upsertSubtipo("Espinha Bífida com mobilidade preservada parcial", motora.id),
+    upsertSubtipo("Distrofias musculares leves/moderadas (com autonomia laboral)", motora.id),
+  ]);
 
-	// ...vincule barreiras/acessibilidades específicas conforme sua lógica
+  // SUBTIPOS – Deficiência Auditiva
+  const subtiposAuditiva = await Promise.all([
+    upsertSubtipo("Surdez Neurossensorial Leve", auditiva.id),
+    upsertSubtipo("Surdez Neurossensorial Moderada", auditiva.id),
+    upsertSubtipo("Surdez Neurossensorial Severa", auditiva.id),
+    upsertSubtipo("Surdez Profunda", auditiva.id),
+    upsertSubtipo("Surdez Condutiva Leve", auditiva.id),
+    upsertSubtipo("Surdez Condutiva Moderada", auditiva.id),
+    upsertSubtipo("Surdez Condutiva Severa", auditiva.id),
+    upsertSubtipo("Perda Auditiva Unilateral Leve", auditiva.id),
+    upsertSubtipo("Perda Auditiva Unilateral Severa", auditiva.id),
+    upsertSubtipo("Usuário de Aparelho Auditivo (AASI)", auditiva.id),
+    upsertSubtipo("Usuário de Implante Coclear", auditiva.id),
+    upsertSubtipo("Pessoa que se comunica prioritariamente por Libras", auditiva.id),
+    upsertSubtipo("Pessoa bilíngue (Libras + Português)", auditiva.id),
+  ]);
 
-	return {
-		tipos: { motora, auditiva, visual, intelectual, psicossocial, tea },
-		subtipos: {
-			motora: subtiposMotora,
-			auditiva: subtiposAuditiva,
-			visual: subtiposVisual,
-			intelectual: subtiposIntelectual,
-			psicossocial: subtiposPsicossocial,
-			tea: subtiposTEA,
-		},
-		barreiras: [
-			...barreirasGerais,
-			...barreirasCadeiraRodas,
-			...barreirasMuletasAndadorProtese,
-			...barreirasAmputacaoSup,
-			...barreirasNeuromotoras,
-			...barreirasAuditiva,
-			...barreirasVisual,
-			...barreirasIntelectual,
-			...barreirasPsicossocial,
-			...barreirasTEA,
-		],
-		acessibilidades: [
-			...acessGeral,
-			...acessCadeiraRodas,
-			...acessMuletaAndadorProtese,
-			...acessAmputacaoSup,
-			...acessNeuromotoras,
-			...acessAuditiva,
-			...acessVisual,
-			...acessIntelectual,
-			...acessPsicossocial,
-			...acessTEA,
-		],
-	};
-}
+  // SUBTIPOS – Deficiência Visual
+  const subtiposVisual = await Promise.all([
+    upsertSubtipo("Cegueira Total", visual.id),
+    upsertSubtipo("Baixa Visão Leve", visual.id),
+    upsertSubtipo("Baixa Visão Moderada", visual.id),
+    upsertSubtipo("Baixa Visão Severa", visual.id),
+    upsertSubtipo("Visão Tubular", visual.id),
+    upsertSubtipo("Visão Central Preservada com Periférica Reduzida", visual.id),
+    upsertSubtipo("Visão Periférica Preservada com Central Reduzida", visual.id),
+    upsertSubtipo("Pessoa usuária de Bengala", visual.id),
+    upsertSubtipo("Pessoa usuária de Cão-guia", visual.id),
+    upsertSubtipo("Pessoa com fotossensibilidade grave", visual.id),
+    upsertSubtipo("Deficiência visual progressiva (ex.: glaucoma avançado)", visual.id),
+  ]);
+
+  // SUBTIPOS – Deficiência Intelectual
+  const subtiposIntelectual = await Promise.all([
+    upsertSubtipo("Deficiência Intelectual Leve", intelectual.id),
+    upsertSubtipo("Deficiência Intelectual Moderada", intelectual.id),
+    upsertSubtipo("Deficiência Intelectual com boa autonomia social", intelectual.id),
+    upsertSubtipo("Deficiência Intelectual com limitação cognitiva leve", intelectual.id),
+    upsertSubtipo("Transtorno Global do Desenvolvimento com prejuízo cognitivo leve", intelectual.id),
+    upsertSubtipo("Condições genéticas associadas (ex.: Síndrome de Down – leve/moderada)", intelectual.id),
+  ]);
+
+  // SUBTIPOS – Deficiência Psicossocial
+  const subtiposPsicossocial = await Promise.all([
+    upsertSubtipo("Transtorno Bipolar estabilizado", psicossocial.id),
+    upsertSubtipo("Esquizofrenia estabilizada", psicossocial.id),
+    upsertSubtipo("Transtorno Esquizoafetivo", psicossocial.id),
+    upsertSubtipo("Transtorno Depressivo Maior recorrente", psicossocial.id),
+    upsertSubtipo("Transtorno de Ansiedade Generalizada severa", psicossocial.id),
+    upsertSubtipo("TOC severo estabilizado", psicossocial.id),
+    upsertSubtipo("Transtorno de Personalidade com prejuízo funcional leve e controlado", psicossocial.id),
+  ]);
+
+  // SUBTIPOS – TEA
+  const subtiposTEA = await Promise.all([
+    upsertSubtipo("TEA Nível 1 de suporte (leve)", tea.id),
+    upsertSubtipo("TEA Nível 2 moderado", tea.id),
+    upsertSubtipo("Autistas com comunicação verbal funcional", tea.id),
+    upsertSubtipo("Autistas com sensibilidade sensorial acentuada", tea.id),
+    upsertSubtipo("Autistas com dificuldade de interação social", tea.id),
+    upsertSubtipo("Autistas com hiperfoco e habilidade analítica", tea.id),
+    upsertSubtipo("Autistas com rotinas rígidas", tea.id),
+  ]);
+
+  // --- DEFICIÊNCIAS COGNITIVAS ESPECÍFICAS (ex: Dislexia) ---
+  // Adiciona subtipo Dislexia em Intelectual (ou crie tipo separado se desejar)
+  // Aqui, vamos adicionar como subtipo de Intelectual para manter compatibilidade
+  const dislexiaSubtipo = await upsertSubtipo("Dislexia", intelectual.id);
+
+  // Barreiras Dislexia
+  const barreirasDislexia = await Promise.all([
+    upsertBarreira("Textos longos"),
+    upsertBarreira("Leitura rápida exigida"),
+    upsertBarreira("Instruções complexas"),
+  ]);
+
+  // Acessibilidades Dislexia
+  const acessDislexia = await Promise.all([
+    upsertAcessibilidade("Texto simplificado"),
+    upsertAcessibilidade("Fontes legíveis"),
+    upsertAcessibilidade("WCAG (layout limpo)"),
+  ]);
+
+  // Vincular barreiras e acessibilidades para Dislexia
+  await prisma.subtipoBarreira.createMany({
+    data: barreirasDislexia.map(bar => ({ subtipoId: dislexiaSubtipo.id, barreiraId: bar.id })),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasDislexia.flatMap(bar => acessDislexia.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  // Função utilitária para upsert de barreiras
+  async function upsertBarreira(descricao) {
+    return prisma.barreira.upsert({
+      where: { descricao },
+      update: {},
+      create: { descricao }
+    });
+  }
+
+  // Função utilitária para upsert de acessibilidade
+  async function upsertAcessibilidade(descricao) {
+    return prisma.acessibilidade.upsert({
+      where: { descricao },
+      update: {},
+      create: { descricao }
+    });
+  }
+
+  // Substituir as transações de barreiras e acessibilidades por upserts
+  // Exemplo para barreiras gerais:
+
+  const barreirasGerais = await Promise.all([
+    upsertBarreira("Escadas sem alternativa acessível"),
+    upsertBarreira("Falta de rampas"),
+    upsertBarreira("Porta estreita"),
+    upsertBarreira("Piso irregular"),
+    upsertBarreira("Falta de elevador acessível"),
+    upsertBarreira("Desníveis no piso"),
+    upsertBarreira("Banheiro sem barras"),
+    upsertBarreira("Falta de espaço de circulação"),
+    upsertBarreira("Mobiliário bloqueando passagem"),
+    upsertBarreira("Abertura de porta pesada"),
+    upsertBarreira("Altura inadequada de interruptores"),
+    upsertBarreira("Falta de estacionamento PCD"),
+    upsertBarreira("Rotas longas sem descanso"),
+  ]);
+
+
+  // --- VÍNCULOS DEFICIÊNCIA FÍSICA/MOTORA ---
+  // Índices dos subtipos conforme lista enviada (1-based):
+  // 1–12: Amputações/Ausência de membros
+  // 13–23: Mobilidade reduzida/ortopédica
+  // 24–27: Neuromotoras
+  // 5,6,8: Amputações superiores
+  // 12,13,14,17,18,24,25,26: Cadeira de rodas
+  // 1–11,15,16,17–23,26: Muletas/andador/prótese
+  // 17–27: Neuromotoras
+
+  // Barreiras gerais (aplicam para todos)
+  await prisma.subtipoBarreira.createMany({
+    data: subtiposMotora.flatMap(sub => barreirasGerais.map(bar => ({ subtipoId: sub.id, barreiraId: bar.id }))),
+    skipDuplicates: true,
+  });
+
+  // Barreiras específicas para grupos
+  // IDs dos subtipos (0-based):
+  const idxCadeiraRodas = [11,12,13,16,17,23,24,25]; // 12,13,14,17,18,24,25,26
+  const idxMuletas = [0,1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,25]; // 1–11,15,16,17–23,26
+  const idxAmputSup = [4,5,7]; // 5,6,8
+  const idxNeuromotoras = [16,17,18,19,20,21,22,23,24,25,26]; // 17–27
+
+  // Barreiras específicas (crie se não existirem)
+  const barreirasCadeiraRodas = await Promise.all([
+    upsertBarreira("Rampas com inclinação inadequada"),
+    upsertBarreira("Elevador com botões inacessíveis"),
+    upsertBarreira("Mesas sem espaço para encaixar cadeira"),
+    upsertBarreira("Falta de espaço de giro (1,50m)"),
+    upsertBarreira("Banheiro com espaço frontal insuficiente"),
+    upsertBarreira("Falta de plataforma elevatória"),
+    upsertBarreira("Balcões muito altos"),
+  ]);
+  const barreirasMuletas = await Promise.all([
+    upsertBarreira("Piso escorregadio"),
+    upsertBarreira("Tapetes soltos"),
+    upsertBarreira("Percurso longo sem pontos de descanso"),
+    upsertBarreira("Rampas muito inclinadas (difícil com muletas)"),
+    upsertBarreira("Portas pesadas"),
+    upsertBarreira("Desníveis pequenos (2–3 cm) que atrapalham próteses"),
+    upsertBarreira("Falta de corrimão"),
+    upsertBarreira("Cadeiras não ergonômicas"),
+  ]);
+  const barreirasAmputSup = await Promise.all([
+    upsertBarreira("Maçanetas redondas"),
+    upsertBarreira("Portas sem alavanca"),
+    upsertBarreira("Botões pequenos/difíceis"),
+    upsertBarreira("Equipamentos que exigem força de pinça"),
+    upsertBarreira("Torneiras manuais"),
+    upsertBarreira("Sistemas que exigem digitação extensiva sem adaptação"),
+  ]);
+  const barreirasNeuromotoras = await Promise.all([
+    upsertBarreira("Falta de corrimão duplo"),
+    upsertBarreira("Falta de assentos de apoio nas rotas"),
+    upsertBarreira("Trajetos longos sem pausas"),
+    upsertBarreira("Portas rápidas que fecham sozinhas"),
+    upsertBarreira("Estações de trabalho sem ergonomia ajustável"),
+  ]);
+
+  // Vincular barreiras específicas
+  await prisma.subtipoBarreira.createMany({
+    data: idxCadeiraRodas.flatMap(i => barreirasCadeiraRodas.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.subtipoBarreira.createMany({
+    data: idxMuletas.flatMap(i => barreirasMuletas.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.subtipoBarreira.createMany({
+    data: idxAmputSup.flatMap(i => barreirasAmputSup.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.subtipoBarreira.createMany({
+    data: idxNeuromotoras.flatMap(i => barreirasNeuromotoras.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    skipDuplicates: true,
+  });
+
+  // --- ACESSIBILIDADES DEFICIÊNCIA FÍSICA/MOTORA ---
+  // Gerais
+  const acessMotoraGerais = await Promise.all([
+    upsertAcessibilidade("Rampas com inclinação correta (NBR 9050)"),
+    upsertAcessibilidade("Portas com +80 cm e maçaneta de alavanca"),
+    upsertAcessibilidade("Estacionamento PCD sinalizado"),
+    upsertAcessibilidade("Banheiro com barras verticais e horizontais"),
+    upsertAcessibilidade("Layout com no mínimo 90 cm de circulação"),
+    upsertAcessibilidade("Espaço organizado sem obstáculos"),
+    upsertAcessibilidade("Sinalização visual clara"),
+    upsertAcessibilidade("Rotas acessíveis definidas"),
+  ]);
+  // Cadeira de rodas
+  const acessCadeiraRodas = await Promise.all([
+    upsertAcessibilidade("Porta com 90 cm"),
+    upsertAcessibilidade("Mesa com altura 73–85 cm"),
+    upsertAcessibilidade("Espaço de giro (1,50m)"),
+    upsertAcessibilidade("Elevador com botões a 1,10m"),
+    upsertAcessibilidade("Plataforma elevatória"),
+    upsertAcessibilidade("Rampa com corrimão duplo"),
+    upsertAcessibilidade("Banheiro com 1,20m de aproximação frontal"),
+    upsertAcessibilidade("Estação de trabalho regulável"),
+  ]);
+  // Muletas/andador/prótese
+  const acessMuletas = await Promise.all([
+    upsertAcessibilidade("Piso antiderrapante"),
+    upsertAcessibilidade("Tapete fixo com fita antiderrapante"),
+    upsertAcessibilidade("Corrimão bilateral"),
+    upsertAcessibilidade("Assentos de apoio ao longo do trajeto"),
+    upsertAcessibilidade("Rampa suave (máx. 8,33%)"),
+    upsertAcessibilidade("Portas leves ou automáticas"),
+    upsertAcessibilidade("Áreas de descanso acessíveis"),
+  ]);
+  // Amputações superiores
+  const acessAmputSup = await Promise.all([
+    upsertAcessibilidade("Maçaneta tipo alavanca"),
+    upsertAcessibilidade("Torneiras automáticas"),
+    upsertAcessibilidade("Botões grandes / touch / pedal"),
+    upsertAcessibilidade("Sistemas com acessibilidade digital (voz, atalho, ampliação)"),
+    upsertAcessibilidade("Equipamentos que não exigem força de pinça"),
+    upsertAcessibilidade("Automatização de portas"),
+  ]);
+  // Neuromotoras
+  const acessNeuromotoras = await Promise.all([
+    upsertAcessibilidade("Corrimão duplo"),
+    upsertAcessibilidade("Assentos em rotas longas"),
+    upsertAcessibilidade("Estações reguláveis"),
+    upsertAcessibilidade("Ambientes com espaço para movimentação lenta"),
+    upsertAcessibilidade("Portas com fechamento suave"),
+    upsertAcessibilidade("Sistemas para evitar quedas (apoios laterais)"),
+  ]);
+
+  // Vincular barreiras gerais às acessibilidades gerais
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasGerais.flatMap(bar => acessMotoraGerais.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  // Vincular barreiras específicas aos grupos de acessibilidade
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasCadeiraRodas.flatMap(bar => acessCadeiraRodas.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasMuletas.flatMap(bar => acessMuletas.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasAmputSup.flatMap(bar => acessAmputSup.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasNeuromotoras.flatMap(bar => acessNeuromotoras.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasAuditiva.flatMap(bar => acessAuditiva.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasVisual.flatMap(bar => acessVisual.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasIntelectual.flatMap(bar => acessIntelectual.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasPsicossocial.flatMap(bar => acessPsicossocial.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+  await prisma.barreiraAcessibilidade.createMany({
+    data: barreirasTEA.flatMap(bar => acessTEA.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
+    skipDuplicates: true,
+  });
+
+
+  // Retorne objetos úteis se necessário
+  return {
+    // Adicione aqui se quiser retornar tipos, subtipos, etc.
+  };
 }

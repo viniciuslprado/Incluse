@@ -11,6 +11,9 @@ export const TiposService = {
   async listSubtipos(tipoId: number) {
     return TiposRepo.listSubtipos(tipoId);
   },
+  async listBarreirasPorTipo(tipoId: number) {
+    return TiposRepo.listBarreirasPorTipo(tipoId);
+  },
   async create(nome: string) {
     const final = (nome ?? "").trim();
     if (!final) throw Object.assign(new Error("O campo 'nome' é obrigatório"), { status: 400 });

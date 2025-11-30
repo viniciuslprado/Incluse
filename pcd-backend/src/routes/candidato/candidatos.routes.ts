@@ -7,10 +7,23 @@ import { uploadCurriculo } from "../../middleware/upload-curriculo";
 import { NotificacoesController } from "../../controllers/common/notificacoes.controller";
 import { CurriculoController } from "../../controllers/candidato/curriculo.controller";
 import * as ConfigController from "../../controllers/common/config.controller";
+import { MatchController } from "../../controllers/common/match.controller";
 const router = Router();
 // Laudo médico
 router.get('/:id/laudo', verifyJWT, ensureSelfCandidate, CandidatosController.getLaudo);
 router.delete('/:id/laudo', verifyJWT, ensureSelfCandidate, CandidatosController.excluirLaudo);
+// Upload de laudo médico
+router.post('/:id/laudo', verifyJWT, ensureSelfCandidate, multer({
+	storage: multerConfig.upload('uploads').storage,
+	limits: { fileSize: 5 * 1024 * 1024 },
+	fileFilter: (req, file, cb) => {
+		const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+		if (!allowed.includes(file.mimetype)) {
+			return cb(new Error('O laudo deve ser PDF ou imagem (JPG/PNG)'));
+		}
+		cb(null, true);
+	}
+}).single('laudo'), CandidatosController.uploadLaudo);
 // Configure multer for PDF uploads with size + MIME validation
 const pdfUpload = multer({
 	storage: multerConfig.upload("uploads").storage,
@@ -47,8 +60,23 @@ router.post("/", pdfUpload, CandidatosController.criar);
 router.get("/check-cpf/:cpf", CandidatosController.checkCpf);
 router.get("/check-email/:email", CandidatosController.checkEmail);
 
-// GET /candidatos/:id (temporário sem auth para desenvolvimento)
-router.get("/:id", CandidatosController.getCandidato);
+// Compatibilidade com frontend: rota /candidatos/cpf/:cpf/exists
+import { CandidatosService } from '../../services/candidato/candidatos.service';
+router.get("/cpf/:cpf/exists", async (req, res) => {
+	try {
+		const { cpf } = req.params;
+		const exists = await CandidatosService.checkCpfExists(cpf);
+		res.json({ exists: !!exists });
+	} catch (e) {
+		res.status(500).json({ error: 'Erro ao verificar CPF' });
+	}
+});
+
+// GET /candidato/:id/inicio (substitui o antigo /:id)
+router.get("/:id/inicio", CandidatosController.getCandidato);
+
+// GET /candidato/:id/match - retorna vagas compatíveis para o candidato
+router.get("/:id/match", MatchController.matchCandidato);
 
 // PUT /candidatos/:id
 router.put("/:id", verifyJWT, ensureSelfCandidate, CandidatosController.atualizar);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FaRegFileAlt, FaGraduationCap, FaGift, FaClipboardList, FaWheelchair, FaRocket, FaLightbulb } from 'react-icons/fa';
 import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
@@ -117,13 +118,13 @@ export default function NovaVagaPage() {
   }, []);
 
   const steps = [
-    { id: 1, name: 'Dados Básicos', icon: '📝' },
-    { id: 2, name: 'Descrição', icon: '📄' },
-    { id: 3, name: 'Requisitos', icon: '🎓' },
-    { id: 4, name: 'Benefícios', icon: '🎁' },
-    { id: 5, name: 'Processo Seletivo', icon: '📋' },
-    { id: 6, name: 'Acessibilidade', icon: '♿' },
-    { id: 7, name: 'Publicação', icon: '🚀' }
+    { id: 1, name: 'Dados Básicos', icon: <FaRegFileAlt /> },
+    { id: 2, name: 'Descrição', icon: <FaRegFileAlt /> },
+    { id: 3, name: 'Requisitos', icon: <FaGraduationCap /> },
+    { id: 4, name: 'Benefícios', icon: <FaGift /> },
+    { id: 5, name: 'Processo Seletivo', icon: <FaClipboardList /> },
+    { id: 6, name: 'Acessibilidade', icon: <FaWheelchair /> },
+    { id: 7, name: 'Publicação', icon: <FaRocket /> }
   ];
 
   const handleInputChange = (field: keyof VagaData, value: any) => {
@@ -700,16 +701,17 @@ export default function NovaVagaPage() {
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Sugestões de Benefícios</h4>
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2"><FaLightbulb className="inline mr-1" /> Sugestões de Benefícios</h4>
               <div className="flex flex-wrap gap-2">
                 {['Vale alimentação', 'Vale transporte', 'Plano de saúde', 'Plano odontológico', 'Gympass', 'Home office', 'Horário flexível', 'Day off aniversário'].map((sug) => (
                   <button
                     key={sug}
                     type="button"
-                    onClick={() => {
+                    onClick={e => {
                       if (!vagaData.beneficios.includes(sug)) {
                         addToArray('beneficios', sug);
                       }
+                      e.currentTarget.blur();
                     }}
                     className="px-3 py-1 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
                   >
@@ -780,16 +782,17 @@ export default function NovaVagaPage() {
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Etapas Comuns</h4>
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2"><FaLightbulb className="inline mr-1" /> Etapas Comuns</h4>
               <div className="flex flex-wrap gap-2">
                 {['Análise de currículo', 'Entrevista com RH', 'Teste técnico', 'Entrevista com gestor', 'Dinâmica de grupo', 'Proposta'].map((sug) => (
                   <button
                     key={sug}
                     type="button"
-                    onClick={() => {
+                    onClick={e => {
                       if (!vagaData.etapas.includes(sug)) {
                         addToArray('etapas', sug);
                       }
+                      e.currentTarget.blur();
                     }}
                     className="px-3 py-1 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
                   >
@@ -816,7 +819,7 @@ export default function NovaVagaPage() {
               <div className="space-y-2">
                 {vagaData.recursos.map((rec, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                    <span className="text-sm text-gray-900 dark:text-gray-100">♿ {rec}</span>
+                    <span className="text-sm text-gray-900 dark:text-gray-100"><FaWheelchair className="inline mr-1" />{rec}</span>
                     <button
                       type="button"
                       onClick={() => removeFromArray('recursos', idx)}
@@ -833,16 +836,17 @@ export default function NovaVagaPage() {
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">♿ Recursos Disponíveis</h4>
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2"><FaWheelchair className="inline mr-1" /> Recursos Disponíveis</h4>
               <div className="flex flex-wrap gap-2">
                 {acessibilidadesDisponiveis.map((acess) => (
                   <button
                     key={acess.id}
                     type="button"
-                    onClick={() => {
+                    onClick={e => {
                       if (!vagaData.recursos.includes(acess.descricao)) {
                         addToArray('recursos', acess.descricao);
                       }
+                      e.currentTarget.blur();
                     }}
                     className="px-3 py-1 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
                   >
@@ -893,7 +897,7 @@ export default function NovaVagaPage() {
             
             {/* Seção 1 - Dados Básicos */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400">📝 Dados Básicos</h4>
+              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400"><FaRegFileAlt className="inline mr-1" /> Dados Básicos</h4>
               <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Título *</dt>
@@ -924,7 +928,7 @@ export default function NovaVagaPage() {
 
             {/* Seção 2 - Descrição */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400">📄 Descrição</h4>
+              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400"><FaRegFileAlt className="inline mr-1" /> Descrição</h4>
               <dl className="space-y-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Resumo da Função</dt>
@@ -951,7 +955,7 @@ export default function NovaVagaPage() {
 
             {/* Seção 3 - Requisitos */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400">🎓 Requisitos</h4>
+              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400"><FaGraduationCap className="inline mr-1" /> Requisitos</h4>
               <dl className="space-y-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Formação Mínima *</dt>
@@ -998,7 +1002,7 @@ export default function NovaVagaPage() {
 
             {/* Seção 4 - Benefícios */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400">🎁 Benefícios</h4>
+              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400"><FaGift className="inline mr-1" /> Benefícios</h4>
               {vagaData.beneficios.length > 0 ? (
                 <ul className="list-disc list-inside space-y-1">
                   {vagaData.beneficios.map((ben, idx) => (
@@ -1012,7 +1016,7 @@ export default function NovaVagaPage() {
 
             {/* Seção 5 - Processo Seletivo */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400">📋 Processo Seletivo</h4>
+              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400"><FaClipboardList className="inline mr-1" /> Processo Seletivo</h4>
               {vagaData.etapas.length > 0 ? (
                 <ol className="space-y-2">
                   {vagaData.etapas.map((etapa, idx) => (
@@ -1031,7 +1035,7 @@ export default function NovaVagaPage() {
 
             {/* Seção 6 - Acessibilidade */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400">♿ Acessibilidade</h4>
+              <h4 className="font-medium mb-4 text-blue-600 dark:text-blue-400"><FaWheelchair className="inline mr-1" /> Acessibilidade</h4>
               <dl className="space-y-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Recursos de Acessibilidade *</dt>
@@ -1039,7 +1043,7 @@ export default function NovaVagaPage() {
                     {vagaData.recursos.length > 0 ? (
                       <ul className="list-disc list-inside space-y-1">
                         {vagaData.recursos.map((rec, idx) => (
-                          <li key={idx} className="text-sm text-gray-900 dark:text-gray-100">♿ {rec}</li>
+                          <li key={idx} className="text-sm text-gray-900 dark:text-gray-100"><FaWheelchair className="inline mr-1" />{rec}</li>
                         ))}
                       </ul>
                     ) : (

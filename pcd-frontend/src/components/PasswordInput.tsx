@@ -57,19 +57,19 @@ export default function PasswordInput({
           placeholder={placeholder}
           required={required}
           autoComplete={autoComplete}
-          className={`w-full pr-10 ${className}`}
+          className={`w-full pr-12 pl-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm dark:bg-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-150 ${className}`}
         />
         <button
           type="button"
           onClick={togglePasswordVisibility}
-          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-0 bg-transparent border-0"
+          className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 focus:outline-none focus:ring-0 bg-transparent border-0"
           aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
           tabIndex={-1}
         >
           {showPassword ? (
-            <FiEyeOff className="w-3.5 h-3.5" />
+            <FiEyeOff className="w-5 h-5" />
           ) : (
-            <FiEye className="w-3.5 h-3.5" />
+            <FiEye className="w-5 h-5" />
           )}
         </button>
       </div>

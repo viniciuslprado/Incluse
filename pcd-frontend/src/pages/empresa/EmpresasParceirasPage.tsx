@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FaBuilding } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 import { api } from '../../lib/api';
@@ -162,7 +163,7 @@ export default function EmpresasParceirasPage() {
 
         {empresasFiltradas.length === 0 && !loading && (
           <div className="text-center py-12">
-            <div className="text-gray-400 dark:text-gray-600 text-6xl mb-4">🏢</div>
+            <div className="text-gray-400 dark:text-gray-600 text-6xl mb-4"><FaBuilding /></div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               Nenhuma empresa encontrada
             </h3>

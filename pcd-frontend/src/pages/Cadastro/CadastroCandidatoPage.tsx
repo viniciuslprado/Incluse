@@ -1,11 +1,57 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { TipoComSubtipos, Barreira } from '../../types';
 import PasswordInput from '../../components/PasswordInput';
+import CustomSelect from '../../components/common/CustomSelect';
 import { formatPhone, unformatPhone } from '../../utils/formatters';
 
 export default function CadastroCandidatoPage() {
+  // Se for edição, pega o id da URL
+  const params = useParams();
+  const candidatoId = params.id ? Number(params.id) : null;
+
+  // Carregar dados do candidato para edição
+  useEffect(() => {
+    if (!candidatoId) return;
+    (async () => {
+      try {
+        const candidato = await api.getCandidato(candidatoId);
+        // Ajuste conforme o formato retornado pela API
+        if (candidato) {
+          setFormData(prev => ({
+            ...prev,
+            nomeCompleto: candidato.nomeCompleto || '',
+            cpf: candidato.cpf || '',
+            telefone: candidato.telefone || '',
+            email: candidato.email || '',
+            escolaridade: candidato.escolaridade || '',
+            cidade: candidato.cidade || '',
+            estado: candidato.estado || '',
+          }));
+          // Supondo que venha arrays de ids:
+          if (candidato.tipos && candidato.tipos.length > 0) {
+            setSelectedTipoId(candidato.tipos[0].id); // ou múltiplos se for multi-select
+          }
+          if (candidato.subtipos && candidato.subtipos.length > 0) {
+            setSelectedSubtipoId(candidato.subtipos[0].id);
+          }
+          if (candidato.barreiras && candidato.barreiras.length > 0) {
+            setSelectedBarreiras(candidato.barreiras.map(b => b.id));
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao carregar dados do candidato:', err);
+      }
+    })();
+  }, [candidatoId]);
+  // ...existing code...
+    // Step 2 specific
+    // ...existing code...
+    // ...existing code...
+
+    // ...existing code...
+    // ...existing code...
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [formData, setFormData] = useState({
@@ -16,7 +62,20 @@ export default function CadastroCandidatoPage() {
     senha: '',
     confirmarSenha: '',
     escolaridade: '',
+    areaFormacao: '',
+    cidade: '',
+    estado: '',
   });
+
+  const [areasFormacao, setAreasFormacao] = useState<{ id: number, nome: string }[]>([]);
+  // Carregar áreas de formação
+  useEffect(() => {
+    api.listarAreasFormacao().then((areas) => {
+      setAreasFormacao(Array.isArray(areas) ? areas : []);
+    }).catch((err) => {
+      console.error('Erro ao carregar áreas de formação:', err);
+    });
+  }, []);
 
   const [fileCurriculo, setFileCurriculo] = useState<File | null>(null);
   const [fileLaudo, setFileLaudo] = useState<File | null>(null);
@@ -42,8 +101,11 @@ export default function CadastroCandidatoPage() {
   // Step 2 specific
   const [selectedTipoId, setSelectedTipoId] = useState<number | null>(null);
   const [selectedSubtipoId, setSelectedSubtipoId] = useState<number | null>(null);
-  const [barreiras, setBarreiras] = useState<Barreira[]>([]);
+  const [barreirasPorSubtipo, setBarreirasPorSubtipo] = useState<Record<number, Barreira[]>>({});
   const [selectedBarreiras, setSelectedBarreiras] = useState<number[]>([]);
+
+  // Barreiras do subtipo selecionado para o passo 3
+  const barreiras = selectedSubtipoId ? (barreirasPorSubtipo[selectedSubtipoId] ?? []) : [];
 
   // Carregar tipos de deficiência
   useEffect(() => {
@@ -186,37 +248,40 @@ export default function CadastroCandidatoPage() {
     setStep(3);
   };
 
-  // quando subtipo for selecionado, buscar barreiras
+  // Quando subtipo for selecionado, buscar barreiras desse subtipo
   useEffect(() => {
-    async function carregarBarreiras() {
-      setBarreiras([]);
-      setSelectedBarreiras([]);
+    async function carregarBarreirasPorSubtipo() {
       if (!selectedSubtipoId) return;
       try {
         const b = await api.listarBarreirasPorSubtipo(selectedSubtipoId);
-        setBarreiras(b ?? []);
+        if (Array.isArray(b)) {
+          setBarreirasPorSubtipo(prev => ({ ...prev, [selectedSubtipoId]: b }));
+        }
       } catch (err) {
-        console.error('Erro ao carregar barreiras:', err);
+        console.error('Erro ao carregar barreiras por subtipo:', err);
       }
     }
-    carregarBarreiras();
+    if (selectedSubtipoId && !barreirasPorSubtipo[selectedSubtipoId]) {
+      carregarBarreirasPorSubtipo();
+    }
+    // Limpa seleção de barreiras ao trocar subtipo
+    setSelectedBarreiras([]);
   }, [selectedSubtipoId]);
 
   const toggleBarreira = (id: number) => {
-    setSelectedBarreiras(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+    setSelectedBarreiras(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
-  // Finalizar cadastro: cria candidato e vincula subtipo/barreiras
+  // Finalizar cadastro: cria candidato e vincula barreiras
   const handleFinalSubmit = async () => {
     setErro(null);
-    if (!selectedSubtipoId) {
-      setErro('Selecione um subtipo de deficiência.');
+    if (!selectedTipoId) {
+      setErro('Selecione um tipo de deficiência.');
       return;
     }
-    if (!Array.isArray(selectedBarreiras) || selectedBarreiras.length === 0) {
-      setErro('Selecione pelo menos uma barreira.');
-      return;
-    }
+    // Validação de barreiras removida a pedido do usuário
     setLoading(true);
     try {
       // build FormData to include optional files
@@ -242,6 +307,8 @@ export default function CadastroCandidatoPage() {
       fd.append('telefone', telefoneNumerico);
       fd.append('email', formData.email);
       fd.append('escolaridade', formData.escolaridade);
+      fd.append('cidade', formData.cidade);
+      fd.append('estado', formData.estado);
       fd.append('senha', formData.senha);
       if (fileCurriculo) fd.append('file', fileCurriculo);
       if (fileLaudo) fd.append('laudo', fileLaudo);
@@ -256,11 +323,20 @@ export default function CadastroCandidatoPage() {
       const created: any = await api.registerCandidatoWithFiles(fd);
       const candidatoId = created?.id;
       if (!candidatoId) throw new Error('Resposta inválida do servidor');
-      // vincular subtipo
-      await api.vincularSubtiposACandidato(candidatoId, [selectedSubtipoId]);
       // vincular barreiras (se houver)
       if (selectedBarreiras.length > 0) {
-        await api.vincularBarreirasACandidato(candidatoId, selectedSubtipoId, selectedBarreiras);
+        // Para cada barreira selecionada, buscar o subtipo correspondente e vincular
+        for (const tipo of tiposDeficiencia) {
+          if (tipo.id !== selectedTipoId) continue;
+          for (const subtipo of tipo.subtipos) {
+            // Busca as barreiras desse subtipo
+            const barreirasSubtipo = await api.listarBarreirasPorSubtipo(subtipo.id);
+            const barreirasSelecionadas = barreirasSubtipo.filter(b => selectedBarreiras.includes(b.id));
+            if (barreirasSelecionadas.length > 0) {
+              await api.vincularBarreirasACandidato(candidatoId, subtipo.id, barreirasSelecionadas.map(b => b.id));
+            }
+          }
+        }
       }
       // redirect to candidate dashboard
       navigate(`/candidato/${candidatoId}`);
@@ -309,6 +385,7 @@ export default function CadastroCandidatoPage() {
               <div aria-hidden style={{ width: `${Math.round((step / 3) * 100)}%` }} className="h-2 bg-blue-600 dark:bg-blue-400 transition-all duration-300" />
             </div>
           </div>
+
           {step === 1 && (
             <form onSubmit={handleStep1Submit} className="space-y-6">
               {/* Nome Completo */}
@@ -332,11 +409,26 @@ export default function CadastroCandidatoPage() {
                 )}
               </div>
 
+
               {/* Telefone */}
               <div>
                 <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefone/Celular *</label>
                 <input type="tel" name="telefone" id="telefone" required value={formatPhone(formData.telefone)} onChange={handleTelefoneChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100" placeholder="+55 (DD) 9XXXX-XXXX" disabled={loading} />
+              </div>
+
+              {/* Cidade */}
+              <div>
+                <label htmlFor="cidade" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cidade *</label>
+                <input type="text" name="cidade" id="cidade" required value={formData.cidade} onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100" placeholder="Sua cidade" disabled={loading} />
+              </div>
+
+              {/* Estado */}
+              <div>
+                <label htmlFor="estado" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado *</label>
+                <input type="text" name="estado" id="estado" required value={formData.estado} onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100" placeholder="UF" maxLength={2} disabled={loading} />
               </div>
 
               {/* E-mail */}
@@ -345,43 +437,20 @@ export default function CadastroCandidatoPage() {
                 <input type="email" name="email" id="email" required value={formData.email} onChange={handleInputChange} onBlur={handleEmailBlur}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100" placeholder="seu@email.com" disabled={loading} />
                 {checkingEmail && <p className="mt-1 text-xs text-gray-500">Verificando...</p>}
-                {emailWarning && (
-                  <div className="mt-1">
-                    <p className="text-sm text-red-600 dark:text-red-400">{emailWarning}</p>
-                    <Link to="/login" state={{ identifier: formData.email }} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">Fazer login</Link>
-                  </div>
-                )}
+                {emailWarning && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{emailWarning}</p>}
               </div>
 
               {/* Senha */}
-              <PasswordInput
-                id="senha"
-                name="senha"
-                value={formData.senha}
-                onChange={handleInputChange}
-                label="Senha *"
-                placeholder="Mínimo 6 caracteres"
-                required
-                autoComplete="new-password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100"
-                showPassword={showPassword}
-                onTogglePassword={() => setShowPassword(!showPassword)}
-              />
+              <div>
+                <label htmlFor="senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Senha *</label>
+                <PasswordInput name="senha" id="senha" value={formData.senha} onChange={handleInputChange} disabled={loading} autoComplete="new-password" />
+              </div>
 
               {/* Confirmar Senha */}
-              <PasswordInput
-                id="confirmarSenha"
-                name="confirmarSenha"
-                value={formData.confirmarSenha}
-                onChange={handleInputChange}
-                label="Confirmar Senha *"
-                placeholder="Digite a senha novamente"
-                required
-                autoComplete="new-password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100"
-                showPassword={showPassword}
-                onTogglePassword={() => setShowPassword(!showPassword)}
-              />
+              <div>
+                <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmar Senha *</label>
+                <PasswordInput name="confirmarSenha" id="confirmarSenha" value={formData.confirmarSenha} onChange={handleInputChange} disabled={loading} autoComplete="new-password" />
+              </div>
 
               {/* Declarações obrigatórias */}
               <div className="space-y-3">
@@ -448,6 +517,20 @@ export default function CadastroCandidatoPage() {
               </div>
 
               <div>
+                <label htmlFor="areaFormacao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Área de formação *</label>
+                <CustomSelect
+                  name="areaFormacao"
+                  value={formData.areaFormacao}
+                  onChange={v => handleInputChange({ target: { name: 'areaFormacao', value: v } })}
+                  options={[
+                    { value: '', label: 'Selecione...' },
+                    ...areasFormacao.map(a => ({ value: a.id.toString(), label: a.nome }))
+                  ]}
+                  className="mt-1 block w-full"
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Currículo (PDF) - opcional</label>
                 <div className="mt-1 flex items-center gap-3">
                   <input id="curriculo" type="file" accept="application/pdf" className="sr-only" onChange={(e) => handleCurriculoChange(e.target.files?.[0] ?? null)} />
@@ -480,10 +563,13 @@ export default function CadastroCandidatoPage() {
 
           {step === 3 && (
             <div className="space-y-6">
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded text-sm text-yellow-800">
+                <strong>Observação:</strong> Caso você possua mais de uma deficiência, é possível adicionar outras na aba <b>Perfil</b> disponível no menu após o cadastro.
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Deficiência *</label>
                 <CustomSelect
-                  value={selectedTipoId ?? ''}
+                  value={selectedTipoId !== null ? selectedTipoId.toString() : ''}
                   onChange={v => setSelectedTipoId(v ? Number(v) : null)}
                   options={[
                     { value: '', label: 'Selecione...' },
@@ -496,7 +582,7 @@ export default function CadastroCandidatoPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtipo de Deficiência *</label>
                 <CustomSelect
-                  value={selectedSubtipoId ?? ''}
+                  value={selectedSubtipoId !== null ? selectedSubtipoId.toString() : ''}
                   onChange={v => setSelectedSubtipoId(v ? Number(v) : null)}
                   options={[
                     { value: '', label: 'Selecione...' },

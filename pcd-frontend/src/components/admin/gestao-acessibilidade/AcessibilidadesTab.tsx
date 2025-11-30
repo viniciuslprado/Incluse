@@ -128,7 +128,7 @@ export default function AcessibilidadesTab() {
       <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
         <strong>Instrução:</strong> Cadastre recursos de acessibilidade e vincule a barreiras. Exemplo: Rampa, Elevador, Sinalização tátil...
       </div>
-      <div className="flex flex-col sm:flex-row sm:items-end gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-end gap-2 mb-2">
         <div>
           <label className="block mb-1 font-medium">Tipo de Deficiência</label>
           <CustomSelect
@@ -167,8 +167,10 @@ export default function AcessibilidadesTab() {
             disabled={!subtipoId}
           />
         </div>
-        <div className="flex-1 flex gap-2 items-end">
-          <div className="relative w-full">
+      </div>
+      <div className="mb-4">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
             <input
               type="text"
@@ -181,7 +183,7 @@ export default function AcessibilidadesTab() {
             />
           </div>
           <button
-            className="ml-1 px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
+            className="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
             onClick={() => setBuscaAplicada(busca)}
             disabled={loading || acessibilidades.length === 0}
             title="Buscar"

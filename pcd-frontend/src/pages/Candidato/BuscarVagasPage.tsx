@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiTrash, FiSearch } from 'react-icons/fi';
+import { FaChevronDown } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import VagaCardCandidate from '../../components/candidato/VagaCard';
@@ -315,7 +316,7 @@ export default function BuscarVagasPage() {
                     <details className="bg-white dark:bg-gray-800 border rounded">
                       <summary className="px-4 py-3 cursor-pointer flex items-center justify-between">
                         <div className="font-semibold">{company.nome} <span className="text-sm text-gray-500">({companyVagas.length})</span></div>
-                        <div className="text-sm text-gray-400">▾</div>
+                        <FaChevronDown className="text-sm text-gray-400" />
                       </summary>
                       <div className="p-4 space-y-4">
                         {companyVagas.map(v => (
@@ -376,7 +377,7 @@ export default function BuscarVagasPage() {
                       <details key={String(eid)} className="bg-white dark:bg-gray-800 border rounded">
                         <summary className="px-4 py-3 cursor-pointer flex items-center justify-between">
                           <div className="font-semibold">{title} <span className="text-sm text-gray-500">({vagas.length})</span></div>
-                          <div className="text-sm text-gray-400">▾</div>
+                          <FaChevronDown className="text-sm text-gray-400" />
                         </summary>
                         <div className="p-4 space-y-4">
                           {vagas.map(v => (

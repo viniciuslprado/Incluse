@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
+import { FaStar } from "react-icons/fa";
 
 export default function EmpresasPage() {
   const [empresas, setEmpresas] = useState<any[]>([]);
@@ -48,7 +49,7 @@ export default function EmpresasPage() {
                 <div className="text-sm text-gray-500">{(emp.vagasCount ?? 0)} vagas</div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-yellow-500">⭐ {emp.mediaAvaliacao ?? '—'}</div>
+                <div className="text-yellow-500 flex items-center gap-1"><FaStar /> {emp.mediaAvaliacao ?? '—'}</div>
                 <button onClick={() => toggleFollow(emp.id)} className={`px-3 py-1 rounded ${isFollowing(emp.id) ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
                   {isFollowing(emp.id) ? 'Seguindo' : 'Seguir'}
                 </button>

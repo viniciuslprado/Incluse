@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/common/Toast';
 import { api } from '../../lib/api';
 import { FiUpload, FiFileText, FiEdit } from 'react-icons/fi';
+import { FaLightbulb } from 'react-icons/fa';
 
 export default function MeuCurriculoPage() {
   const { id } = useParams();
@@ -226,8 +227,8 @@ export default function MeuCurriculoPage() {
         />
         {(fileName || hasCurriculoBasico) && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Dica:</strong> Você pode ter PDF e Currículo ao mesmo tempo. Empresas verão ambos ao visualizar sua candidatura.
+            <p className="text-sm text-blue-800 flex items-center gap-2">
+              <FaLightbulb className="text-yellow-400" /> <strong>Dica:</strong> Você pode ter PDF e Currículo ao mesmo tempo. Empresas verão ambos ao visualizar sua candidatura.
             </p>
           </div>
         )}

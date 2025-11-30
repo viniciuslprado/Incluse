@@ -56,8 +56,8 @@ export default function LoginPage() {
         console.debug('[LoginPage] redirecting to /admin');
         navigate('/admin');
       } else if (userType === 'candidato') {
-        console.debug(`[LoginPage] redirecting to /candidato/${id}`);
-        navigate(`/candidato/${id}`);
+        console.debug(`[LoginPage] redirecting to /candidato/${id}/inicio`);
+        navigate(`/candidato/${id}/inicio`);
       } else if (userType === 'empresa') {
         console.debug(`[LoginPage] redirecting to /empresa/${id}`);
         navigate(`/empresa/${id}`);

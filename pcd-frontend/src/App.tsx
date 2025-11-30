@@ -136,6 +136,7 @@ function AppRoutes() {
 
               <Route path="/candidato/:id" element={<DashboardLayout />}>
                 <Route index element={<InicioPage />} />
+                <Route path="inicio" element={<InicioPage />} />
                 <Route path="favoritas" element={<VagasFavoritasPage />} />
                 <Route path="candidaturas" element={<CandidatoVagasPage />} />
                 <Route path="minhas-candidaturas" element={<MinhasCandidaturasPage />} />

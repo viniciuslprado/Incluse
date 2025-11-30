@@ -1,6 +1,5 @@
-
-
-
+  // ...existing code...
+// ...existing code...
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import type { AxiosInstance } from 'axios';
 
@@ -115,29 +114,96 @@ const axiosInstance = createInstance();
 
 // Objeto da API
 export const api = {
-  deletarBarreira(id: number) { return axiosInstance.delete(`/barreiras/${id}`).then(r => r.data); },
-  deletarAcessibilidade(id: number) { return axiosInstance.delete(`/acessibilidades/${id}`).then(r => r.data); },
-  deletarSubtipo(id: number) { return axiosInstance.delete(`/subtipos/${id}`).then(r => r.data); },
+  /**
+   * Cadastra uma nova empresa
+   * @param data Dados da empresa
+   */
+  async registerEmpresa(data: any) {
+    return axiosInstance.post('/empresa', data).then(r => r.data);
+  },
+
+  /**
+   * Verifica se já existe uma empresa com o CNPJ informado
+   * @param cnpj string (apenas números)
+   * @returns Promise<boolean>
+   */
+  async checkCnpjExists(cnpj: string): Promise<boolean> {
+    if (!cnpj || cnpj.length < 14) return false;
+    try {
+      const res = await axiosInstance.get(`/empresas/check-cnpj/${encodeURIComponent(cnpj)}`);
+      return !!res.data?.exists;
+    } catch (e: any) {
+      if (e?.status === 404) return false;
+      throw e;
+    }
+  },
+
+  vincularBarreirasACandidato(candidatoId: number, subtipoId: number, barreiraIds: number[]) {
+    return axiosInstance.post(`/candidatos/${candidatoId}/subtipos/${subtipoId}/barreiras`, { barreiraIds }).then(r => r.data);
+  },
+
+      registerCandidatoWithFiles(formData: FormData) {
+        return axiosInstance.post('/candidatos', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }).then(r => r.data);
+      },
+    /**
+     * Verifica se já existe um candidato com o e-mail informado
+     * @param email string
+     * @returns Promise<boolean>
+     */
+    async checkCandidatoEmailExists(email: string): Promise<boolean> {
+      if (!email) return false;
+      try {
+        const res = await axiosInstance.get(`/candidatos/check-email/${encodeURIComponent(email)}`);
+        return !!res.data?.exists;
+      } catch (e: any) {
+        if (e?.status === 404) return false;
+        throw e;
+      }
+    },
+  /**
+   * Verifica se já existe um candidato com o CPF informado
+   * @param cpfOnly string (apenas números)
+   * @returns Promise<boolean>
+   */
+  async checkCpfExists(cpfOnly: string): Promise<boolean> {
+    if (!cpfOnly || cpfOnly.length !== 11) return false;
+    try {
+      const res = await axiosInstance.get(`/candidatos/cpf/${cpfOnly}/exists`);
+      // Espera resposta: { exists: true/false }
+      return !!res.data?.exists;
+    } catch (e: any) {
+      if (e?.status === 404) return false;
+      throw e;
+    }
+  },
+  listarBarreirasPorTipo(tipoId: number) {
+    return axiosInstance.get(`/tipos/${tipoId}/barreiras`).then(r => r.data);
+  },
+  deletarTipo(id: number) { return axiosInstance.delete(`/admin/deficiencias/${id}`).then(r => r.data); },
+  deletarBarreira(id: number) { return axiosInstance.delete(`/admin/barreiras/${id}`).then(r => r.data); },
+  deletarAcessibilidade(id: number) { return axiosInstance.delete(`/admin/acessibilidades/${id}`).then(r => r.data); },
+  deletarSubtipo(id: number) { return axiosInstance.delete(`/admin/subtipos/${id}`).then(r => r.data); },
   listarLogsAdmin(params?: { page?: number; limit?: number; tipo?: string }) {
     return axiosInstance.get('/admin/logs', { params }).then(r => r.data);
   },
   // --- CRIAÇÃO DE RECURSOS ---
-  criarTipo(nome: string) { return axiosInstance.post('/tipos', { nome }).then(r => r.data); },
-  criarSubtipo(tipoId: number, nome: string) { return axiosInstance.post('/subtipos', { tipoId, nome }).then(r => r.data); },
-  criarBarreira(subtipoId: number, descricao: string) { return axiosInstance.post('/barreiras', { subtipoId, descricao }).then(r => r.data); },
-  criarAcessibilidade(barreiraId: number, descricao: string) { return axiosInstance.post('/acessibilidades', { barreiraId, descricao }).then(r => r.data); },
-  criarTipo(nome: string) { return axiosInstance.post('/tipos', { nome }).then(r => r.data); },
-            atualizarSubtipo(id: number, nome: string) { return axiosInstance.put(`/subtipos/${id}`, { nome }).then(r => r.data); },
-            atualizarBarreira(id: number, descricao: string) { return axiosInstance.put(`/barreiras/${id}`, { descricao }).then(r => r.data); },
-            atualizarAcessibilidade(id: number, descricao: string) { return axiosInstance.put(`/acessibilidades/${id}`, { descricao }).then(r => r.data); },
-          atualizarTipo(id: number, nome: string) { return axiosInstance.put(`/tipos/${id}`, { nome }).then(r => r.data); },
+  criarTipo(nome: string) { return axiosInstance.post('/admin/deficiencias', { nome }).then(r => r.data); },
+  criarSubtipo(tipoId: number, nome: string) { return axiosInstance.post('/admin/subtipos', { tipoId, nome }).then(r => r.data); },
+  criarBarreira(subtipoId: number, descricao: string) { return axiosInstance.post('/admin/barreiras', { subtipoId, descricao }).then(r => r.data); },
+  criarAcessibilidade(barreiraId: number, descricao: string) { return axiosInstance.post('/admin/acessibilidades', { barreiraId, descricao }).then(r => r.data); },
+            atualizarSubtipo(id: number, nome: string) { return axiosInstance.patch(`/admin/subtipos/${id}`, { nome }).then(r => r.data); },
+            atualizarBarreira(id: number, descricao: string) { return axiosInstance.patch(`/admin/barreiras/${id}`, { descricao }).then(r => r.data); },
+            atualizarAcessibilidade(id: number, descricao: string) { return axiosInstance.patch(`/admin/acessibilidades/${id}`, { descricao }).then(r => r.data); },
+            atualizarTipo(id: number, nome: string) { return axiosInstance.patch(`/admin/deficiencias/${id}`, { nome }).then(r => r.data); },
         listarAcessibilidadesPorBarreira(barreiraId: number) { return axiosInstance.get(`/barreiras/${barreiraId}/acessibilidades`).then(r => r.data); },
       listarBarreiras() { return axiosInstance.get('/barreiras').then(r => r.data); },
     getConfig(candidatoId: number) {
-      return axiosInstance.get(`/candidato/${candidatoId}/config`).then(r => r.data);
+      return axiosInstance.get(`/candidatos/${candidatoId}/config`).then(r => r.data);
     },
     updateConfig(candidatoId: number, data: any) {
-      return axiosInstance.put(`/candidato/${candidatoId}/config`, data).then(r => r.data);
+      return axiosInstance.put(`/candidatos/${candidatoId}/config`, data).then(r => r.data);
     },
   // --- PÚBLICO E UTILITÁRIOS ---
   listarTiposPublicos() { return axiosInstance.get('/tipos').then(r => r.data); },
@@ -148,29 +214,31 @@ export const api = {
   listarVagasPublicas() { return axiosInstance.get('/vagas').then(r => r.data); },
   requestPasswordReset(identifier: string) { return axiosInstance.post('/auth/request-password-reset', { identifier }).then(r => r.data); },
   listarAreasFormacao() { return axiosInstance.get('/areas-formacao').then(r => r.data); },
-  listarSubtiposCandidato(candidatoId: number) { return axiosInstance.get(`/candidato/${candidatoId}/subtipos`).then(r => r.data); },
+  listarSubtiposCandidato(candidatoId: number) { return axiosInstance.get(`/candidatos/${candidatoId}/subtipos`).then(r => r.data); },
   listarBarreirasPorSubtipo(subtipoId: number) { return axiosInstance.get(`/subtipos/${subtipoId}/barreiras`).then(r => r.data); },
   async getLaudo(id: number) {
     // Primeiro busca a URL do laudo
-    const res = await axiosInstance.get(`/candidato/${id}/laudo`);
+    const res = await axiosInstance.get(`/candidatos/${id}/laudo`);
     const laudoUrl = res.data?.laudo;
     if (!laudoUrl) throw new Error('Laudo não encontrado');
     // Agora faz o download do arquivo
     // Se a URL for relativa, ajusta para o baseURL
     const url = laudoUrl.startsWith('http') ? laudoUrl : `${BASE_URL}${laudoUrl}`;
     const fileRes = await axios.get(url, { responseType: 'blob' });
-    return fileRes;
+    return fileRes.data;
   },
-  getDevToken(id: number) { return axiosInstance.post(`/candidato/${id}/dev-auth`).then(r => r.data); },
-  listarAreasFormacaoCandidato(id: number) { return axiosInstance.get(`/candidato/${id}/areas-formacao`).then(r => r.data); },
-  vincularAreasFormacaoCandidato(id: number, areas: number[]) { return axiosInstance.post(`/candidato/${id}/areas-formacao`, { areas }).then(r => r.data); },
+  getDevToken(id: number) { return axiosInstance.post(`/candidatos/${id}/dev-auth`).then(r => r.data); },
+  listarAreasFormacaoCandidato(id: number) { return axiosInstance.get(`/candidatos/${id}/areas-formacao`).then(r => r.data); },
+  vincularAreasFormacaoCandidato(id: number, areas: number[]) { return axiosInstance.post(`/candidatos/${id}/areas-formacao`, { areas }).then(r => r.data); },
+  vincularSubtiposACandidato(id: number, subtipoIds: number[]) { return axiosInstance.post(`/candidatos/${id}/subtipos`, { subtipoIds }).then(r => r.data); },
   uploadLaudo(id: number, file: File) {
     const formData = new FormData();
     formData.append('laudo', file);
-    return axiosInstance.post(`/candidato/${id}/laudo`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data);
+    // Corrige endpoint para /candidatos/:id/laudo
+    return axiosInstance.post(`/candidatos/${id}/laudo`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data);
   },
-  deleteLaudo(id: number) { return axiosInstance.delete(`/candidato/${id}/laudo`).then(r => r.data); },
-  obterCurriculoBasico(id: number) { return axiosInstance.get(`/candidato/${id}/curriculo`).then(r => r.data); },
+  deleteLaudo(id: number) { return axiosInstance.delete(`/candidatos/${id}/laudo`).then(r => r.data); },
+  obterCurriculoBasico(id: number) { return axiosInstance.get(`/candidatos/${id}/curriculo`).then(r => r.data); },
   buscarEmpresa(id: number) { return axiosInstance.get(`/empresa/${id}`).then(r => r.data); },
   getEmpresaPerfil() { return axiosInstance.get('/empresa/me').then(r => r.data); },
   uploadLogoEmpresaAutenticada(formData: FormData) { return axiosInstance.post('/empresas/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data); },
@@ -204,30 +272,30 @@ export const api = {
   // --- CANDIDATO ---
   getCandidato(id: number) {
     if (!id) throw new Error('ID do candidato é obrigatório');
-    return axiosInstance.get<any>(`/candidato/${id}`).then(r => r.data);
+    return axiosInstance.get<any>(`/candidatos/${id}/inicio`).then(r => r.data);
   },
-  atualizarCandidato(id: number, data: any) { return axiosInstance.put(`/candidato/${id}`, data).then(r => r.data); },
-  calcularCompatibilidade(vagaId: number) { return axiosInstance.get(`/candidato/compatibilidade/${vagaId}`).then(r => r.data); },
-  listarVagasFavoritas(candidatoId: number) { return axiosInstance.get<any[]>(`/candidato/${candidatoId}/favoritos`).then(r => r.data); },
-  favoritarVaga(vagaId: number) { return axiosInstance.post(`/candidato/favoritos/${vagaId}`).then(r => r.data); },
+  atualizarCandidato(id: number, data: any) { return axiosInstance.put(`/candidatos/${id}`, data).then(r => r.data); },
+  calcularCompatibilidade(vagaId: number) { return axiosInstance.get(`/candidatos/compatibilidade/${vagaId}`).then(r => r.data); },
+  listarVagasFavoritas(candidatoId: number) { return axiosInstance.get<any[]>(`/candidatos/${candidatoId}/favoritos`).then(r => r.data); },
+  favoritarVaga(vagaId: number) { return axiosInstance.post(`/candidatos/favoritos/${vagaId}`).then(r => r.data); },
   desfavoritarVaga(vagaId: number) {
-    return axiosInstance.delete(`/candidato/favoritos/${vagaId}`).then(r => r.data);
+    return axiosInstance.delete(`/candidatos/favoritos/${vagaId}`).then(r => r.data);
   },
 
 
   listarVagasSalvas() {
-    return axiosInstance.get(`/candidato/vagas-salvas`).then(r => r.data);
+    return axiosInstance.get(`/candidatos/vagas-salvas`).then(r => r.data);
   },
 
   // --- NOTIFICAÇÕES ---
   listarNotificacoes(candidatoId: number) {
-    return axiosInstance.get(`/candidato/${candidatoId}/notificacoes`).then(r => r.data);
+    return axiosInstance.get(`/candidatos/${candidatoId}/notificacoes`).then(r => r.data);
   },
   marcarNotificacaoLida(candidatoId: number, notifId: number) {
-    return axiosInstance.patch(`/candidato/${candidatoId}/notificacoes/${notifId}/lida`).then(r => r.data);
+    return axiosInstance.patch(`/candidatos/${candidatoId}/notificacoes/${notifId}/lida`).then(r => r.data);
   },
   marcarTodasNotificacoesLidas(candidatoId: number) {
-    return axiosInstance.patch(`/candidato/${candidatoId}/notificacoes/marcar-todas-lidas`).then(r => r.data);
+    return axiosInstance.patch(`/candidatos/${candidatoId}/notificacoes/marcar-todas-lidas`).then(r => r.data);
   },
 
   // --- NOTIFICAÇÕES EMPRESA ---

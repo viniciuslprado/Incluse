@@ -1,6 +1,7 @@
 // Função movida para dentro do export const CandidatosController
 import { Request, Response } from "express";
 import { CandidatosService } from "../../services/candidato/candidatos.service";
+import { MatchService } from "../../services/common/match.service";
 
 // GET /candidatos/:id/laudo - Retornar laudo do candidato
 // DELETE /candidatos/:id/laudo - Excluir laudo do candidato
@@ -46,8 +47,9 @@ export const CandidatosController = {
 
       const body = req.body ?? {};
       const nome = (body.nome ?? body.nomeCompleto ?? body.name) as string | undefined;
-      const cpf = body.cpf as string | undefined;
-      const telefone = body.telefone as string | undefined;
+      // Normaliza CPF e telefone para conter apenas números
+      const cpf = typeof body.cpf === 'string' ? body.cpf.replace(/\D/g, '') : undefined;
+      const telefone = typeof body.telefone === 'string' ? body.telefone.replace(/\D/g, '') : undefined;
       const email = body.email as string | undefined;
       const escolaridade = body.escolaridade as string | undefined;
       const senha = body.senha as string | undefined;
@@ -104,13 +106,40 @@ export const CandidatosController = {
       res.status(e.status || 400).json(payload);
     }
   },
+  // GET /candidato/:id/inicio - Dados do candidato + vagas recomendadas (match)
   async getCandidato(req: Request, res: Response) {
     const id = Number(req.params.id);
     if (!id || isNaN(id)) {
       return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
     }
-    const data = await CandidatosService.getCandidato(id);
-    res.json(data);
+    try {
+      const candidato = await CandidatosService.getCandidato(id);
+      const vagasRecomendadas = await MatchService.matchVagasForCandidato(id);
+
+      // Buscar subtipos vinculados ao candidato
+      const subtipos = await CandidatosService.listarSubtipos(id);
+
+      // Buscar barreiras vinculadas a cada subtipo
+      // Estrutura: [{ subtipo: {...}, barreiras: [...] }]
+      const subtiposComBarreiras = await Promise.all(
+        subtipos.map(async (sub: any) => {
+          let barreiras = [];
+          if (sub && sub.id) {
+            // Busca barreiras vinculadas a este subtipo para o candidato
+            barreiras = await CandidatosService.listarBarreirasVinculadas(id, sub.id);
+          }
+          return { ...sub, barreiras };
+        })
+      );
+
+      res.json({
+        ...candidato,
+        vagasRecomendadas,
+        subtipos: subtiposComBarreiras
+      });
+    } catch (e: any) {
+      res.status(e.status || 500).json({ error: e.message || "Erro ao buscar candidato" });
+    }
   },
 
   async listarSubtipos(req: Request, res: Response) {
