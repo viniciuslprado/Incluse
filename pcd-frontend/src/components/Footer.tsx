@@ -67,7 +67,7 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link to="/empresa" className="text-base text-gray-300 hover:text-incluse-primary transition-colors duration-300">
+                    <Link to="/empresas" className="text-base text-gray-300 hover:text-incluse-primary transition-colors duration-300">
                       Empresas Parceiras
                     </Link>
                   </li>
@@ -108,7 +108,7 @@ export default function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <Link to="/cadastro/empresa" className="text-base text-gray-300 hover:text-incluse-primary transition-colors duration-300">
+                    <Link to="/cadastro/empresas" className="text-base text-gray-300 hover:text-incluse-primary transition-colors duration-300">
                       Cadastrar Empresa
                     </Link>
                   </li>
@@ -118,7 +118,7 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link to="/empresa" className="text-base text-gray-300 hover:text-incluse-primary transition-colors duration-300">
+                    <Link to="/empresas" className="text-base text-gray-300 hover:text-incluse-primary transition-colors duration-300">
                       Empresas Parceiras
                     </Link>
                   </li>

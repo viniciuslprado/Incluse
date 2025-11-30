@@ -34,7 +34,7 @@ export const VagasController = {
     }
   },
 
-  // GET /vaga/empresa/:empresaId - Listar vagas de uma empresa
+  // GET /vaga/empresas/:empresaId - Listar vagas de uma empresa
   async listarPorEmpresa(req: Request, res: Response) {
     try {
       const empresaId = Number(req.params.empresaId);
@@ -164,7 +164,7 @@ export const VagasController = {
   },
 
 
-  // GET /vaga/empresa/:empresaId/filtros - Obter opções de filtro
+  // GET /vaga/empresas/:empresaId/filtros - Obter opções de filtro
   async obterFiltros(req: Request, res: Response) {
     try {
       const empresaId = Number(req.params.empresaId);
@@ -175,7 +175,7 @@ export const VagasController = {
     }
   },
 
-  // GET /vaga/empresa/:empresaId/pesquisar - Pesquisar vagas
+  // GET /vaga/empresas/:empresaId/pesquisar - Pesquisar vagas
   async pesquisar(req: Request, res: Response) {
     try {
       const empresaId = Number(req.params.empresaId);

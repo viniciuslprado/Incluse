@@ -74,7 +74,7 @@ export default function NovaVagaPage() {
 
     if (Number(userId) !== empresaId) {
       alert(`Acesso negado. Você não tem permissão para acessar esta empresa.\n\nSua empresa: ${userId}\nEmpresa solicitada: ${empresaId}`);
-      navigate(`/empresa/${userId}/dashboard`);
+      navigate(`/empresas/${userId}/dashboard`);
       return;
     }
   }, [empresaId, navigate]);
@@ -257,7 +257,7 @@ export default function NovaVagaPage() {
       };
       console.log('📦 Payload da vaga:', payload);
       await api.criarVagaCompleta(payload);
-      navigate(`/empresa/${empresaId}/gestao-vagas`);
+      navigate(`/empresas/${empresaId}/gestao-vagas`);
     } catch (error) {
       console.error('❌ Erro completo:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';

@@ -115,7 +115,7 @@ function Hero() {
               Explorar Vagas
             </Link>
             <Link
-              to="/empresa"
+              to="/empresas"
               className="inline-flex items-center px-8 py-4 border-2 border-white/50 text-base font-medium rounded-lg text-white hover:bg-white/10 hover:border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white backdrop-blur-sm transition-all duration-300 min-h-[52px] transform hover:scale-105"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,7 +154,7 @@ function Stats({ onAbrirChat, totalVagas, totalEmpresas }: { onAbrirChat: () => 
             <div className="text-sm font-medium text-incluse-text-secondary dark:text-gray-400">Vagas Ativas</div>
           </Link>
           
-          <Link to="/empresa" className="text-center group cursor-pointer block">
+          <Link to="/empresas" className="text-center group cursor-pointer block">
             <div className="w-20 h-20 bg-incluse-secondary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -374,7 +374,7 @@ function ComoFunciona() {
         </div>
         <div className="mt-10 flex justify-center gap-6">
           <Link to="/cadastro/candidato" className="px-8 py-3 bg-incluse-primary text-white rounded-full">Cadastrar meu currículo</Link>
-          <Link to="/cadastro/empresa" className="px-8 py-3 border-2 border-incluse-primary rounded-full">Anunciar vaga gratuitamente</Link>
+          <Link to="/cadastro/empresas" className="px-8 py-3 border-2 border-incluse-primary rounded-full">Anunciar vaga gratuitamente</Link>
         </div>
       </div>
     </section>

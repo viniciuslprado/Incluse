@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 export default function SidebarEmpresa({ empresaId }: { empresaId: number }) {
-  const base = `/empresa/${empresaId}`;
+  const base = `/empresas/${empresaId}`;
   const itemClass = (isActive: boolean) =>
     `block px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${isActive ? 'bg-gray-100 dark:bg-gray-800 font-semibold' : ''}`;
 

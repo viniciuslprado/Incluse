@@ -31,7 +31,7 @@ function VagaCard({ vaga, empresaId }: { vaga: Vaga; empresaId: string }) {
         </div>
         <div className="ml-4 flex-shrink-0">
           <Link
-            to={`/empresa/${empresaId}/vagas/${vaga.id}`}
+            to={`/empresas/${empresaId}/vagas/${vaga.id}`}
             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             Gerenciar

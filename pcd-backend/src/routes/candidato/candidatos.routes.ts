@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { MatchService } from "../../services/candidato/match.service";
 import multer from "multer";
 import multerConfig from "../../config/multer";
 import { CandidatosController } from "../../controllers/candidato/candidatos.controller";
@@ -7,7 +8,6 @@ import { uploadCurriculo } from "../../middleware/upload-curriculo";
 import { NotificacoesController } from "../../controllers/common/notificacoes.controller";
 import { CurriculoController } from "../../controllers/candidato/curriculo.controller";
 import * as ConfigController from "../../controllers/common/config.controller";
-import { MatchController } from "../../controllers/common/match.controller";
 const router = Router();
 // Laudo médico
 router.get('/:id/laudo', verifyJWT, ensureSelfCandidate, CandidatosController.getLaudo);
@@ -74,9 +74,23 @@ router.get("/cpf/:cpf/exists", async (req, res) => {
 
 // GET /candidato/:id/inicio (substitui o antigo /:id)
 router.get("/:id/inicio", CandidatosController.getCandidato);
+// Compatibilidade: GET /candidatos/:id
+router.get("/:id", CandidatosController.obterPorId);
 
-// GET /candidato/:id/match - retorna vagas compatíveis para o candidato
-router.get("/:id/match", MatchController.matchCandidato);
+
+// GET /candidato/:id/vagas-recomendadas - retorna vagas recomendadas para o candidato
+router.get('/:id/vagas-recomendadas', async (req, res) => {
+	const id = Number(req.params.id);
+	if (!id || isNaN(id)) {
+		return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
+	}
+	try {
+		const vagas = await MatchService.matchVagasForCandidato(id);
+		res.json(vagas);
+	} catch (e) {
+		res.status(500).json({ error: e.message || 'Erro ao buscar vagas recomendadas' });
+	}
+});
 
 // PUT /candidatos/:id
 router.put("/:id", verifyJWT, ensureSelfCandidate, CandidatosController.atualizar);

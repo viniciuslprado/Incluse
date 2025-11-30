@@ -76,7 +76,7 @@ export default function DashboardLayout() {
                 <div className="text-sm text-gray-600">Menu</div>
               </div>
               <nav className="space-y-2 flex-1 overflow-y-auto">
-                <NavLink to={`/candidato/${candidatoId}`} end onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
+                <NavLink to={`/candidato/${candidatoId}/inicio`} end onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
                 <NavLink to={`/candidato/${candidatoId}/favoritas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBookmark/> Vagas Favoritas</NavLink>
                 <NavLink to={`/candidato/${candidatoId}/minhas-candidaturas`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBriefcase/> Minhas Candidaturas</NavLink>
                 <NavLink to={`/candidato/${candidatoId}/curriculo`} onClick={() => setIsDrawerOpen(false)} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> Meu Currículo</NavLink>
@@ -104,7 +104,7 @@ export default function DashboardLayout() {
                 </div>
               </div>
             <nav className="space-y-2">
-              <NavLink to={`/candidato/${candidatoId}`} end className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
+              <NavLink to={`/candidato/${candidatoId}/inicio`} end className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiHome/> Início</NavLink>
               <NavLink to={`/candidato/${candidatoId}/favoritas`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBookmark/> Vagas Favoritas</NavLink>
               <NavLink to={`/candidato/${candidatoId}/minhas-candidaturas`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiBriefcase/> Minhas Candidaturas</NavLink>
               <NavLink to={`/candidato/${candidatoId}/curriculo`} className={({isActive}) => isActive ? 'flex items-center gap-2 px-3 py-2 rounded bg-blue-50 font-semibold' : 'flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-50'}><FiFileText/> Meu Currículo</NavLink>

@@ -30,10 +30,10 @@ r.post("/duplicar", verifyJWT, ensureRole('empresa'), VagasController.duplicar);
 // Filtros e pesquisa
 
 // Listar vagas de uma empresa específica
-r.get("/empresa/:empresaId/vagas", verifyJWT, ensureRole('empresa'), VagasController.listarPorEmpresa);
+r.get("/empresas/:empresaId/vagas", verifyJWT, ensureRole('empresa'), VagasController.listarPorEmpresa);
 
-r.get("/empresa/:empresaId/filtros", verifyJWT, ensureRole('empresa'), VagasController.obterFiltros);
-r.get("/empresa/:empresaId/pesquisar", verifyJWT, ensureRole('empresa'), VagasController.pesquisar);
+r.get("/empresas/:empresaId/filtros", verifyJWT, ensureRole('empresa'), VagasController.obterFiltros);
+r.get("/empresas/:empresaId/pesquisar", verifyJWT, ensureRole('empresa'), VagasController.pesquisar);
 
 // Candidatura (candidato se inscrever em vaga)
 r.post("/:id/candidatar", verifyJWT, ensureRole('candidato'), CandidaturasController.criar);

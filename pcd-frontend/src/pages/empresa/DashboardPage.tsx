@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { FiBriefcase, FiCheckCircle, FiXCircle, FiClock, FiUsers, FiTrendingUp, FiAlertCircle, FiEdit } from 'react-icons/fi';
+import { FiCheckCircle, FiXCircle, FiClock, FiUsers, FiTrendingUp, FiAlertCircle, FiEdit } from 'react-icons/fi';
 import { FaExclamationTriangle, FaTrophy, FaChartLine } from 'react-icons/fa';
 
 interface DashboardStats {
@@ -21,6 +21,8 @@ interface VagaRecente {
   totalCandidatos: number;
 }
 
+type Insight = { icon: React.ReactNode; text: string };
+
 export default function DashboardPage() {
   const { id } = useParams<{ id: string }>();
   const empresaId = Number(id);
@@ -35,10 +37,10 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [vagasRecentes, setVagasRecentes] = useState<VagaRecente[]>([]);
-  const [insights, setInsights] = useState<string[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
 
   useEffect(() => {
-    async function carregarDados() {
+    async function carregarDados() { 
       try {
         // Checagem de permissão
         const userType = localStorage.getItem('userType');
@@ -79,14 +81,14 @@ export default function DashboardPage() {
         }
         setVagasRecentes(vagasComCandidatos);
         // Gerar insights
-        const newInsights: string[] = [];
+        const newInsights: Insight[] = [];
         if (vagasAtivas === 0 && vagasArray.length > 0) {
           newInsights.push({ icon: <FaExclamationTriangle className="inline mr-1 text-yellow-600" />, text: 'Você não tem vagas ativas no momento. Considere reabrir alguma vaga.' });
         }
         if (totalCandidatos > 50) {
           newInsights.push({ icon: <FaTrophy className="inline mr-1 text-green-600" />, text: `Parabéns! Você já recebeu ${totalCandidatos} candidaturas no total.` });
         }
-        if (vagasAtivas > 5) {
+        if (vagasAtivas > 5) { 
           newInsights.push({ icon: <FaChartLine className="inline mr-1 text-blue-600" />, text: 'Você está com várias vagas ativas. Organize seu processo seletivo.' });
         }
         setInsights(newInsights);
@@ -212,7 +214,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => navigate(`/empresa/${empresaId}/vagas/${vaga.id}`)}
+                  onClick={() => navigate(`/empresas/${empresaId}/vagas/${vaga.id}`)}
                   className="ml-4 p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                   aria-label="Editar vaga"
                 >
@@ -232,7 +234,7 @@ export default function DashboardPage() {
             <div className="flex-1">
               <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Insights Automáticos</h2>
               <ul className="space-y-2">
-                {insights.map((insight, index) => (
+                {insights.map((insight, index) => ( 
                   <li key={index} className="text-sm text-blue-800 dark:text-blue-200 flex items-center">{insight.icon}{insight.text}</li>
                 ))}
               </ul>

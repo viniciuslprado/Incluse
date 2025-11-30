@@ -218,6 +218,7 @@ export default function CadastroCandidatoPage() {
       if (!selectedSubtipoId) return;
       try {
         const b = await api.listarBarreirasPorSubtipo(selectedSubtipoId);
+        console.log('[DEBUG] Barreiras recebidas da API:', b, 'para subtipo', selectedSubtipoId);
         if (Array.isArray(b)) {
           setBarreirasPorSubtipo(prev => ({ ...prev, [selectedSubtipoId]: b }));
         }

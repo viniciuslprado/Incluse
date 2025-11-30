@@ -63,7 +63,7 @@ export default function CadastroPage() {
 
             {/* Cadastro de Empresa */}
             <Link
-              to="/cadastro/empresa"
+              to="/cadastro/empresas"
               className="group relative block p-6 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 hover:shadow-md"
             >
               <div className="flex items-center">

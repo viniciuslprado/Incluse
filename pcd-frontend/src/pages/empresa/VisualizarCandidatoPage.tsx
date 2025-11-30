@@ -60,7 +60,7 @@ export default function VisualizarCandidatoPage() {
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Candidato não encontrado</h1>
-          <Link to="/empresa" className="text-blue-600 hover:text-blue-800 mt-4 inline-block">
+          <Link to="/empresas" className="text-blue-600 hover:text-blue-800 mt-4 inline-block">
             Voltar para o painel
           </Link>
         </div>
@@ -73,7 +73,7 @@ export default function VisualizarCandidatoPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <Link to="/empresa" className="hover:text-blue-600">Painel</Link>
+          <Link to="/empresas" className="hover:text-blue-600">Painel</Link>
           <span>›</span>
           <span>Candidato</span>
         </div>

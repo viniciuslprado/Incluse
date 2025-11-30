@@ -12,7 +12,7 @@ import FAQPage from "./pages/public/FAQPage";
 import FaqModal from "./components/FaqModal";
 import PoliticaPrivacidadePage from "./pages/public/PoliticaPrivacidadePage";
 import QuemSomosPage from "./pages/public/QuemSomosPage";
-import AcessibilidadePage from "./pages/AcessibilidadePage";
+// import AcessibilidadePage from "./pages/AcessibilidadePage";
 import EmpresasParceirasPage from "./pages/empresa/EmpresasParceirasPage";
 import AdminPage from "./pages/admin/AdminPage";
 import NovaVagaPage from "./pages/empresa/NovaVagaPage";
@@ -21,14 +21,14 @@ import VagaDetalhePage from "./pages/empresa/VagaDetalhePage";
 import EmpresaPage from "./pages/empresa/EmpresaPage";
 import CandidatosPorVagaPage from "./pages/empresa/CandidatosPorVagaPage";
 import VisualizarCandidatoPage from "./pages/empresa/VisualizarCandidatoPage";
-import AvaliarEmpresaPage from "./pages/empresa/AvaliarEmpresaPage";
+// import AvaliarEmpresaPage from "./pages/empresa/AvaliarEmpresaPage";
 import DashboardPage from "./pages/empresa/DashboardPage";
 import EmpresaNotificacoesPage from "./pages/empresa/EmpresaNotificacoesPage";
-import EstatisticasPage from "./pages/empresa/EstatisticasPage";
+// import EstatisticasPage from "./pages/empresa/EstatisticasPage";
 import MinhaContaPage from "./pages/empresa/MinhaContaPage";
 import DadosEmpresaPage from "./pages/empresa/DadosEmpresaPage";
-import SeguidoresPage from "./pages/empresa/SeguidoresPage";
-import ServicoPage from "./pages/empresa/ServicoPage";
+// import SeguidoresPage from "./pages/empresa/SeguidoresPage";
+// import ServicoPage from "./pages/empresa/ServicoPage";
 import GestaoVagasPage from "./pages/empresa/GestaoVagasPage";
 import CandidatosGeralPage from "./pages/empresa/CandidatosGeralPage";
 import ConfiguracoesEmpresaPage from "./pages/empresa/ConfiguracoesPage";
@@ -44,7 +44,7 @@ import ConfiguracoesPage from "./pages/Candidato/ConfiguracoesPage";
 import DashboardLayout from "./pages/Candidato/DashboardLayout";
 import MeuCurriculoPage from "./pages/Candidato/MeuCurriculoPage";
 import CurriculoBasicoEditorPage from "./pages/Candidato/CurriculoBasicoEditorPage";
-import EmpresasPage from "./pages/Candidato/EmpresasPage";
+// import EmpresasPage from "./pages/Candidato/EmpresasPage";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { ToastProvider } from "./components/common/Toast";
 import AccessibilityMenu from "./components/AccessibilityMenu";
@@ -64,7 +64,7 @@ import AdminCandidates from "./components/admin/panel/AdminCandidates";
 import AdminJobs from "./components/admin/panel/AdminJobs";
 import GestaoAcessibilidadePage from "./pages/admin/GestaoAcessibilidadePage";
 import AdminLogsPage from "./pages/admin/AdminLogsPage";
-import VisualizarCurriculoPage from "./pages/empresa/VisualizarCurriculoPage";
+// import VisualizarCurriculoPage from "./pages/empresa/VisualizarCurriculoPage";
 import Erro403Page from "./pages/public/Erro403Page";
 import TermosDeUsoPage from "./pages/public/TermosDeUsoPage";
 import AdminPanelPage from "./pages/admin/PanelPage";
@@ -84,9 +84,9 @@ function AppRoutes() {
         <Route path="/vagas/:vagaId" element={<VagaPublicaPage />} />
         {/* Redireciona /vaga/:vagaId para /login */}
         <Route path="/vaga/:vagaId" element={<Navigate to="/login" replace />} />
-        <Route path="/empresa" element={<EmpresasParceirasPage />} />
+        <Route path="/empresas" element={<EmpresasParceirasPage />} />
         <Route path="/quem-somos" element={<QuemSomosPage />} />
-        <Route path="/acessibilidade" element={<AcessibilidadePage />} />
+        {/* <Route path="/acessibilidade" element={<AcessibilidadePage />} /> */}
         <Route path="/politica-privacidade" element={<PoliticaPrivacidadePage />} />
         <Route path="/termos-de-uso" element={<TermosDeUsoPage />} />
         <Route path="/erro403" element={<Erro403Page />} />
@@ -120,17 +120,17 @@ function AppRoutes() {
           <Route path="faq" element={<FAQPage />} />
           <Route path="anunciar" element={<NovaVagaPage />} />
           <Route path="candidatos" element={<CandidatosGeralPage />} />
-          <Route path="avaliar" element={<AvaliarEmpresaPage />} />
+          {/* <Route path="avaliar" element={<AvaliarEmpresaPage />} /> */}
           <Route path="vagas/:vagaId/candidatos" element={<CandidatosPorVagaPage />} />
           <Route path="candidatos/:candidatoId" element={<PerfilCandidatoPage />} />
           <Route path="visualizar-candidato/:candidatoId" element={<VisualizarCandidatoPage />} />
-          <Route path="visualizar-curriculo/:candidatoId" element={<VisualizarCurriculoPage />} />
+          {/* <Route path="visualizar-curriculo/:candidatoId" element={<VisualizarCurriculoPage />} /> */}
           <Route path="vagas/:vagaId" element={<VagaDetalhePage />} />
-          <Route path="seguidores" element={<SeguidoresPage />} />
-          <Route path="estatisticas" element={<EstatisticasPage />} />
+          {/* <Route path="seguidores" element={<SeguidoresPage />} /> */}
+          {/* <Route path="estatisticas" element={<EstatisticasPage />} /> */}
           <Route path="minha-conta" element={<MinhaContaPage />} />
           <Route path="dados" element={<DadosEmpresaPage />} />
-          <Route path="servico" element={<ServicoPage />} />
+          {/* <Route path="servico" element={<ServicoPage />} /> */}
           <Route path="configuracoes" element={<ConfiguracoesEmpresaPage />} />
         </Route>
 
@@ -149,7 +149,7 @@ function AppRoutes() {
           <Route path="faq" element={<FAQPage />} />
           <Route path="configuracoes" element={<ConfiguracoesPage />} />
           <Route path="historico" element={<CurriculosEnviadosPage />} />
-          <Route path="empresas" element={<EmpresasPage />} />
+          {/* <Route path="empresas" element={<EmpresasPage />} /> */}
         </Route>
         <Route path="*" element={
           <div className="min-h-screen flex items-center justify-center">

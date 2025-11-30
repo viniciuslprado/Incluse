@@ -114,6 +114,19 @@ const axiosInstance = createInstance();
 
 // Objeto da API
 export const api = {
+        // --- ADMINISTRADORES ---
+        listarAdministradores() {
+          return axiosInstance.get('/admin/administradores').then(r => r.data);
+        },
+        criarAdministrador(data: { nome: string; email: string; senha: string }) {
+          return axiosInstance.post('/admin/administradores', data).then(r => r.data);
+        },
+        atualizarAdministrador(id: number, data: { nome: string; email: string; senha?: string }) {
+          return axiosInstance.put(`/admin/administradores/${id}`, data).then(r => r.data);
+        },
+        deletarAdministrador(id: number) {
+          return axiosInstance.delete(`/admin/administradores/${id}`).then(r => r.data);
+        },
       /**
        * Cria uma vaga (compatibilidade)
        */
@@ -128,14 +141,14 @@ export const api = {
      * @param anonimo Se a avaliação é anônima
      */
     async avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimo?: boolean) {
-      return axiosInstance.post(`/empresa/${empresaId}/avaliacoes`, { nota, comentario, anonimo }).then(r => r.data);
+      return axiosInstance.post(`/empresas/${empresaId}/avaliacoes`, { nota, comentario, anonimo }).then(r => r.data);
     },
   /**
    * Cadastra uma nova empresa
    * @param data Dados da empresa
    */
   async registerEmpresa(data: any) {
-    return axiosInstance.post('/empresa', data).then(r => r.data);
+    return axiosInstance.post('/empresas', data).then(r => r.data);
   },
 
   /**
@@ -146,7 +159,7 @@ export const api = {
   async checkCnpjExists(cnpj: string): Promise<boolean> {
     if (!cnpj || cnpj.length < 14) return false;
     try {
-      const res = await axiosInstance.get(`/empresa/check-cnpj/${encodeURIComponent(cnpj)}`);
+      const res = await axiosInstance.get(`/empresas/check-cnpj/${encodeURIComponent(cnpj)}`);
       return !!res.data?.exists;
     } catch (e: any) {
       if (e?.status === 404) return false;
@@ -226,43 +239,30 @@ export const api = {
   listarTipos() { return axiosInstance.get('/tipos').then(r => r.data); },
   listarSubtiposPorTipo(tipoId: number) { return axiosInstance.get(`/tipos/${tipoId}/subtipos`).then(r => r.data); },
   listarAcessibilidadesPublicas() { return axiosInstance.get('/acessibilidades').then(r => r.data); },
-  listarEmpresas() { return axiosInstance.get('/empresa').then(r => r.data); },
+  listarEmpresas() { return axiosInstance.get('/empresas').then(r => r.data); },
   listarVagasPublicas() { return axiosInstance.get('/vagas').then(r => r.data); },
+
+  // Vagas recomendadas para o candidato
+  listarVagasRecomendadas(candidatoId: number) {
+    return axiosInstance.get(`/candidatos/${candidatoId}/vagas-recomendadas`).then(r => r.data);
+  },
   requestPasswordReset(identifier: string) { return axiosInstance.post('/auth/request-password-reset', { identifier }).then(r => r.data); },
   listarAreasFormacao() { return axiosInstance.get('/areas-formacao').then(r => r.data); },
   listarSubtiposCandidato(candidatoId: number) { return axiosInstance.get(`/candidatos/${candidatoId}/subtipos`).then(r => r.data); },
   listarBarreirasPorSubtipo(subtipoId: number) { return axiosInstance.get(`/subtipos/${subtipoId}/barreiras`).then(r => r.data); },
-  async getLaudo(id: number) {
-    // Primeiro busca a URL do laudo
-    const res = await axiosInstance.get(`/candidatos/${id}/laudo`);
-    const laudoUrl = res.data?.laudo;
-    if (!laudoUrl) throw new Error('Laudo não encontrado');
-    // Agora faz o download do arquivo
-    // Se a URL for relativa, ajusta para o baseURL
-    const url = laudoUrl.startsWith('http') ? laudoUrl : `${BASE_URL}${laudoUrl}`;
-    const fileRes = await axios.get(url, { responseType: 'blob' });
-    return fileRes.data;
-  },
   getDevToken(id: number) { return axiosInstance.post(`/candidatos/${id}/dev-auth`).then(r => r.data); },
   listarAreasFormacaoCandidato(id: number) { return axiosInstance.get(`/candidatos/${id}/areas-formacao`).then(r => r.data); },
   vincularAreasFormacaoCandidato(id: number, areas: number[]) { return axiosInstance.post(`/candidatos/${id}/areas-formacao`, { areas }).then(r => r.data); },
   vincularSubtiposACandidato(id: number, subtipoIds: number[]) { return axiosInstance.post(`/candidatos/${id}/subtipos`, { subtipoIds }).then(r => r.data); },
-  uploadLaudo(id: number, file: File) {
-    const formData = new FormData();
-    formData.append('laudo', file);
-    // Corrige endpoint para /candidatos/:id/laudo
-    return axiosInstance.post(`/candidatos/${id}/laudo`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data);
-  },
-  deleteLaudo(id: number) { return axiosInstance.delete(`/candidatos/${id}/laudo`).then(r => r.data); },
   obterCurriculoBasico(id: number) { return axiosInstance.get(`/candidatos/${id}/curriculo`).then(r => r.data); },
-  buscarEmpresa(id: number) { return axiosInstance.get(`/empresa/${id}`).then(r => r.data); },
-  getEmpresaPerfil() { return axiosInstance.get('/empresa/me').then(r => r.data); },
+  buscarEmpresa(id: number) { return axiosInstance.get(`/empresas/${id}`).then(r => r.data); },
+  getEmpresaPerfil() { return axiosInstance.get('/empresas/me').then(r => r.data); },
   uploadLogoEmpresaAutenticada(formData: FormData) { return axiosInstance.post('/empresas/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data); },
-  atualizarEmpresaAutenticada(empresa: any) { return axiosInstance.put('/empresa/update', empresa).then(r => r.data); },
+  atualizarEmpresaAutenticada(empresa: any) { return axiosInstance.put('/empresas/update', empresa).then(r => r.data); },
   alterarSenha(userId: number, userType: string, senhaAtual: string, novaSenha: string) {
     return axiosInstance.post('/auth/alterar-senha', { userId, userType, senhaAtual, novaSenha }).then(r => r.data);
   },
-  listarVagasPorEmpresa(empresaId: number) { return axiosInstance.get(`/vagas/empresa/${empresaId}/vagas`).then(r => r.data); },
+  listarVagasPorEmpresa(empresaId: number) { return axiosInstance.get(`/vagas/empresas/${empresaId}/vagas`).then(r => r.data); },
   duplicarVaga(vagaId: number) { return axiosInstance.post(`/vagas/${vagaId}/duplicar`).then(r => r.data); },
   listarTiposComSubtiposPublico() { return axiosInstance.get('/tipos/com-subtipos').then(r => r.data); },
 
@@ -288,15 +288,16 @@ export const api = {
   // --- CANDIDATO ---
   getCandidato(id: number) {
     if (!id) throw new Error('ID do candidato é obrigatório');
-    return axiosInstance.get<any>(`/candidatos/${id}/inicio`).then(r => r.data);
+    return axiosInstance.get<any>(`/candidatos/${id}`).then(r => r.data);
   },
   atualizarCandidato(id: number, data: any) { return axiosInstance.put(`/candidatos/${id}`, data).then(r => r.data); },
-  calcularCompatibilidade(vagaId: number) { return axiosInstance.get(`/candidatos/compatibilidade/${vagaId}`).then(r => r.data); },
+  // calcularCompatibilidade removido: lógica agora é backend, vagas já vêm filtradas.
   listarVagasFavoritas(candidatoId: number) { return axiosInstance.get<any[]>(`/candidatos/${candidatoId}/favoritos`).then(r => r.data); },
   favoritarVaga(vagaId: number) { return axiosInstance.post(`/candidatos/favoritos/${vagaId}`).then(r => r.data); },
   desfavoritarVaga(vagaId: number) {
     return axiosInstance.delete(`/candidatos/favoritos/${vagaId}`).then(r => r.data);
   },
+  // verificarCandidatura removido: lógica agora é backend, vagas já vêm com status de candidatura.
 
 
   listarVagasSalvas() {
@@ -316,13 +317,13 @@ export const api = {
 
   // --- NOTIFICAÇÕES EMPRESA ---
   listarNotificacoesEmpresa(empresaId: number) {
-    return axiosInstance.get(`/empresa/${empresaId}/notificacoes`).then(r => r.data);
+    return axiosInstance.get(`/empresas/${empresaId}/notificacoes`).then(r => r.data);
   },
   marcarNotificacaoEmpresaLida(empresaId: number, notifId: number) {
-    return axiosInstance.patch(`/empresa/${empresaId}/notificacoes/${notifId}/lida`).then(r => r.data);
+    return axiosInstance.patch(`/empresas/${empresaId}/notificacoes/${notifId}/lida`).then(r => r.data);
   },
   marcarTodasNotificacoesEmpresaLidas(empresaId: number) {
-    return axiosInstance.patch(`/empresa/${empresaId}/notificacoes/marcar-todas-lidas`).then(r => r.data);
+    return axiosInstance.patch(`/empresas/${empresaId}/notificacoes/marcar-todas-lidas`).then(r => r.data);
   },
 
   // --- ADMIN ---

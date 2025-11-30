@@ -88,7 +88,7 @@ export default function VagaPage() {
           <p className="text-gray-600 dark:text-gray-400 mt-2">Gerencie suas vagas publicadas</p>
         </div>
         <Link
-          to={`/empresa/${empresaId}/vagas/nova`}
+          to={`/empresas/${empresaId}/vagas/nova`}
           className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,13 +164,13 @@ export default function VagaPage() {
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-medium space-x-2">
                       <Link
-                        to={`/empresa/${empresaId}/vagas/${vaga.id}/candidatos`}
+                        to={`/empresas/${empresaId}/vagas/${vaga.id}/candidatos`}
                         className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         Ver Candidatos
                       </Link>
                       <Link
-                        to={`/empresa/${empresaId}/vagas/${vaga.id}/editar`}
+                        to={`/empresas/${empresaId}/vagas/${vaga.id}/editar`}
                         className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                       >
                         Editar
@@ -210,8 +210,8 @@ export default function VagaPage() {
                 { label: 'Criada em', value: new Date(vaga.createdAt).toLocaleDateString() },
               ],
               actions: [
-                { label: 'Ver Candidatos', to: `/empresa/${empresaId}/vagas/${vaga.id}/candidatos`, variant: 'blue' },
-                { label: 'Editar', to: `/empresa/${empresaId}/vagas/${vaga.id}/editar`, variant: 'indigo' },
+                { label: 'Ver Candidatos', to: `/empresas/${empresaId}/vagas/${vaga.id}/candidatos`, variant: 'blue' },
+                { label: 'Editar', to: `/empresas/${empresaId}/vagas/${vaga.id}/editar`, variant: 'indigo' },
                 { label: vaga.status === 'ativa' ? 'Pausar' : 'Ativar', onClick: () => handleToggleStatus(vaga.id, vaga.status === 'ativa'), variant: 'yellow', full: true },
                 { label: 'Excluir', onClick: () => handleDeleteVaga(vaga.id), variant: 'red', full: true },
               ],

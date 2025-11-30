@@ -73,9 +73,9 @@ export default function PerfilCandidatoPage() {
     <div className="p-6">
       <div className="mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <Link to={`/empresa/${empresaId}/vagas`} className="hover:text-blue-600">Vagas</Link>
+          <Link to={`/empresas/${empresaId}/vagas`} className="hover:text-blue-600">Vagas</Link>
           <span>›</span>
-          <Link to={`/empresa/${empresaId}/candidatos`} className="hover:text-blue-600">Candidatos</Link>
+          <Link to={`/empresas/${empresaId}/candidatos`} className="hover:text-blue-600">Candidatos</Link>
           <span>›</span>
           <span>{candidato.nome}</span>
         </div>

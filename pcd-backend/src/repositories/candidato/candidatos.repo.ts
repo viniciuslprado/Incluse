@@ -20,6 +20,13 @@ export const CandidatosRepo = {
       include: {
         subtipos: { include: { subtipo: true } },
         barras: { include: { barreira: true, subtipo: true } },
+        areasFormacao: true,
+        experiencias: true,
+        formacoes: true,
+        cursos: true,
+        competencias: true,
+        idiomas: true,
+        configuracoes: true,
       },
     });
   },

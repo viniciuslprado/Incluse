@@ -63,6 +63,22 @@ export default function CandidatoPage() {
 
       <CandidatoSubtiposForm candidatoId={candidatoId} onUpdated={carregar} allSubtipos={allSubtipos} />
 
+      {/* Área */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold mb-2">Área</h2>
+        <ul className="list-disc list-inside">
+          {Array.isArray(candidato.areasFormacao) && candidato.areasFormacao.length > 0 ? (
+            candidato.areasFormacao.map((af: any) => (
+              <li key={af.id || af.areaId || Math.random()}>
+                {af.area?.nome || af.nome || af.areaNome || 'Área desconhecida'}
+              </li>
+            ))
+          ) : (
+            <li className="text-gray-500">Nenhuma área cadastrada.</li>
+          )}
+        </ul>
+      </section>
+
       <div className="mt-6 space-y-4">
         {candidato.subtipos?.map((s: CandidatoSubtipo) => (
           <CandidatoBarreirasForm key={s.subtipoId} candidatoId={candidatoId} subtipo={s.subtipo} />

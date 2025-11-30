@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Vaga } from '../../types';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import { api } from '../../lib/api';
 import { useParams } from 'react-router-dom';
 
 
@@ -19,41 +18,13 @@ type Props = {
 export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited: _isCompanyFavorited, onToggleCompanyFavorite: _onToggleCompanyFavorite, candidatoId }: Props) {
   const { id } = useParams();
   const currentCandidatoId = candidatoId || Number(id);
-  const [compatibilityData, setCompatibilityData] = useState<any>(null);
-  const [loadingCompatibility, setLoadingCompatibility] = useState(false);
-  const [isApplied, setIsApplied] = useState(false);
-  const [checkingApplication, setCheckingApplication] = useState(false);
+  // Compatibilidade e candidatura agora vêm do backend, não é necessário buscar manualmente.
   
-  // Buscar compatibilidade se não estiver disponível
-  useEffect(() => {
-    const hasCompatibility = vaga?.matchPercent !== undefined || vaga?.compatibility !== undefined;
-    if (!hasCompatibility && currentCandidatoId && vaga?.id) {
-      setLoadingCompatibility(true);
-      api.calcularCompatibilidade(vaga.id)
-        .then(data => setCompatibilityData(data))
-        .catch(err => console.error('Erro ao calcular compatibilidade:', err))
-        .finally(() => setLoadingCompatibility(false));
-    }
-  }, [currentCandidatoId, vaga?.id, vaga?.matchPercent, vaga?.compatibility]);
-  
-  // Verificar se já se candidatou
-  useEffect(() => {
-    if (currentCandidatoId && vaga?.id) {
-      setCheckingApplication(true);
-      api.verificarCandidatura(vaga.id, currentCandidatoId)
-        .then(applied => {
-          setIsApplied(applied);
-          // Estado já sincronizado com backend
-        })
-        .catch(() => setIsApplied(false))
-        .finally(() => setCheckingApplication(false));
-    }
-  }, [currentCandidatoId, vaga?.id]);
-  
-  const matchValue = vaga?.matchPercent ?? vaga?.compatibility ?? (compatibilityData?.total || 0);
+  // Compatibilidade e candidatura já vêm do backend (vaga.matchPercent, vaga.compatibility, vaga.applied, etc.)
+  const matchValue = vaga?.matchPercent ?? vaga?.compatibility ?? 0;
   const match = matchValue <= 1 ? matchValue * 100 : matchValue;
   const isSaved = Boolean(vaga?.salvo || vaga?.isSaved || vaga?.saved);
-  const applied = vaga?.applied ?? isApplied;
+  const applied = vaga?.applied;
 
   return (
     <article className="relative bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer">
@@ -119,7 +90,7 @@ export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave,
               />
             </div>
             <span className="text-sm font-medium text-gray-700">
-              {loadingCompatibility ? 'Calculando...' : `${Math.round(match)}% de compatibilidade`}
+              {`${Math.round(match)}% de compatibilidade`}
             </span>
           </div>
 
@@ -146,14 +117,14 @@ export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave,
                     }
                   }
                 }}
-                disabled={checkingApplication}
+                // disabled={checkingApplication}
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                   applied 
                     ? 'bg-red-600 text-white hover:bg-red-700' 
                     : 'bg-green-600 text-white hover:bg-green-700'
                 }`}
               >
-                {checkingApplication ? 'Verificando...' : (applied ? 'Remover' : 'Candidatar-se')}
+                {applied ? 'Remover' : 'Candidatar-se'}
               </button>
             )}
           </div>

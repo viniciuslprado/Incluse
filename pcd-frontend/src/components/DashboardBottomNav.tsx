@@ -9,7 +9,7 @@ export default function DashboardBottomNav() {
 
   // Versão enxuta: apenas 5 itens principais
   const items = [
-    { name: 'Início', to: `/candidato/${cid}`, icon: <FiHome />, key: 'home' },
+    { name: 'Início', to: `/candidato/${cid}/inicio`, icon: <FiHome />, key: 'home' },
     { name: 'Favoritas', to: `/candidato/${cid}/favoritas`, icon: <FiBookmark />, key: 'favoritas' },
     { name: 'Candidaturas', to: `/candidato/${cid}/minhas-candidaturas`, icon: <FiBriefcase />, key: 'candidaturas' },
     { name: 'Notificações', to: `/candidato/${cid}/notificacoes`, icon: <FiBell />, key: 'notificacoes' },

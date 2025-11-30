@@ -44,13 +44,29 @@ export async function seedCandidatosVagas() {
 
   // Candidatos
   await prisma.candidato.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      nome: 'Fernando Moises',
+      email: 'fernando@email.com',
+      senhaHash: '$2a$10$Q9QwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQw', // senha: 123456
+      escolaridade: 'Ensino Superior Completo',
+      curso: 'Administração',
+      cidade: 'São Paulo',
+      estado: 'SP',
+      aceitaMudanca: true,
+      aceitaViajar: true,
+    },
+  });
+  await prisma.candidato.upsert({
     where: { id: 2 },
     update: {},
     create: {
       id: 2,
       nome: 'Maria da Silva',
       email: 'maria@email.com',
-      senhaHash: '$2a$10$Q9QwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQw', // senha: 123456
+      senhaHash: '$2a$10$Q9QwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw', // senha: 123456
       escolaridade: 'Ensino Superior Completo',
       curso: 'Administração',
       cidade: 'Campinas',

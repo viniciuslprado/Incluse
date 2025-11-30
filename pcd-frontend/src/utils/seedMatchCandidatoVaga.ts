@@ -1,5 +1,3 @@
-// Arquivo de seed para testar matches entre candidatos e vagas
-// Basta importar e rodar com ts-node para ver os resultados
 import { calcularCompatibilidade } from '../lib/compatibilidade.ts';
 
 const candidatos = [

@@ -2,13 +2,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import VagaCardCandidate from "../../components/candidato/VagaCard";
+
 import { api } from "../../lib/api";
 import { useCandidate } from '../../contexts/CandidateContext';
 import CustomSelect from '../../components/common/CustomSelect';
 import { useToast } from "../../components/common/Toast";
 import { addCandidatura, isVagaApplied, isVagaFavorited, toggleFavoriteVaga, removeCandidatura } from '../../lib/localStorage';
 import PerfilIncompletoAlert from '../../components/candidato/PerfilIncompletoAlert';
-import { calcularCompatibilidade } from '../../lib/compatibilidade';
+
 
 type FilterState = {
   cidade?: string;
@@ -39,19 +40,14 @@ export default function InicioPage() {
         return;
       }
       try {
-        // Busca todas as vagas públicas
-        const vagasAll = await api.listarVagasPublicas();
+        // Busca apenas as vagas recomendadas para o candidato
+        const vagasAll = await api.listarVagasRecomendadas(candidatoId);
         // Busca áreas de formação do candidato (se existir endpoint)
-        let candidatoAreas: string[] = [];
-        if (cand.areasFormacao && Array.isArray(cand.areasFormacao)) {
-          candidatoAreas = cand.areasFormacao.map((a: any) => a.nome || a.area || a);
-        } else if (cand.curso) {
-          candidatoAreas = [cand.curso];
-        }
+        // (Removido: candidatoAreas não é utilizada)
         // Busca barreiras do candidato (se existir)
         let candidatoBarreiraIds: number[] = [];
-        if (cand.subtipos && Array.isArray(cand.subtipos)) {
-          cand.subtipos.forEach((st: any) => {
+        if ((cand as any).subtipos && Array.isArray((cand as any).subtipos)) {
+          (cand as any).subtipos.forEach((st: any) => {
             if (st.barreiras && Array.isArray(st.barreiras)) {
               st.barreiras.forEach((b: any) => {
                 if (b.barreiraId) candidatoBarreiraIds.push(b.barreiraId);
@@ -59,23 +55,8 @@ export default function InicioPage() {
             }
           });
         }
-        // Calcula compatibilidade para cada vaga
-        const vagasComMatch = vagasAll.map((vaga: any) => {
-          // Barreiras cobertas pela vaga
-          const vagaBarreirasCobertasIds = Array.isArray(vaga.acessibilidades)
-            ? vaga.acessibilidades.map((a: any) => a.acessibilidadeId || a.id)
-            : [];
-          const resultado = calcularCompatibilidade({
-            candidato: cand,
-            vaga,
-            candidatoAreas,
-            candidatoBarreiraIds,
-            vagaBarreirasCobertasIds,
-          });
-          return { ...vaga, matchPercent: resultado.total, compatibilidade: resultado.compatibilidade, match: resultado.match, excluida: resultado.excluida };
-        });
-        // Filtra apenas vagas com match (não excluídas)
-        setVagas(vagasComMatch.filter(v => !v.excluida));
+        // O backend já retorna apenas as vagas compatíveis, então basta exibir todas
+        setVagas(vagasAll);
       } catch (err: any) {
         setVagas([]);
         addToast({ type: 'error', title: 'Erro', message: err?.message || 'Erro ao buscar vagas.' });
@@ -253,7 +234,7 @@ export default function InicioPage() {
       </div>
 
 
-      {!cand.perfilCompleto && <PerfilIncompletoAlert candidato={cand} />}
+      {cand && (cand as any).perfilCompleto === false && <PerfilIncompletoAlert candidato={cand} />}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">

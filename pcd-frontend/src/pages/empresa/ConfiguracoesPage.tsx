@@ -245,7 +245,7 @@ export default function ConfiguracoesPage() {
 
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <button
-                    onClick={() => navigate(`/empresa/${empresaId}/recuperar-senha`)}
+                    onClick={() => navigate(`/empresas/${empresaId}/recuperar-senha`)}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     Esqueci minha senha

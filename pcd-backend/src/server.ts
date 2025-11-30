@@ -14,7 +14,6 @@ import barreirasRoutes from "./routes/common/barreiras.routes.js";
 import acessibilidadesRoutes from "./routes/common/acessibilidades.routes.js";
 import vinculosRoutes from "./routes/common/vinculos.routes.js";
 import vagasRoutes from "./routes/common/vagas.routes.js";
-import matchRoutes from "./routes/common/match.routes.js";
 import processoSeletivoRoutes from "./routes/common/processo-seletivo.routes.js";
 import areasFormacaoRoutes from "./routes/common/areas-formacao.routes.js";
 import tiposDeficienciaRoutes from "./routes/common/tiposDeficienciaRoutes.js";
@@ -47,12 +46,11 @@ app.use("/subtipos", subtiposRoutes);
 app.use("/vinculos", vinculosRoutes)
 app.use("/barreiras", barreirasRoutes);
 app.use("/acessibilidades", acessibilidadesRoutes);
-app.use("/empresa", empresasRoutes);
+app.use("/empresas", empresasRoutes);
 app.use("/candidatos", candidatosRoutes);
 app.use("/vagas", vagasRoutes);
 app.use("/processo-seletivo", processoSeletivoRoutes);
 app.use("/auth", authRoutes);
-app.use("/match", matchRoutes);
 app.use("/tipos-deficiencia", tiposDeficienciaRoutes);
 app.use("/acessibilidades", acessibilidadesPublicRoutes);
 

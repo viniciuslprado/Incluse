@@ -24,7 +24,7 @@ router.use("/subtipos", subtipos);
 router.use("/barreiras", barreiras);
 router.use("/acessibilidades", acessibilidades);
 router.use("/vagas", vagas);
-router.use("/empresa", empresa);
+router.use("/empresas", empresa);
 router.use("/candidato", candidato);
 router.use("/candidaturas", candidaturas);
 router.use("/areas-formacao", areasFormacao);

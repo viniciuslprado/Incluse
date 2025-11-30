@@ -49,7 +49,7 @@ export default function MeuPerfil({ avatarPreview, candidato, fileRef, handleFil
           {errors.email && <div className="text-xs text-red-600 mt-1">{errors.email}</div>}
         </div>
         <div>
-          <label className="block text-sm font-medium">Celular <span className="text-red-600">*</span></label>
+          <label className="block text-sm font-medium">Telefone/Celular <span className="text-red-600">*</span></label>
           <input 
             aria-required="true" 
             value={formatPhone(form.telefone || '')} 
@@ -57,10 +57,11 @@ export default function MeuPerfil({ avatarPreview, candidato, fileRef, handleFil
               const unformatted = e.target.value.replace(/\D/g, '');
               handleInput('telefone', unformatted);
             }}
-            placeholder="+55 (DD) 9XXXX-XXXX" 
+            placeholder="(00) 00000-0000" 
             className="p-3 border rounded w-full" 
+            maxLength={15}
           />
-          <div className="text-xs text-gray-500 mt-1">Formato: +55 (DD) 9XXXX-XXXX</div>
+          <div className="text-xs text-gray-500 mt-1">Formato: (00) 00000-0000</div>
           {errors.telefone && <div className="text-xs text-red-600 mt-1">{errors.telefone}</div>}
         </div>
         <div>
@@ -89,32 +90,30 @@ export default function MeuPerfil({ avatarPreview, candidato, fileRef, handleFil
           />
           {errors.escolaridade && <div className="text-xs text-red-600 mt-1">{errors.escolaridade}</div>}
         </div>
-        {form.escolaridade && /superior|pós|mestrado|doutorado/i.test(form.escolaridade) && (
-          <div>
-            <label className="block text-sm font-medium mb-2">Área de formação <span className="text-red-600">*</span></label>
-            <p className="text-xs text-gray-500 mb-2">Selecione uma ou mais áreas relacionadas à sua formação</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded p-4 bg-gray-50">
-              {form.areasFormacaoDisponiveis?.sort((a: any, b: any) => a.nome.localeCompare(b.nome)).map((area: any) => (
-                <label key={area.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                  <input
-                    type="checkbox"
-                    checked={(form.areasFormacao || []).includes(area.id)}
-                    onChange={(e) => {
-                      const current = form.areasFormacao || [];
-                      const updated = e.target.checked 
-                        ? [...current, area.id]
-                        : current.filter((id: number) => id !== area.id);
-                      handleInput('areasFormacao', updated);
-                    }}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                  <span className="text-sm">{area.nome}</span>
-                </label>
-              ))}
-            </div>
-            {errors.areasFormacao && <div className="text-xs text-red-600 mt-1">{errors.areasFormacao}</div>}
+        <div>
+          <label className="block text-sm font-medium mb-2">Área de formação <span className="text-red-600">*</span></label>
+          <p className="text-xs text-gray-500 mb-2">Selecione uma ou mais áreas relacionadas à sua formação</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded p-4 bg-gray-50">
+            {form.areasFormacaoDisponiveis?.sort((a: any, b: any) => a.nome.localeCompare(b.nome)).map((area: any) => (
+              <label key={area.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                <input
+                  type="checkbox"
+                  checked={(form.areasFormacao || []).includes(area.id)}
+                  onChange={(e) => {
+                    const current = form.areasFormacao || [];
+                    const updated = e.target.checked 
+                      ? [...current, area.id]
+                      : current.filter((id: number) => id !== area.id);
+                    handleInput('areasFormacao', updated);
+                  }}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-sm">{area.nome}</span>
+              </label>
+            ))}
           </div>
-        )}
+          {errors.areasFormacao && <div className="text-xs text-red-600 mt-1">{errors.areasFormacao}</div>}
+        </div>
       </section>
     </>
   );

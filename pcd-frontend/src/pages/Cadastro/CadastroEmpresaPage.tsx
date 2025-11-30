@@ -190,7 +190,7 @@ export default function CadastroEmpresaPage() {
         if (empresa.token) {
           localStorage.setItem('token', empresa.token);
         }
-        navigate(`/empresa/${empresa.id}/dashboard`);
+        navigate(`/empresas/${empresa.id}/dashboard`);
       } else {
         // fallback: vai para login
         navigate('/login');

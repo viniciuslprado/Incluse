@@ -1,12 +1,52 @@
-// Função movida para dentro do export const CandidatosController
+
 import { Request, Response } from "express";
 import { CandidatosService } from "../../services/candidato/candidatos.service";
-import { MatchService } from "../../services/common/match.service";
-
-// GET /candidatos/:id/laudo - Retornar laudo do candidato
-// DELETE /candidatos/:id/laudo - Excluir laudo do candidato
+import { MatchService } from "../../services/candidato/match.service";
 
 export const CandidatosController = {
+  async obterPorId(req: Request, res: Response) {
+    const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
+    }
+    try {
+      const candidato = await CandidatosService.getCandidato(id);
+      if (!candidato) {
+        return res.status(404).json({ error: 'Candidato não encontrado' });
+      }
+      // Normalização dos campos esperados pelo frontend
+      const normalizado = {
+        id: candidato.id,
+        nome: typeof candidato.nome === 'string' ? candidato.nome : '',
+        username: candidato.username ?? '',
+        email: candidato.email ?? '',
+        telefone: candidato.telefone ?? '',
+        cpf: candidato.cpf ?? '',
+        rua: candidato.rua ?? '',
+        bairro: candidato.bairro ?? '',
+        cidade: candidato.cidade ?? '',
+        estado: candidato.estado ?? '',
+        cep: candidato.cep ?? '',
+        escolaridade: candidato.escolaridade ?? '',
+        curso: candidato.curso ?? '',
+        sobre: candidato.sobre ?? '',
+        aceitaMudanca: candidato.aceitaMudanca ?? null,
+        aceitaViajar: candidato.aceitaViajar ?? null,
+        pretensaoSalarialMin: candidato.pretensaoSalarialMin ?? '',
+        areasFormacao: Array.isArray(candidato.areasFormacao) ? candidato.areasFormacao.map((a: any) => ({ id: a.areaId ?? a.id, nome: a.area?.nome ?? a.nome ?? '' })) : [],
+        subtipos: Array.isArray(candidato.subtipos) ? candidato.subtipos : [],
+        barras: Array.isArray(candidato.barras) ? candidato.barras : [],
+        curriculo: candidato.curriculo ?? '',
+        laudo: candidato.laudo ?? '',
+        isActive: candidato.isActive ?? true,
+        createdAt: candidato.createdAt,
+        updatedAt: candidato.updatedAt,
+      };
+      res.json(normalizado);
+    } catch (e: any) {
+      res.status(e.status || 500).json({ error: e.message || "Erro ao buscar candidato" });
+    }
+  },
   async listarAreasFormacao(req: Request, res: Response) {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
@@ -79,12 +119,14 @@ export const CandidatosController = {
 
       if (e && e.code === 'P2002') {
         const target = String(e.meta?.target || 'campo');
-
         if (target.toLowerCase().includes('cpf')) {
           return res.status(400).json({ error: 'Já existe uma conta cadastrada neste CPF' });
         }
         if (target.toLowerCase().includes('email')) {
           return res.status(400).json({ error: 'Já existe uma conta cadastrada neste e-mail' });
+        }
+        if (target.toLowerCase().includes('id')) {
+          return res.status(400).json({ error: 'Já existe um registro semelhante cadastrado. Tente atualizar ou revise os dados enviados.' });
         }
         return res.status(400).json({ error: `Conflito de unicidade: ${target}` });
       }
@@ -113,30 +155,9 @@ export const CandidatosController = {
       return res.status(400).json({ error: 'ID do candidato ausente ou inválido.' });
     }
     try {
-      const candidato = await CandidatosService.getCandidato(id);
+      // Importação dinâmica para evitar erro de importação circular
       const vagasRecomendadas = await MatchService.matchVagasForCandidato(id);
-
-      // Buscar subtipos vinculados ao candidato
-      const subtipos = await CandidatosService.listarSubtipos(id);
-
-      // Buscar barreiras vinculadas a cada subtipo
-      // Estrutura: [{ subtipo: {...}, barreiras: [...] }]
-      const subtiposComBarreiras = await Promise.all(
-        subtipos.map(async (sub: any) => {
-          let barreiras = [];
-          if (sub && sub.id) {
-            // Busca barreiras vinculadas a este subtipo para o candidato
-            barreiras = await CandidatosService.listarBarreirasVinculadas(id, sub.id);
-          }
-          return { ...sub, barreiras };
-        })
-      );
-
-      res.json({
-        ...candidato,
-        vagasRecomendadas,
-        subtipos: subtiposComBarreiras
-      });
+      res.json({ vagasRecomendadas });
     } catch (e: any) {
       res.status(e.status || 500).json({ error: e.message || "Erro ao buscar candidato" });
     }

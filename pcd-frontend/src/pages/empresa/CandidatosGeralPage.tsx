@@ -59,7 +59,7 @@ export default function CandidatosGeralPage() {
           todosCandidatos.push(...candidatosComVaga);
         } catch (error) {
           // Se erro 404, ignora a vaga
-          if (error && error.response && error.response.status === 404) {
+          if (error && (error as any).response && (error as any).response.status === 404) {
             console.warn(`Vaga ${vaga.id} não encontrada ou sem candidatos.`);
             continue;
           }
@@ -330,7 +330,7 @@ export default function CandidatosGeralPage() {
 
               <div className="mt-6 flex gap-3">
                 <button
-                  onClick={() => navigate(`/empresa/${empresaId}/candidato/${candidatoSelecionado.id}`)}
+                  onClick={() => navigate(`/empresas/${empresaId}/candidato/${candidatoSelecionado.id}`)}
                   className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   Ver Perfil Completo

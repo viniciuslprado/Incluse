@@ -1,6 +1,62 @@
+
 import { prisma } from "../../prismaClient";
 
 export const VagasRepo = {
+  /**
+   * Retorna as acessibilidades de uma vaga pelo ID
+   */
+  async listarAcessibilidades(vagaId: number) {
+    const acessibilidades = await prisma.vagaAcessibilidade.findMany({
+      where: { vagaId },
+      include: { acessibilidade: { select: { descricao: true } } }
+    });
+    // Retorna array de strings (descrição)
+    return acessibilidades.map(a => a.acessibilidade.descricao);
+  },
+  /**
+   * Retorna todas as vagas ativas (status = 'ativa')
+   */
+  async findAllAtivas() {
+    return prisma.vaga.findMany({
+      where: { status: 'ativa' },
+      include: {
+        empresa: { select: { id: true, nome: true, email: true, cnpj: true } },
+        area: { select: { id: true, nome: true } },
+        descricaoVaga: true,
+        requisitos: true,
+        beneficios: true,
+        processos: { orderBy: { ordem: 'asc' } },
+        subtiposAceitos: { include: { subtipo: { select: { id: true, nome: true } } } },
+        acessibilidades: { include: { acessibilidade: { select: { id: true, descricao: true } } } },
+        _count: { select: { candidaturas: true } }
+      }
+    });
+  },
+  list(empresaId?: number, filters?: any, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    const where: any = {};
+    if (empresaId) where.empresaId = empresaId;
+    if (filters?.status) where.status = filters.status;
+    if (filters?.areaId) where.areaId = Number(filters.areaId);
+    if (filters?.modeloTrabalho) where.modeloTrabalho = filters.modeloTrabalho;
+    return prisma.vaga.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        empresa: { select: { id: true, nome: true, email: true, cnpj: true } },
+        area: { select: { id: true, nome: true } },
+        descricaoVaga: true,
+        requisitos: true,
+        beneficios: true,
+        processos: { orderBy: { ordem: 'asc' } },
+        subtiposAceitos: { include: { subtipo: { select: { id: true, nome: true } } } },
+        acessibilidades: { include: { acessibilidade: { select: { id: true, descricao: true } } } },
+        _count: { select: { candidaturas: true } }
+      }
+    });
+  },
   list(empresaId?: number, filters?: any, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     const where: any = {};
