@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import type { Vaga } from '../../../types';
-import { FiEye, FiEdit2, FiArchive } from 'react-icons/fi';
+import { FiEye, FiEdit2, FiPause, FiXCircle } from 'react-icons/fi';
 
 function StatusBadge({ status }: { status: string }) {
   let color = 'bg-gray-300';
@@ -57,9 +57,14 @@ export default function AdminJobs() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [areaFilter, setAreaFilter] = useState('');
+  const [empresaFilter, setEmpresaFilter] = useState('');
+  const [dataFilter, setDataFilter] = useState('');
   const [selected, setSelected] = useState<Vaga & { empresa?: { nome: string } } | null>(null);
   const [candidatos, setCandidatos] = useState<any[]>([]);
   const [loadingModal, setLoadingModal] = useState(false);
+  const [showPauseModal, setShowPauseModal] = useState<number|null>(null);
+  const [pauseReason, setPauseReason] = useState('');
 
   function fetchVagas() {
     setLoading(true);
@@ -67,8 +72,14 @@ export default function AdminJobs() {
     api
       .listarVagas()
       .then((data) => {
-        setVagas(data.vagas || data || []);
-        setTotal(data.total || 0);
+        let lista = data.vagas || data || [];
+        // Filtros locais (mock, pois API não suporta filtros ainda)
+        if (statusFilter) lista = lista.filter((v: Vaga) => v.status === statusFilter);
+        if (areaFilter) lista = lista.filter((v: Vaga) => (v.area || '').toLowerCase().includes(areaFilter.toLowerCase()));
+        if (empresaFilter) lista = lista.filter((v: Vaga & { empresa?: { nome: string } }) => (v.empresa?.nome || '').toLowerCase().includes(empresaFilter.toLowerCase()));
+        if (dataFilter) lista = lista.filter((v: Vaga) => v.createdAt && new Date(v.createdAt).toISOString().slice(0,10) === dataFilter);
+        setVagas(lista);
+        setTotal(lista.length);
       })
       .catch((e) => setErro(e.message || 'Erro ao carregar vagas'))
       .finally(() => setLoading(false));
@@ -91,7 +102,7 @@ export default function AdminJobs() {
   useEffect(() => {
     fetchVagas();
     // eslint-disable-next-line
-  }, [page, statusFilter]);
+  }, [page, statusFilter, areaFilter, empresaFilter, dataFilter]);
 
   function handleSetStatus(id: number, status: string) {
     import('../../../lib/api').then(({ api }) => {
@@ -103,25 +114,25 @@ export default function AdminJobs() {
     });
   }
 
+  // Contadores
+  const ativas = vagas.filter(v => v.status === 'ativa').length;
+  const pausadas = vagas.filter(v => v.status === 'pausada').length;
+  const encerradas = vagas.filter(v => v.status === 'encerrada').length;
+
   return (
     <div className="p-0 md:px-2 w-full">
       <div className="mb-8 p-0 md:p-0 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full min-w-0">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">Vagas Cadastradas</h1>
-          <div className="mt-2 text-gray-600 dark:text-gray-300 text-lg font-medium flex gap-4 items-center">
-            {vagas.length > 0 ? (
-              <>
-                <span>{vagas.filter(v => v.status === 'ativa').length} ativas</span>
-                <span>• {vagas.filter(v => v.status === 'pausada').length} pausadas</span>
-                <span>• {vagas.filter(v => v.status === 'encerrada').length} encerradas</span>
-              </>
-            ) : (
-              <span>Nenhuma vaga cadastrada</span>
-            )}
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">Vagas Cadastradas</h1>
+          <div className="mt-2 text-gray-600 dark:text-gray-300 text-base font-medium flex gap-3 items-center">
+            <span className="text-green-700">{ativas} ativas</span>
+            <span className="text-yellow-700">{pausadas} pausadas</span>
+            <span className="text-gray-500">{encerradas} encerradas</span>
           </div>
         </div>
         {/* Espaço para botão de ação futuro, ex: Nova Vaga */}
       </div>
+      {/* Filtros avançados */}
       <div className="mb-6 flex flex-col md:flex-row gap-4 items-center md:items-end flex-wrap">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1 font-medium text-gray-700 dark:text-gray-200">
@@ -131,15 +142,12 @@ export default function AdminJobs() {
             {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         </div>
-        {/* Filtros avançados: Área, Empresa, Data (placeholder para drawer/lateral futuramente) */}
-        <div className="flex gap-2 flex-wrap">
-          <input type="text" placeholder="Filtrar por área" className="border rounded px-2 py-1" style={{minWidth:120}} disabled />
-          <input type="text" placeholder="Filtrar por empresa" className="border rounded px-2 py-1" style={{minWidth:120}} disabled />
-          <input type="date" placeholder="Criada em" className="border rounded px-2 py-1" style={{minWidth:120}} disabled />
-        </div>
+        <input type="text" placeholder="Filtrar por área" className="border rounded px-2 py-1" style={{minWidth:120}} value={areaFilter} onChange={e => { setAreaFilter(e.target.value); setPage(1); }} />
+        <input type="text" placeholder="Filtrar por empresa" className="border rounded px-2 py-1" style={{minWidth:120}} value={empresaFilter} onChange={e => { setEmpresaFilter(e.target.value); setPage(1); }} />
+        <input type="date" placeholder="Criada em" className="border rounded px-2 py-1" style={{minWidth:120}} value={dataFilter} onChange={e => { setDataFilter(e.target.value); setPage(1); }} />
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:bg-gray-800">
-        <table className="w-full text-base table-fixed">
+      <div className="overflow-x-auto rounded-lg bg-white dark:bg-gray-800">
+        <table className="w-full text-sm table-fixed">
           <thead className="bg-gray-100 dark:bg-gray-700">
             <tr>
               <th className="px-0 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 w-[22%] truncate">Empresa</th>
@@ -166,51 +174,75 @@ export default function AdminJobs() {
                 <td className="px-4 py-4 whitespace-nowrap">{vaga.createdAt ? new Date(vaga.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}</td>
                 <td className="px-4 py-4 flex gap-2 items-center">
                   <button
-                    className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                    title="Visualizar"
+                    className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold"
+                    title="Verificar vaga"
                     onClick={() => openModal(vaga)}
                   >
-                    <FiEye className="w-5 h-5 text-blue-600" />
+                    Verificar vaga
                   </button>
-                  <button
-                    className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                    title="Editar"
-                    onClick={() => window.alert('Funcionalidade de edição em breve')}
-                  >
-                    <FiEdit2 className="w-5 h-5 text-green-600" />
-                  </button>
-                  {(vaga.status === 'ativa' || vaga.status === 'pausada') && (
-                    <button
-                      className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Arquivar"
-                      onClick={() => handleSetStatus(vaga.id, 'encerrada')}
-                    >
-                      <FiArchive className="w-5 h-5 text-yellow-600" />
-                    </button>
-                  )}
-                  {vaga.status === 'encerrada' && (
-                    <button
-                      className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Reabrir"
-                      onClick={() => handleSetStatus(vaga.id, 'ativa')}
-                    >
-                      <FiArchive className="w-5 h-5 text-green-600" />
-                    </button>
-                  )}
                 </td>
+                    {/* Modal para justificar desativação ou exclusão */}
+                    {showPauseModal && (
+                      <Modal open={true} onClose={() => { setShowPauseModal(null); setPauseReason(''); }}>
+                        <div>
+                          <h2 className="text-lg font-bold mb-2">
+                            {showPauseModal > 0 ? 'Justificar desativação da vaga' : 'Justificar exclusão da vaga'}
+                          </h2>
+                          <p className="mb-2 text-sm text-gray-700">
+                            {showPauseModal > 0
+                              ? 'Explique o motivo da desativação/pausa da vaga. Uma notificação será enviada para a empresa.'
+                              : 'Explique o motivo da exclusão da vaga. Uma notificação será enviada para a empresa.'}
+                          </p>
+                          <textarea
+                            className="w-full border rounded p-2 mb-2"
+                            rows={3}
+                            placeholder={showPauseModal > 0 ? 'Motivo da desativação/pausa...' : 'Motivo da exclusão...'}
+                            value={pauseReason}
+                            onChange={e => setPauseReason(e.target.value)}
+                          />
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400"
+                              onClick={() => { setShowPauseModal(null); setPauseReason(''); }}
+                            >Cancelar</button>
+                            {showPauseModal > 0 ? (
+                              <button
+                                className="px-3 py-1 rounded bg-yellow-500 text-white hover:bg-yellow-600"
+                                onClick={() => {
+                                  handleSetStatus(showPauseModal, 'pausada');
+                                  // TODO: Enviar notificação para a empresa com pauseReason
+                                  setShowPauseModal(null); setPauseReason('');
+                                  window.alert('Vaga pausada/desativada e notificação enviada para a empresa!');
+                                }}
+                              >Confirmar desativação</button>
+                            ) : (
+                              <button
+                                className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                                onClick={() => {
+                                  api.excluirVaga(-showPauseModal).then(() => {
+                                    // TODO: Enviar notificação para a empresa com pauseReason
+                                    fetchVagas();
+                                    setShowPauseModal(null); setPauseReason('');
+                                    window.alert('Vaga excluída e notificação enviada para a empresa!');
+                                  });
+                                }}
+                              >Confirmar exclusão</button>
+                            )}
+                          </div>
+                        </div>
+                      </Modal>
+                    )}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {/* Paginação */}
-      <div className="flex flex-col items-center justify-center mt-6 gap-2">
-        <span className="text-sm text-gray-600 dark:text-gray-300">
-          {total > 0
-            ? `Exibindo ${(page - 1) * limit + 1}–${Math.min(page * limit, total)} de ${total} vagas`
-            : 'Nenhuma vaga encontrada'}
-        </span>
-        <div className="flex gap-1 items-center">
+      {/* Paginação com info de páginas centralizada */}
+      <div className="flex flex-col items-center mt-6 gap-1 w-full">
+        <div className="text-sm text-gray-700 font-medium mb-1 text-center w-full">
+          {`Exibindo ${page}–${Math.ceil(total / limit) || 1} páginas`}
+        </div>
+        <div className="flex justify-center gap-2 items-center w-full">
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
@@ -247,7 +279,7 @@ export default function AdminJobs() {
         </div>
       </div>
 
-      {/* Modal de detalhes da vaga */}
+      {/* Modal de detalhes e ações da vaga */}
       <Modal open={!!selected} onClose={closeModal}>
         {selected && (
           <div>
@@ -257,6 +289,39 @@ export default function AdminJobs() {
             <div className="mb-2 text-sm text-gray-700">Status: {selected.status}</div>
             <div className="mb-2 text-sm text-gray-700">Data de criação: {selected.createdAt ? new Date(selected.createdAt).toLocaleDateString() : '-'}</div>
             <div className="mb-2 text-sm text-gray-700">Descrição: {selected.descricao || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Escolaridade: {selected.escolaridade || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Cidade: {selected.cidade || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Estado: {selected.estado || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Tipo de contratação: {selected.tipoContratacao || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Modelo de trabalho: {selected.modeloTrabalho || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Localização: {selected.localizacao || '-'}</div>
+            <div className="mb-2 text-sm text-gray-700">Exige mudança: {selected.exigeMudanca ? 'Sim' : 'Não'}</div>
+            <div className="mb-2 text-sm text-gray-700">Exige viagens: {selected.exigeViagens ? 'Sim' : 'Não'}</div>
+            {selected.descricaoVaga && (
+              <div className="mb-2 text-sm text-gray-700">
+                <div>Resumo: {selected.descricaoVaga.resumo || '-'}</div>
+                <div>Atividades: {selected.descricaoVaga.atividades || '-'}</div>
+                <div>Jornada: {selected.descricaoVaga.jornada || '-'}</div>
+                <div>Salário: {selected.descricaoVaga.salarioMin ? `R$ ${selected.descricaoVaga.salarioMin}` : '-'} {selected.descricaoVaga.salarioMax ? `até R$ ${selected.descricaoVaga.salarioMax}` : ''}</div>
+              </div>
+            )}
+            {selected.requisitos && (
+              <div className="mb-2 text-sm text-gray-700">
+                <div>Formação: {selected.requisitos.formacao || '-'}</div>
+                <div>Experiência: {selected.requisitos.experiencia || '-'}</div>
+                <div>Competências: {selected.requisitos.competencias || '-'}</div>
+                <div>Habilidades técnicas: {selected.requisitos.habilidadesTecnicas || '-'}</div>
+              </div>
+            )}
+            {selected.beneficios && selected.beneficios.length > 0 && (
+              <div className="mb-2 text-sm text-gray-700">Benefícios: {selected.beneficios.map(b => b.descricao).join(', ')}</div>
+            )}
+            {selected.acessibilidades && selected.acessibilidades.length > 0 && (
+              <div className="mb-2 text-sm text-gray-700">Acessibilidades: {selected.acessibilidades.map(a => a.acessibilidade?.descricao).join(', ')}</div>
+            )}
+            {selected.subtipos && selected.subtipos.length > 0 && (
+              <div className="mb-2 text-sm text-gray-700">Subtipos: {selected.subtipos.map(s => s.nome).join(', ')}</div>
+            )}
             <h3 className="font-semibold mt-4 mb-2">Candidatos inscritos</h3>
             {loadingModal ? (
               <div>Carregando candidatos...</div>
@@ -271,6 +336,39 @@ export default function AdminJobs() {
                 ))}
               </ul>
             )}
+            <div className="mt-6 flex flex-col gap-2">
+              {(selected.status === 'ativa' || selected.status === 'pausada') && (
+                <button
+                  className="px-4 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600 font-semibold"
+                  onClick={() => {
+                    setShowPauseModal(selected.id);
+                    closeModal();
+                  }}
+                >
+                  Desativar vaga
+                </button>
+              )}
+              <button
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 font-semibold"
+                onClick={() => {
+                  setShowPauseModal(-selected.id); // valor negativo para diferenciar exclusão
+                  closeModal();
+                }}
+              >
+                Excluir vaga
+              </button>
+              {selected.status === 'encerrada' && (
+                <button
+                  className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 font-semibold"
+                  onClick={() => {
+                    handleSetStatus(selected.id, 'ativa');
+                    closeModal();
+                  }}
+                >
+                  Reabrir vaga
+                </button>
+              )}
+            </div>
           </div>
         )}
       </Modal>

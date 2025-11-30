@@ -4,6 +4,15 @@ export const adminBarreirasService = {
   async listar() {
     return prisma.barreira.findMany();
   },
+
+  async listarPorSubtipo(subtipoId: number) {
+    // Busca todas as barreiras vinculadas ao subtipo
+    const vinculos = await prisma.subtipoBarreira.findMany({
+      where: { subtipoId },
+      include: { barreira: true }
+    });
+    return vinculos.map(v => v.barreira);
+  },
   async criar(descricao: string) {
     return prisma.barreira.create({ data: { descricao } });
   },

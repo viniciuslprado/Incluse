@@ -7,6 +7,13 @@ export const adminBarreirasController = {
     const barreiras = await adminBarreirasService.listar();
     res.json(barreiras);
   },
+
+  async listarPorSubtipo(req: Request, res: Response) {
+    const subtipoId = Number(req.params.subtipoId);
+    if (!subtipoId) return res.status(400).json({ error: 'subtipoId obrigatório' });
+    const barreiras = await adminBarreirasService.listarPorSubtipo(subtipoId);
+    res.json(barreiras);
+  },
   async criar(req: Request, res: Response) {
     const b = await adminBarreirasService.criar(req.body.nome);
     res.status(201).json(b);

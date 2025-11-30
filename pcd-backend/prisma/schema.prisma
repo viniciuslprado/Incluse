@@ -19,8 +19,22 @@ datasource db {
 model Empresa {
   id         Int         @id @default(autoincrement())
   nome       String
+  nomeContato String?
+  quantidadeFuncionarios String?
+  cargo      String?
   email      String?     @unique
   cnpj       String?     @unique
+  telefone   String?
+  cep        String?
+  rua        String?
+  numero     String?
+  bairro     String?
+  cidade     String?
+  estado     String?
+  endereco   String?
+  areaAtuacao String?
+  descricao  String?
+  logoUrl    String?
   createdAt  DateTime    @default(now())
   isActive   Boolean     @default(true)
   updatedAt  DateTime    @updatedAt

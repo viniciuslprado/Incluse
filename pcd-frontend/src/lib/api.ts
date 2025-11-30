@@ -1,8 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance } from 'axios';
-import type { TipoComSubtipos, Barreira, TipoDeficiencia, SubtipoDeficiencia, Acessibilidade, Vaga, Candidato } from "../types";
 
 const BASE_URL = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
+
 
 function createInstance(): AxiosInstance {
   const instance = axios.create({ baseURL: BASE_URL, headers: { 'Content-Type': 'application/json' } });
@@ -46,43 +46,30 @@ function createInstance(): AxiosInstance {
   return instance;
 }
 
-// ...existing code...
+function mapAxiosError(err: AxiosError) {
+  if (!err || !err.response) {
+    if ((import.meta as any).env?.DEV) {
+      console.error('Network or connection error:', err?.message);
+    }
+    return err;
+  }
+  const data = (err.response.data as any) || {};
+  const message = data.error || data.message || err.message || 'Erro na requisição';
+  const e = new Error(message) as Error & { status?: number; response?: any };
+  e.status = err.response.status;
+  e.response = err.response;
+  
+  if ((import.meta as any).env?.DEV && err.response.status !== 401 && err.response.status !== 403) {
+    console.error(`API Error ${err.response.status}:`, message, data);
+  }
+  
+
+  return e;
+}
 
 const axiosInstance = createInstance();
 
 export const api = {
-  // Public
-  listarVagasPublicas() { return axiosInstance.get('/vagas').then(r => r.data); },
-  listarTiposPublicos() { return axiosInstance.get<TipoDeficiencia[]>("/tipos").then(r => r.data); },
-  listarAcessibilidadesPublicas() { return axiosInstance.get<Acessibilidade[]>("/acessibilidades").then(r => r.data); },
-
-  // Admin
-  obterDashboardAdmin() { return axiosInstance.get('/admin/dashboard').then(r => r.data); },
-  listarTipos() { return axiosInstance.get<TipoDeficiencia[]>('/admin/deficiencias').then(r => r.data); },
-  criarTipo(nome: string) { return axiosInstance.post<TipoDeficiencia>('/admin/deficiencias', { nome }).then(r => r.data); },
-  atualizarTipo(id: number, nome: string) { return axiosInstance.patch(`/admin/deficiencias/${id}`, { nome }).then(r => r.data); },
-  deletarTipo(id: number) { return axiosInstance.delete(`/admin/deficiencias/${id}`).then(r => r.data); },
-  listarTiposComSubtipos() { return axiosInstance.get<TipoComSubtipos[]>('/admin/deficiencias').then(r => r.data); },
-  listarSubtiposPorTipo(deficienciaId: number) { return axiosInstance.get<SubtipoDeficiencia[]>(`/admin/deficiencias/${deficienciaId}/subtipos`).then(r => r.data); },
-  criarSubtipo(deficienciaId: number, nome: string) { return axiosInstance.post<SubtipoDeficiencia>('/admin/subtipos', { deficienciaId, nome }).then(r => r.data); },
-  atualizarSubtipo(id: number, nome: string) { return axiosInstance.patch(`/admin/subtipos/${id}`, { nome }).then(r => r.data); },
-  deletarSubtipo(id: number) { return axiosInstance.delete(`/admin/subtipos/${id}`).then(r => r.data); },
-  listarBarreiras() { return axiosInstance.get<Barreira[]>('/admin/barreiras').then(r => r.data); },
-  criarBarreira(nome: string) { return axiosInstance.post<Barreira>('/admin/barreiras', { nome }).then(r => r.data); },
-  atualizarBarreira(id: number, nome: string) { return axiosInstance.patch(`/admin/barreiras/${id}`, { nome }).then(r => r.data); },
-  deletarBarreira(id: number) { return axiosInstance.delete(`/admin/barreiras/${id}`).then(r => r.data); },
-  listarAcessibilidades() { return axiosInstance.get<Acessibilidade[]>('/admin/acessibilidades').then(r => r.data); },
-  criarAcessibilidade(nome: string) { return axiosInstance.post<Acessibilidade>('/admin/acessibilidades', { nome }).then(r => r.data); },
-  atualizarAcessibilidade(id: number, nome: string) { return axiosInstance.patch(`/admin/acessibilidades/${id}`, { nome }).then(r => r.data); },
-  deletarAcessibilidade(id: number) { return axiosInstance.delete(`/admin/acessibilidades/${id}`).then(r => r.data); },
-  listarEmpresas() { return axiosInstance.get('/empresa').then(r => r.data); },
-  listarCandidatos() { return axiosInstance.get('/admin/candidatos').then(r => r.data); },
-  listarVagas() { return axiosInstance.get('/admin/vagas').then(r => r.data); },
-  buscarEmpresa(id: number) { return axiosInstance.get(`/empresa/${id}`).then(r => r.data); },
-  listarVagasPorEmpresa(empresaId: number) { return axiosInstance.get(`/vagas/empresa/${empresaId}/pesquisar`).then(r => r.data); },
-  criarVaga(empresaId: number, titulo: string, descricao: string, escolaridade: string, cidade?: string, estado?: string) {
-    return axiosInstance.post('/vagas', { empresaId, titulo, descricao, escolaridade, cidade, estado }).then(r => r.data);
-  },
   criarVagaCompleta(vagaData: any) { return axiosInstance.post('/vagas', vagaData).then(r => r.data); },
   atualizarVaga(vagaId: number, data: any) { return axiosInstance.put(`/vagas/${vagaId}`, data).then(r => r.data); },
   atualizarStatusVaga(vagaId: number, status: string) { return axiosInstance.patch(`/vagas/${vagaId}/status`, { status }).then(r => r.data); },
@@ -92,21 +79,12 @@ export const api = {
   vincularSubtiposAVaga(vagaId: number, subtipoIds: number[]) { return axiosInstance.post(`/vagas/${vagaId}/subtipos`, { subtipoIds }).then(r => r.data); },
   vincularAcessibilidadesAVaga(vagaId: number, acessibilidadeIds: number[]) { return axiosInstance.post(`/vagas/${vagaId}/acessibilidades`, { acessibilidadeIds }).then(r => r.data); },
   listarAcessibilidadesPossiveis(vagaId: number) { return axiosInstance.get<Acessibilidade[]>(`/vagas/${vagaId}/acessibilidades-disponiveis`).then(r => r.data); },
-  obterVaga(vagaId: number) { return axiosInstance.get<Vaga>(`/vagas/${vagaId}`).then(r => r.data); },
-
-  // Candidato
-  // Função ajustada: endpoint /candidato/perfil não existe no backend
-  // Use /candidato/:id se necessário
+  obterVaga(vagaId: number) { return axiosInstance.get<Vaga>(`/vagas/vaga/${vagaId}`).then(r => r.data); },
   getCandidato(id: number) {
     if (!id) throw new Error('ID do candidato é obrigatório');
     return axiosInstance.get<Candidato>(`/candidato/${id}`).then(r => r.data);
   },
   atualizarCandidato(id: number, data: any) { return axiosInstance.put(`/candidato/${id}`, data).then(r => r.data); },
-  // Função removida/ajustada: endpoint /candidato/vagas-compativeis não existe no backend
-  // Se necessário, implemente a rota no backend ou ajuste para usar um endpoint existente
-  // listarVagasCompativeis(candidatoId: number) {
-  //   return axiosInstance.get<Vaga[]>(`/candidato/${candidatoId}/vagas-compativeis`).then(r => r.data);
-  // },
   calcularCompatibilidade(vagaId: number) { return axiosInstance.get(`/candidato/compatibilidade/${vagaId}`).then(r => r.data); },
   avaliarEmpresa(empresaId: number, nota: number, comentario?: string, anonimato?: boolean) { return axiosInstance.post(`/empresa/${empresaId}/avaliacoes`, { nota, comentario, anonimato }).then(r => r.data); },
   listarVagasFavoritas() { return axiosInstance.get<Vaga[]>(`/candidato/favoritos`).then(r => r.data); },
@@ -131,16 +109,13 @@ export const api = {
   listarFAQ() { return axiosInstance.get(`/faq/list`).then(r => r.data); },
   registerCandidato(data: { nome: string; cpf?: string; telefone?: string; email?: string; escolaridade?: string; senha: string }) { return axiosInstance.post(`/candidato`, data).then(r => r.data); },
   registerCandidatoWithFiles(formData: FormData) {
-    // O axiosInstance já usa o baseURL correto e adiciona headers necessários.
-    // Não setar manualmente Content-Type, o axios faz isso ao enviar FormData.
     return axiosInstance.post('/candidato', formData).then(r => r.data);
   },
   requestPasswordReset(identifier: string) {
     return axiosInstance.post('/auth/forgot', { identifier }).then(r => r.data);
   },
-  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string }) { return axiosInstance.post(`/empresa`, data).then(r => r.data); },
-  checkCnpjExists(cnpj: string) { return axiosInstance.get(`/empresa/check-cnpj/${encodeURIComponent(cnpj)}`).then(r => r.data.exists); },
-  getEmpresaPerfil() { return axiosInstance.get(`/empresa/perfil`).then(r => r.data); },
+  registerEmpresa(data: { nome: string; cnpj?: string; email?: string; telefone?: string; senha: string; endereco?: string; areaAtuacao?: string; descricao?: string; logoUrl?: string }) { return axiosInstance.post(`/empresa`, data).then(r => r.data); },
+  getEmpresaPerfil() { return axiosInstance.get(`/empresa/me`).then(r => r.data); },
   atualizarEmpresaAutenticada(data: any) { return axiosInstance.put(`/empresa/perfil`, data).then(r => r.data); },
   uploadLogoEmpresaAutenticada(formData: FormData) { return axiosInstance.post(`/empresa/logo`, formData).then(r => r.data); },
   atualizarEmpresa(id: number, data: any) { return axiosInstance.put(`/empresa/${id}`, data).then(r => r.data); },
@@ -198,8 +173,40 @@ export const api = {
   obterDashboardCandidaturas(candidatoId: number) { return axiosInstance.get(`/candidaturas/candidato/${candidatoId}/dashboard`).then(r => r.data); },
   listarTiposComSubtiposPublico() { return axiosInstance.get<TipoComSubtipos[]>("/tipos/com-subtipos").then(r => r.data); },
   verificarCandidatura(vagaId: number, candidatoId: number) { return axiosInstance.get(`/candidaturas/vaga/${vagaId}/candidato/${candidatoId}/verificar`).then(r => r.data.applied).catch(() => false); },
+  uploadLaudo(candidatoId: number, file: File) {
+    const formData = new FormData();
+    formData.append('laudo', file);
+    return axiosInstance.post(`/candidatos/laudo/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: { candidatoId },
+    }).then(r => r.data);
+  },
+  getLaudo(candidatoId: number) {
+    return axiosInstance.get(`/candidato/${candidatoId}/laudo`, { responseType: 'blob' }).then(r => r);
+  },
+  deleteLaudo(candidatoId: number) {
+    return axiosInstance.delete(`/candidato/${candidatoId}/laudo`).then(r => r.data);
+  },
+};
+  aceitarTermos(candidatoId: number) { return axiosInstance.post(`/candidato/${candidatoId}/aceitar-termos`).then(r => r.data); },
+  desativarConta(candidatoId: number) { return axiosInstance.post(`/candidato/${candidatoId}/desativar-conta`).then(r => r.data); },
+  excluirConta(candidatoId: number, confirmar: string) { return axiosInstance.delete(`/candidato/${candidatoId}/excluir-conta`, { data: { confirmar } }).then(r => r.data); },
+  listarAdministradores() { return axiosInstance.get('/admin/usuarios').then(r => r.data); },
+  criarAdministrador(data: { nome: string; email: string; senha: string }) { return axiosInstance.post('/admin/usuarios', data).then(r => r.data); },
+  atualizarAdministrador(id: number, data: { nome?: string; email?: string; senha?: string }) { return axiosInstance.put(`/admin/usuarios/${id}`, data).then(r => r.data); },
+  deletarAdministrador(id: number) { return axiosInstance.delete(`/admin/usuarios/${id}`).then(r => r.data); },
+  obterAdministrador(id: number) { return axiosInstance.get(`/admin/usuarios/${id}`).then(r => r.data); },
+  listarCandidaturas(candidatoId: number, status?: string, periodo?: string) {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (periodo) params.append('periodo', periodo);
+    return axiosInstance.get(`/candidaturas/candidato/${candidatoId}?${params.toString()}`).then(r => r.data);
+  },
+  obterDashboardCandidaturas(candidatoId: number) { return axiosInstance.get(`/candidaturas/candidato/${candidatoId}/dashboard`).then(r => r.data); },
+  listarTiposComSubtiposPublico() { return axiosInstance.get<TipoComSubtipos[]>("/tipos/com-subtipos").then(r => r.data); },
+  verificarCandidatura(vagaId: number, candidatoId: number) { return axiosInstance.get(`/candidaturas/vaga/${vagaId}/candidato/${candidatoId}/verificar`).then(r => r.data.applied).catch(() => false); },
 
-  // Laudo (medical report)
+
   uploadLaudo(candidatoId: number, file: File) {
     const formData = new FormData();
     formData.append('laudo', file);

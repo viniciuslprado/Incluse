@@ -17,11 +17,7 @@ export default function AdminSidebar() {
         <NavLink to="/admin/candidatos" className={({ isActive }) => itemClass(isActive)}><FiUsers />Candidatos</NavLink>
         <NavLink to="/admin/vagas" className={({ isActive }) => itemClass(isActive)}><FiBriefcase />Vagas</NavLink>
         <hr className="my-2 border-gray-300 dark:border-gray-700" />
-        <NavLink to="/admin/tipos" className={({ isActive }) => itemClass(isActive)}>Tipos de Deficiência</NavLink>
-        <NavLink to="/admin/subtipos" className={({ isActive }) => itemClass(isActive)}>Subtipos</NavLink>
-        <NavLink to="/admin/barreiras" className={({ isActive }) => itemClass(isActive)}>Barreiras</NavLink>
-        <NavLink to="/admin/acessibilidades" className={({ isActive }) => itemClass(isActive)}>Acessibilidades</NavLink>
-        <NavLink to="/admin/vinculos" className={({ isActive }) => itemClass(isActive)}>Vínculos</NavLink>
+        <NavLink to="/admin/gestao-acessibilidade" className={({ isActive }) => itemClass(isActive)}>Gestão de Acessibilidade</NavLink>
         <button onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }} className="w-full text-left block px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">Sair</button>
       </div>
     </aside>

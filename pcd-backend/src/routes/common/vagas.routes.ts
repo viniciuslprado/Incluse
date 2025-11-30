@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 import { VagasController } from "../../controllers/common/vagas.controller";
 import { CandidaturasController } from "../../controllers/candidato/candidaturas.controller";
@@ -5,7 +6,8 @@ import { verifyJWT, ensureRole } from "../../middleware/auth";
 
 const r = Router();
 
-// Rotas públicas (leitura)
+// Rota para obter detalhes de uma vaga pelo id (apenas singular)
+r.get("/vaga/:id", VagasController.detalhar);
 
 // Rota pública para listar todas as vagas
 r.get("/", VagasController.listarPublicas);

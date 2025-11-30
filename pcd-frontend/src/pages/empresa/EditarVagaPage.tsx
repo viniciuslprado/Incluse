@@ -79,56 +79,52 @@ export default function EditarVagaPage() {
       try {
         const data = await api.obterVaga(Number(vagaId));
         setVaga(data);
-        
         // Campos editáveis
         setResumo(data.descricaoVaga?.resumo || '');
         setAtividades(data.descricaoVaga?.atividades || '');
         setSalarioMin(data.descricaoVaga?.salarioMin || '');
         setSalarioMax(data.descricaoVaga?.salarioMax || '');
-        
         // Jornada (parse "40h semanais" ou "160h mensais")
-                const jornadaStr = data.descricaoVaga?.jornada || '';
-                if (jornadaStr) {
-                  const match = jornadaStr.match(/(\d+)h\s+(semanais|mensais)/);
-                  if (match) {
-                    setJornadaHoras(match[1]);
-                    setJornadaPeriodo(match[2] === 'semanais' ? 'semanal' : 'mensal');
-                  } else {
-                    // Caso formato inesperado, mantém tudo em horas semanais por padrão
-                    const numMatch = jornadaStr.match(/(\d+)/);
-                    if (numMatch) setJornadaHoras(numMatch[1]);
-                  }
-                }
-        
+        const jornadaStr = data.descricaoVaga?.jornada || '';
+        if (jornadaStr) {
+          const match = jornadaStr.match(/(\d+)h\s+(semanais|mensais)/);
+          if (match) {
+            setJornadaHoras(match[1]);
+            setJornadaPeriodo(match[2] === 'semanais' ? 'semanal' : 'mensal');
+          } else {
+            // Caso formato inesperado, mantém tudo em horas semanais por padrão
+            const numMatch = jornadaStr.match(/(\d+)/);
+            if (numMatch) setJornadaHoras(numMatch[1]);
+          }
+        }
         // Listas expansíveis
         const benefs = data.beneficios?.map(b => b.descricao) || [];
         setBeneficios(benefs);
         setBeneficiosOriginais(benefs);
-        
         const habs = data.requisitos?.habilidadesTecnicas 
           ? JSON.parse(data.requisitos.habilidadesTecnicas) 
           : [];
         setHabilidadesTecnicas(habs);
         setHabilidadesOriginais(habs);
-        
         const comps = data.requisitos?.competencias 
           ? JSON.parse(data.requisitos.competencias) 
           : [];
         setCompetencias(comps);
         setCompetenciasOriginais(comps);
-        
         const acess = data.acessibilidades?.map(a => a.acessibilidadeId).filter((id): id is number => id !== undefined) || [];
         setAcessibilidades(acess);
         setAcessibilidadesOriginais(acess);
-        
         setSalarioMinOriginal(data.descricaoVaga?.salarioMin || 0);
-        
         // Carregar todas acessibilidades disponíveis
-        const todasAcess = await api.listarAcessibilidades();
+        const todasAcess = await api.listarAcessibilidadesPublicas();
         setTodasAcessibilidades(todasAcess);
-      } catch (error) {
-        console.error('Erro ao carregar vaga:', error);
-        setErro('Erro ao carregar dados da vaga');
+      } catch (error: any) {
+        if (error?.response?.status === 404) {
+          setErro('Esta vaga não existe mais ou foi removida do sistema.');
+        } else {
+          setErro('Erro ao carregar dados da vaga.');
+        }
+        setVaga(null);
       } finally {
         setLoading(false);
       }

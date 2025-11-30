@@ -5,13 +5,22 @@ import { api } from '../../lib/api';
 interface EmpresaData {
   id: number;
   nome: string;
+  nomeContato?: string;
   cnpj: string;
   email: string;
   telefone?: string;
+  quantidadeFuncionarios?: string;
+  cargo?: string;
+  cep?: string;
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
   endereco?: string;
   areaAtuacao?: string;
   descricao?: string;
-  logo?: string;
+  logoUrl?: string;
 }
 
 export default function DadosEmpresaPage() {
@@ -20,13 +29,22 @@ export default function DadosEmpresaPage() {
   const [empresa, setEmpresa] = useState<EmpresaData>({
     id: 0,
     nome: '',
+    nomeContato: '',
     cnpj: '',
     email: '',
     telefone: '',
+    quantidadeFuncionarios: '',
+    cargo: '',
+    cep: '',
+    rua: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
     endereco: '',
     areaAtuacao: '',
     descricao: '',
-    logo: ''
+    logoUrl: ''
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -35,8 +53,7 @@ export default function DadosEmpresaPage() {
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
-  const [autoSave, setAutoSave] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  // Removido autoSave e lastSaved
 
   useEffect(() => {
     async function carregarEmpresa() {
@@ -68,21 +85,7 @@ export default function DadosEmpresaPage() {
     }
   };
 
-  // Auto-save com debounce
-  useEffect(() => {
-    if (!autoSave || !empresa.nome) return;
-    
-    const timeoutId = setTimeout(async () => {
-      try {
-        await api.atualizarEmpresaAutenticada(empresa);
-        setLastSaved(new Date());
-      } catch (error) {
-        console.error('Erro no auto-save:', error);
-      }
-    }, 2000);
-
-    return () => clearTimeout(timeoutId);
-  }, [empresa, autoSave, empresaId]);
+  // Removido efeito de auto-save
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -187,191 +190,119 @@ export default function DadosEmpresaPage() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Logo da Empresa */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Logo da Empresa
-            </label>
-            <div className="flex items-center space-x-6">
-              <div className="flex-shrink-0">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
-                  {logoPreview || empresa.logo ? (
-                    <img 
-                      src={logoPreview || empresa.logo} 
-                      alt="Logo da empresa" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  )}
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              {/* Nome do Contato */}
+              <div>
+                <label htmlFor="nomeContato" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Contato *</label>
+                <input type="text" id="nomeContato" name="nomeContato" value={empresa.nomeContato || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" required />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-3">
-                  <label htmlFor="logo" className="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    Selecionar Logo
-                  </label>
-                  <input
-                    id="logo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="sr-only"
-                  />
-                  {logoFile && (
-                    <button
-                      type="button"
-                      onClick={handleUploadLogo}
-                      disabled={uploadingLogo}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      {uploadingLogo ? 'Enviando...' : 'Salvar Logo'}
-                    </button>
-                  )}
-                  {(logoPreview || empresa.logo) && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveLogo}
-                      className="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100"
-                    >
-                      Remover
-                    </button>
-                  )}
-                </div>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG até 2MB. Recomendado: 200x200px
-                </p>
+              {/* Nome da Empresa */}
+              <div>
+                <label htmlFor="nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa *</label>
+                <input type="text" id="nome" name="nome" value={empresa.nome} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" required />
+              </div>
+              {/* CNPJ */}
+              <div>
+                <label htmlFor="cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ *</label>
+                <input type="text" id="cnpj" name="cnpj" value={empresa.cnpj} onChange={handleInputChange} maxLength={18} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="00.000.000/0000-00" required />
+              </div>
+              {/* E-mail */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">E-mail Corporativo *</label>
+                <input type="email" id="email" name="email" value={empresa.email} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" required />
+              </div>
+              {/* Telefone */}
+              <div>
+                <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefone/Celular *</label>
+                <input type="tel" id="telefone" name="telefone" value={empresa.telefone || ''} onChange={handleInputChange} maxLength={15} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="(00) 00000-0000" required />
+              </div>
+              {/* Quantidade de Funcionários */}
+              <div>
+                <label htmlFor="quantidadeFuncionarios" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantidade de Funcionários *</label>
+                <input type="text" id="quantidadeFuncionarios" name="quantidadeFuncionarios" value={empresa.quantidadeFuncionarios || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Ex: 1-10, 11-50, 51-200..." required />
+              </div>
+              {/* Cargo */}
+              <div>
+                <label htmlFor="cargo" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Seu Cargo na Empresa *</label>
+                <input type="text" id="cargo" name="cargo" value={empresa.cargo || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Ex: Gerente de RH, CEO, Analista de Recrutamento" required />
               </div>
             </div>
-          </div>
-          {/* Nome da Empresa */}
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Nome da Empresa *
-            </label>
-            <input
-              type="text"
-              id="nome"
-              name="nome"
-              value={empresa.nome}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              required
-            />
-          </div>
-
-          {/* CNPJ */}
-          <div>
-            <label htmlFor="cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              CNPJ *
-            </label>
-            <input
-              type="text"
-              id="cnpj"
-              name="cnpj"
-              value={empresa.cnpj}
-              onChange={handleInputChange}
-              maxLength={18}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              placeholder="00.000.000/0000-00"
-              required
-            />
-          </div>
-
-          {/* E-mail */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              E-mail *
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={empresa.email}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              required
-            />
-          </div>
-
-          {/* Telefone */}
-          <div>
-            <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Telefone
-            </label>
-            <input
-              type="tel"
-              id="telefone"
-              name="telefone"
-              value={empresa.telefone || ''}
-              onChange={handleInputChange}
-              maxLength={15}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              placeholder="(00) 00000-0000"
-            />
-          </div>
-
-          {/* Endereço */}
-          <div>
-            <label htmlFor="endereco" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Endereço
-            </label>
-            <input
-              type="text"
-              id="endereco"
-              name="endereco"
-              value={empresa.endereco || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              placeholder="Rua, número, bairro, cidade - UF"
-            />
-          </div>
-
-          {/* Área de Atuação */}
-          <div>
-            <label htmlFor="areaAtuacao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Área de Atuação
-            </label>
-            <select
-              id="areaAtuacao"
-              name="areaAtuacao"
-              value={empresa.areaAtuacao || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-            >
-              <option value="">Selecione uma área</option>
-              <option value="Tecnologia">Tecnologia</option>
-              <option value="Saúde">Saúde</option>
-              <option value="Educação">Educação</option>
-              <option value="Financeiro">Financeiro</option>
-              <option value="Varejo">Varejo</option>
-              <option value="Indústria">Indústria</option>
-              <option value="Serviços">Serviços</option>
-              <option value="Consultoria">Consultoria</option>
-              <option value="Outros">Outros</option>
-            </select>
-          </div>
-
-          {/* Descrição da Empresa */}
-          <div>
-            <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Descrição da Empresa
-            </label>
-            <textarea
-              id="descricao"
-              name="descricao"
-              rows={4}
-              value={empresa.descricao || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              placeholder="Descreva sua empresa, missão, valores e compromisso com a inclusão..."
-            />
+            <div className="space-y-6">
+              {/* Logo da Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Logo da Empresa</label>
+                <div className="flex items-center space-x-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+                      {logoPreview || empresa.logoUrl ? (
+                        <img src={logoPreview || empresa.logoUrl} alt="Logo da empresa" className="w-full h-full object-cover" />
+                      ) : (
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3">
+                      <label htmlFor="logo" className="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Selecionar Logo
+                      </label>
+                      <input id="logo" type="file" accept="image/*" onChange={handleLogoChange} className="sr-only" />
+                      {logoFile && (
+                        <button type="button" onClick={handleUploadLogo} disabled={uploadingLogo} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                          {uploadingLogo ? 'Enviando...' : 'Salvar Logo'}
+                        </button>
+                      )}
+                      {(logoPreview || empresa.logoUrl) && (
+                        <button type="button" onClick={handleRemoveLogo} className="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100">
+                          Remover
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">PNG, JPG até 2MB. Recomendado: 200x200px</p>
+                  </div>
+                </div>
+              </div>
+              {/* Endereço da Empresa */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="cep" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CEP</label>
+                  <input type="text" id="cep" name="cep" value={empresa.cep || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="CEP" />
+                </div>
+                <div></div>
+                <div>
+                  <label htmlFor="rua" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rua/Logradouro</label>
+                  <input type="text" id="rua" name="rua" value={empresa.rua || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Nome da rua" />
+                </div>
+                <div>
+                  <label htmlFor="numero" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Número</label>
+                  <input type="text" id="numero" name="numero" value={empresa.numero || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Número" />
+                </div>
+                <div>
+                  <label htmlFor="bairro" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bairro</label>
+                  <input type="text" id="bairro" name="bairro" value={empresa.bairro || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Nome do bairro" />
+                </div>
+                <div>
+                  <label htmlFor="cidade" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cidade</label>
+                  <input type="text" id="cidade" name="cidade" value={empresa.cidade || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Nome da cidade" />
+                </div>
+                <div>
+                  <label htmlFor="estado" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
+                  <input type="text" id="estado" name="estado" value={empresa.estado || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="SP, RJ, MG..." />
+                </div>
+              </div>
+              {/* Descrição da Empresa */}
+              <div>
+                <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição da Empresa</label>
+                <textarea id="descricao" name="descricao" rows={4} value={empresa.descricao || ''} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100" placeholder="Descreva sua empresa, missão, valores e compromisso com a inclusão..." />
+              </div>
+            </div>
           </div>
 
           {/* Mensagens de Erro e Sucesso */}
@@ -397,33 +328,10 @@ export default function DadosEmpresaPage() {
             </div>
           )}
 
-          {/* Configurações de Auto-save */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={autoSave}
-                    onChange={(e) => setAutoSave(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Salvar automaticamente</span>
-                </label>
-                {lastSaved && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Último salvamento: {lastSaved.toLocaleTimeString()}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* ...removido bloco de auto-save... */}
 
           {/* Botões */}
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {autoSave ? 'Salvamento automático ativado' : 'Lembre-se de salvar suas alterações'}
-            </div>
+          <div className="flex justify-end items-center">
             <div className="flex space-x-4">
               <button
                 type="button"

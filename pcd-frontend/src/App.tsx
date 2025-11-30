@@ -15,10 +15,6 @@ import QuemSomosPage from "./pages/public/QuemSomosPage";
 import AcessibilidadePage from "./pages/AcessibilidadePage";
 import EmpresasParceirasPage from "./pages/empresa/EmpresasParceirasPage";
 import AdminPage from "./pages/admin/AdminPage";
-import BarreirasPage from "./pages/admin/BarreirasPage";
-import TiposPage from "./pages/admin/TiposPage";
-import SubtiposPage from "./pages/admin/SubtiposPage";
-import AcessibilidadesPage from "./pages/admin/AcessibilidadesPage";
 import NovaVagaPage from "./pages/empresa/NovaVagaPage";
 import PerfilCandidatoPage from "./pages/empresa/PerfilCandidatoPage";
 import VagaDetalhePage from "./pages/empresa/VagaDetalhePage";
@@ -66,6 +62,7 @@ import AdminDashboard from "./components/admin/panel/AdminDashboard";
 import AdminCompanies from "./components/admin/panel/AdminCompanies";
 import AdminCandidates from "./components/admin/panel/AdminCandidates";
 import AdminJobs from "./components/admin/panel/AdminJobs";
+import GestaoAcessibilidadePage from "./pages/admin/GestaoAcessibilidadePage";
 
 function AppRoutes() {
   const location = useLocation();
@@ -98,16 +95,10 @@ function AppRoutes() {
                   <Route path="empresas" element={<AdminCompanies />} />
                   <Route path="candidatos" element={<AdminCandidates />} />
                   <Route path="vagas" element={<AdminJobs />} />
+                  <Route path="gestao-acessibilidade" element={<GestaoAcessibilidadePage />} />
                 </Route>
               </Route>
-              <Route path="/admin" element={<AdminPage />}>
-                <Route index element={<Navigate to="tipos" replace />} />
-                <Route path="tipos" element={<TiposPage />} />
-                <Route path="subtipos" element={<SubtiposPage />} />
-                <Route path="barreiras" element={<BarreirasPage />} />
-                <Route path="acessibilidades" element={<AcessibilidadesPage />} />
-                <Route path="administradores" element={import('./pages/admin/AdminsCrudPage').then(m => <m.default />)} />
-              </Route>
+              {/* Rotas antigas de acessibilidade removidas. Use apenas a tela de Gestão de Acessibilidade. */}
 
               <Route path="/empresa/:id" element={<EmpresaPage />}>
                 <Route index element={<DashboardPage />} />

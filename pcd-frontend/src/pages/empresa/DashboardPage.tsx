@@ -240,23 +240,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Ações Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button
-          onClick={() => navigate(`/empresa/${empresaId}/anunciar`)}
-          className="flex items-center justify-center gap-3 p-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors"
-        >
-          <FiBriefcase className="w-6 h-6" />
-          <span className="font-semibold">Anunciar Nova Vaga</span>
-        </button>
-        <button
-          onClick={() => navigate(`/empresa/${empresaId}/vagas`)}
-          className="flex items-center justify-center gap-3 p-6 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
-        >
-          <FiUsers className="w-6 h-6" />
-          <span className="font-semibold">Ver Todas as Vagas</span>
-        </button>
-      </div>
+      {/* ...botões de ações rápidas removidos... */}
     </div>
   );
 }

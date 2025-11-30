@@ -48,8 +48,8 @@ export default function AcessibilidadesTab() {
   useEffect(() => {
     if (barreiraId) {
       setLoading(true);
-      api.listarAcessibilidades()
-        .then(data => setAcessibilidades(data.filter((a: any) => a.barreiraId === barreiraId)))
+      api.listarAcessibilidadesPorBarreira(barreiraId)
+        .then(setAcessibilidades)
         .catch(() => toast.addToast({ message: "Erro ao carregar acessibilidades", type: "error" }))
         .finally(() => setLoading(false));
     } else {
@@ -115,11 +115,14 @@ export default function AcessibilidadesTab() {
         <h2 className="text-xl font-semibold">Acessibilidades</h2>
         <Button variant="primary" onClick={openCreate} disabled={!barreiraId}>Criar Novo</Button>
       </div>
+      <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
+        <strong>Instrução:</strong> Cadastre recursos de acessibilidade e vincule a barreiras. Exemplo: Rampa, Elevador, Sinalização tátil...
+      </div>
       <div className="flex gap-4 mb-4">
         <div>
           <label className="block mb-1 font-medium">Tipo de Deficiência</label>
           <select
-            className="input w-full max-w-xs"
+            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
             value={tipoId ?? ''}
             onChange={e => setTipoId(Number(e.target.value) || null)}
           >
@@ -132,7 +135,7 @@ export default function AcessibilidadesTab() {
         <div>
           <label className="block mb-1 font-medium">Subtipo</label>
           <select
-            className="input w-full max-w-xs"
+            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
             value={subtipoId ?? ''}
             onChange={e => setSubtipoId(Number(e.target.value) || null)}
             disabled={!tipoId}
@@ -146,7 +149,7 @@ export default function AcessibilidadesTab() {
         <div>
           <label className="block mb-1 font-medium">Barreira</label>
           <select
-            className="input w-full max-w-xs"
+            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
             value={barreiraId ?? ''}
             onChange={e => setBarreiraId(Number(e.target.value) || null)}
             disabled={!subtipoId}

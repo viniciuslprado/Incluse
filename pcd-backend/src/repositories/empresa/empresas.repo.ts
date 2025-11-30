@@ -17,7 +17,17 @@ export const EmpresasRepo = {
   findById(id: number) {
     return prisma.empresa.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        nome: true,
+        cnpj: true,
+        email: true,
+        telefone: true,
+        endereco: true,
+        areaAtuacao: true,
+        descricao: true,
+        logoUrl: true,
+        createdAt: true,
         vagas: {
           orderBy: { createdAt: "desc" },
           select: { 
@@ -43,8 +53,18 @@ export const EmpresasRepo = {
     return prisma.empresa.findUnique({ where: { email } });
   },
 
-  create(nome: string, cnpj?: string, email?: string, senhaHash?: string) {
-    const data: any = { nome, cnpj, email };
+  create(
+    nome: string,
+    cnpj?: string,
+    email?: string,
+    senhaHash?: string,
+    telefone?: string,
+    endereco?: string,
+    areaAtuacao?: string,
+    descricao?: string,
+    logoUrl?: string
+  ) {
+    const data: any = { nome, cnpj, email, telefone, endereco, areaAtuacao, descricao, logoUrl };
     if (senhaHash) data.senhaHash = senhaHash;
     return (prisma as any).empresa.create({ data });
   },

@@ -37,8 +37,8 @@ export default function BarreirasTab() {
   useEffect(() => {
     if (subtipoId) {
       setLoading(true);
-      api.listarBarreiras()
-        .then(data => setBarreiras(data.filter((b: any) => b.subtipoId === subtipoId)))
+      api.listarBarreirasPorSubtipo(subtipoId)
+        .then(setBarreiras)
         .catch(() => toast.addToast({ message: "Erro ao carregar barreiras", type: "error" }))
         .finally(() => setLoading(false));
     } else {
@@ -104,11 +104,14 @@ export default function BarreirasTab() {
         <h2 className="text-xl font-semibold">Barreiras</h2>
         <Button variant="primary" onClick={openCreate} disabled={!subtipoId}>Criar Novo</Button>
       </div>
+      <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
+        <strong>Instrução:</strong> Cadastre barreiras e vincule a subtipos. Exemplo: Escada, Falta de intérprete, Iluminação inadequada...
+      </div>
       <div className="flex gap-4 mb-4">
         <div>
           <label className="block mb-1 font-medium">Tipo de Deficiência</label>
           <select
-            className="input w-full max-w-xs"
+            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
             value={tipoId ?? ''}
             onChange={e => setTipoId(Number(e.target.value) || null)}
           >
@@ -121,7 +124,7 @@ export default function BarreirasTab() {
         <div>
           <label className="block mb-1 font-medium">Subtipo</label>
           <select
-            className="input w-full max-w-xs"
+            className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
             value={subtipoId ?? ''}
             onChange={e => setSubtipoId(Number(e.target.value) || null)}
             disabled={!tipoId}

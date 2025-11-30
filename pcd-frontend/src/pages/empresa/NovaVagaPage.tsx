@@ -206,7 +206,7 @@ export default function NovaVagaPage() {
         localizacao,
         cidade: vagaData.cidade || undefined,
         estado: vagaData.estado || undefined,
-        areaId: vagaData.areaId || undefined,
+        areaId: vagaData.areaId || undefined, // mantido no payload, mas não exibe mensagem
         escolaridade: vagaData.formacao || undefined,
         exigeMudanca: vagaData.exigeMudanca,
         exigeViagens: vagaData.exigeViagens,
@@ -367,7 +367,6 @@ export default function NovaVagaPage() {
                   </option>
                 ))}
               </select>
-              areaId: vagaData.areaId || undefined,
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

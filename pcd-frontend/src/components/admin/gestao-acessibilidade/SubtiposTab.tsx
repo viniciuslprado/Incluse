@@ -91,13 +91,16 @@ export default function SubtiposTab() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Subtipos</h2>
+        <h2 className="text-xl font-semibold">Subtipos de Deficiência</h2>
         <Button variant="primary" onClick={openCreate} disabled={!tipoId}>Criar Novo</Button>
+      </div>
+      <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
+        <strong>Instrução:</strong> Cadastre subtipos para cada tipo de deficiência. Exemplo: Paraplegia, Surdez, Baixa visão...
       </div>
       <div className="mb-4">
         <label className="block mb-1 font-medium">Tipo de Deficiência</label>
         <select
-          className="input w-full max-w-xs"
+          className="w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-incluse-primary focus:border-incluse-primary transition shadow-sm appearance-none"
           value={tipoId ?? ''}
           onChange={e => setTipoId(Number(e.target.value) || null)}
         >

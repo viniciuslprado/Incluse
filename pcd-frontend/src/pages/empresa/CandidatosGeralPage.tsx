@@ -33,12 +33,21 @@ export default function CandidatosGeralPage() {
     try {
       setLoading(true);
       const vagasResult = await api.listarVagasPorEmpresa(empresaId);
-      const vagas = Array.isArray(vagasResult) ? vagasResult : vagasResult.data;
+      const vagas = Array.isArray(vagasResult) ? vagasResult : vagasResult?.data || [];
 
       const todosCandidatos: Candidato[] = [];
       for (const vaga of vagas) {
         try {
-          const candidatosVaga = await api.listarCandidatosPorVaga(vaga.id);
+          let candidatosVaga = await api.listarCandidatosPorVaga(vaga.id);
+          // Corrige caso venha { data: [...] }
+          if (candidatosVaga && typeof candidatosVaga === 'object' && 'data' in candidatosVaga && Array.isArray(candidatosVaga.data)) {
+            candidatosVaga = candidatosVaga.data;
+          }
+          if (!Array.isArray(candidatosVaga)) {
+            // Se 404 ou erro, apenas ignora esta vaga
+            console.warn('Nenhum candidato para a vaga', vaga.id);
+            continue;
+          }
           const candidatosComVaga = candidatosVaga.map((c: any) => ({
             ...c,
             vagaId: vaga.id,
@@ -48,6 +57,11 @@ export default function CandidatosGeralPage() {
           }));
           todosCandidatos.push(...candidatosComVaga);
         } catch (error) {
+          // Se erro 404, ignora a vaga
+          if (error && error.response && error.response.status === 404) {
+            console.warn(`Vaga ${vaga.id} não encontrada ou sem candidatos.`);
+            continue;
+          }
           console.error(`Erro ao carregar candidatos da vaga ${vaga.id}:`, error);
         }
       }
@@ -55,6 +69,7 @@ export default function CandidatosGeralPage() {
       setCandidatos(todosCandidatos);
     } catch (error) {
       console.error('Erro ao carregar candidatos:', error);
+      setCandidatos([]); // Garante array vazio para não quebrar hooks
     } finally {
       setLoading(false);
     }

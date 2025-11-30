@@ -85,6 +85,9 @@ export default function TiposTab() {
         <h2 className="text-xl font-semibold">Tipos de Deficiência</h2>
         <Button variant="primary" onClick={openCreate}>Criar Novo</Button>
       </div>
+      <div className="mb-4 bg-blue-50 border-l-4 border-blue-400 p-3 text-blue-900 rounded">
+        <strong>Instrução:</strong> Cadastre e gerencie os tipos de deficiência do sistema. Exemplo: Física, Visual, Auditiva...
+      </div>
       <div className="card p-0 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>

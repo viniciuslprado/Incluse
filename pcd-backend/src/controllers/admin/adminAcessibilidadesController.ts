@@ -7,6 +7,13 @@ export const adminAcessibilidadesController = {
     const acess = await adminAcessibilidadesService.listar();
     res.json(acess);
   },
+
+  async listarPorBarreira(req: Request, res: Response) {
+    const barreiraId = Number(req.params.barreiraId);
+    if (!barreiraId) return res.status(400).json({ error: 'barreiraId obrigatório' });
+    const acess = await adminAcessibilidadesService.listarPorBarreira(barreiraId);
+    res.json(acess);
+  },
   async criar(req: Request, res: Response) {
     const a = await adminAcessibilidadesService.criar(req.body.nome);
     res.status(201).json(a);

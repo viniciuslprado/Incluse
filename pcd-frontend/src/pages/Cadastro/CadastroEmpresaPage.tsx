@@ -22,6 +22,9 @@ export default function CadastroEmpresaPage() {
     bairro: '',
     cidade: '',
     estado: '',
+    areaAtuacao: '',
+    descricao: '',
+    logoUrl: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -137,14 +140,70 @@ export default function CadastroEmpresaPage() {
         setLoading(false);
         return;
       }
+      const endereco = [formData.rua, formData.numero, formData.bairro, formData.cidade, formData.estado]
+        .filter(Boolean).join(', ');
       const payload = {
         nome: formData.nomeEmpresa,
         cnpj: formData.cnpj,
         email: formData.email,
         telefone: formData.telefone,
         senha: formData.senha,
+        endereco: endereco || undefined,
+        areaAtuacao: formData.areaAtuacao || undefined,
+        descricao: formData.descricao || undefined,
+        logoUrl: formData.logoUrl || undefined,
       };
       await api.registerEmpresa(payload);
+                  {/* Área de Atuação */}
+                  <div>
+                    <label htmlFor="areaAtuacao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Área de Atuação
+                    </label>
+                    <input
+                      type="text"
+                      name="areaAtuacao"
+                      id="areaAtuacao"
+                      value={formData.areaAtuacao}
+                      onChange={handleInputChange}
+                      className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                      placeholder="Ex: Tecnologia, Saúde, Educação..."
+                      disabled={loading}
+                    />
+                  </div>
+
+                  {/* Descrição */}
+                  <div>
+                    <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Descrição da Empresa
+                    </label>
+                    <textarea
+                      name="descricao"
+                      id="descricao"
+                      value={formData.descricao}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                      placeholder="Conte um pouco sobre a empresa, missão, valores..."
+                      disabled={loading}
+                    />
+                  </div>
+
+                  {/* Logo (URL) */}
+                  <div>
+                    <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Logo (URL da imagem)
+                    </label>
+                    <input
+                      type="text"
+                      name="logoUrl"
+                      id="logoUrl"
+                      value={formData.logoUrl}
+                      onChange={handleInputChange}
+                      className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm"
+                      placeholder="https://..."
+                      disabled={loading}
+                    />
+                  </div>
       navigate('/login');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

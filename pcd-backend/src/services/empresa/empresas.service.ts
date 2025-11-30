@@ -2,7 +2,17 @@ import { EmpresasRepo } from "../../repositories/empresa/empresas.repo";
 import bcrypt from 'bcryptjs';
 
 export const EmpresasService = {
-  async criarEmpresa(nome: string, cnpj?: string, email?: string, senha?: string) {
+  async criarEmpresa(
+    nome: string,
+    cnpj?: string,
+    email?: string,
+    senha?: string,
+    telefone?: string,
+    endereco?: string,
+    areaAtuacao?: string,
+    descricao?: string,
+    logoUrl?: string
+  ) {
     if (!nome?.trim()) throw new Error("Nome é obrigatório");
     if (cnpj) {
       const cnpjNorm = cnpj.replace(/\D/g, '');
@@ -16,7 +26,17 @@ export const EmpresasService = {
       if (existe) throw new Error("E-mail já cadastrado");
     }
     const senhaHash = senha ? bcrypt.hashSync(senha, 8) : undefined;
-    return EmpresasRepo.create(nome.trim(), cnpj?.replace(/\D/g, ''), email?.trim().toLowerCase(), senhaHash);
+    return EmpresasRepo.create(
+      nome.trim(),
+      cnpj?.replace(/\D/g, ''),
+      email?.trim().toLowerCase(),
+      senhaHash,
+      telefone,
+      endereco,
+      areaAtuacao,
+      descricao,
+      logoUrl
+    );
   },
 
   async checkCnpjExists(cnpj: string): Promise<boolean> {
