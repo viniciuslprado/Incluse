@@ -9,7 +9,7 @@ async function main() {
   // 1. Remover tipos duplicados (mesmo nome padronizado)
   const tipos = await prisma.tipoDeficiencia.findMany();
   const nomePadronizado = (nome: string) => nome.trim().replace(/\s*\/\s*/g, '/').replace(/\s+/g, ' ');
-  const tiposPorNome: Record<string, typeof tipos[0][]> = {};
+  const tiposPorNome: Record<string, any[]> = {};
   for (const tipo of tipos) {
     const nome = nomePadronizado(tipo.nome);
     if (!tiposPorNome[nome]) tiposPorNome[nome] = [];
@@ -17,11 +17,12 @@ async function main() {
   }
   for (const nome in tiposPorNome) {
     const lista = tiposPorNome[nome];
-    if (lista.length > 1) {
+    if (lista && lista.length > 1) {
       // Mantém o primeiro, remove os outros
       const principal = lista[0];
       for (let i = 1; i < lista.length; i++) {
         const duplicado = lista[i];
+        if (!duplicado || !principal) continue;
         await prisma.subtipoDeficiencia.updateMany({ where: { tipoId: duplicado.id }, data: { tipoId: principal.id } });
         await prisma.tipoDeficiencia.delete({ where: { id: duplicado.id } });
         console.log(`Removido tipo duplicado: ${duplicado.nome}`);

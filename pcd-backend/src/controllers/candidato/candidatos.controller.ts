@@ -15,32 +15,33 @@ export const CandidatosController = {
         return res.status(404).json({ error: 'Candidato não encontrado' });
       }
       // Normalização dos campos esperados pelo frontend
+      const c: any = candidato as any;
       const normalizado = {
-        id: candidato.id,
-        nome: typeof candidato.nome === 'string' ? candidato.nome : '',
-        username: candidato.username ?? '',
-        email: candidato.email ?? '',
-        telefone: candidato.telefone ?? '',
-        cpf: candidato.cpf ?? '',
-        rua: candidato.rua ?? '',
-        bairro: candidato.bairro ?? '',
-        cidade: candidato.cidade ?? '',
-        estado: candidato.estado ?? '',
-        cep: candidato.cep ?? '',
-        escolaridade: candidato.escolaridade ?? '',
-        curso: candidato.curso ?? '',
-        sobre: candidato.sobre ?? '',
-        aceitaMudanca: candidato.aceitaMudanca ?? null,
-        aceitaViajar: candidato.aceitaViajar ?? null,
-        pretensaoSalarialMin: candidato.pretensaoSalarialMin ?? '',
-        areasFormacao: Array.isArray(candidato.areasFormacao) ? candidato.areasFormacao.map((a: any) => ({ id: a.areaId ?? a.id, nome: a.area?.nome ?? a.nome ?? '' })) : [],
-        subtipos: Array.isArray(candidato.subtipos) ? candidato.subtipos : [],
-        barras: Array.isArray(candidato.barras) ? candidato.barras : [],
-        curriculo: candidato.curriculo ?? '',
-        laudo: candidato.laudo ?? '',
-        isActive: candidato.isActive ?? true,
-        createdAt: candidato.createdAt,
-        updatedAt: candidato.updatedAt,
+        id: c.id,
+        nome: typeof c.nome === 'string' ? c.nome : '',
+        username: c.username ?? '',
+        email: c.email ?? '',
+        telefone: c.telefone ?? '',
+        cpf: c.cpf ?? '',
+        rua: c.rua ?? '',
+        bairro: c.bairro ?? '',
+        cidade: c.cidade ?? '',
+        estado: c.estado ?? '',
+        cep: c.cep ?? '',
+        escolaridade: c.escolaridade ?? '',
+        curso: c.curso ?? '',
+        sobre: c.sobre ?? '',
+        aceitaMudanca: c.aceitaMudanca ?? null,
+        aceitaViajar: c.aceitaViajar ?? null,
+        pretensaoSalarialMin: c.pretensaoSalarialMin ?? '',
+        areasFormacao: Array.isArray(c.areasFormacao) ? c.areasFormacao.map((a: any) => ({ id: a.areaId ?? a.id, nome: a.area?.nome ?? a.nome ?? '' })) : [],
+        subtipos: Array.isArray(c.subtipos) ? c.subtipos : [],
+        barras: Array.isArray(c.barras) ? c.barras : [],
+        curriculo: c.curriculo ?? '',
+        laudo: c.laudo ?? '',
+        isActive: c.isActive ?? true,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
       };
       res.json(normalizado);
     } catch (e: any) {
@@ -70,7 +71,7 @@ export const CandidatosController = {
     try {
       const id = Number(req.params.id);
       if (!id || isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
-      await CandidatosService.updateLaudo(id, null);
+      await CandidatosService.updateLaudo(id, '');
       res.json({ ok: true, message: 'Laudo excluído com sucesso' });
     } catch (e: any) {
       res.status(400).json({ error: e.message ?? 'Erro ao excluir laudo' });
@@ -112,23 +113,88 @@ export const CandidatosController = {
       }
       
       const c = await CandidatosService.criarCandidato({ nome: nomeVal, cpf, telefone, email, escolaridade, senha, curriculo: curriculoPath, laudo: laudoPath });
+
+      // Após criação, aceitar vinculação opcional de subtipos/barreiras enviados no formulário
+      // Suporta vários formatos (multipart/form-data envia strings):
+      // - 'subtipoIds' como JSON string ou array de ids
+      // - 'subtipoId' único + 'barreiraIds' como JSON string ou array
+      // - 'barreirasBySubtipo' como JSON string no formato { "<subtipoId>": [id,...], ... }
+      try {
+        const bodyAny: any = body as any;
+
+        // Helper para normalizar campos que podem vir como string JSON ou array
+        const parsePossibleArray = (v: any): number[] => {
+          if (!v) return [];
+          if (Array.isArray(v)) return v.map(Number).filter(n => !isNaN(n));
+          if (typeof v === 'string') {
+            try {
+              const parsed = JSON.parse(v);
+              if (Array.isArray(parsed)) return parsed.map(Number).filter(n => !isNaN(n));
+            } catch (_) {
+              // fallback: comma separated
+              return v.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n));
+            }
+          }
+          return [];
+        };
+
+        // vincular subtipos se fornecido
+        const subtipoIds = parsePossibleArray(bodyAny.subtipoIds ?? bodyAny.subtipos);
+        if (subtipoIds.length > 0) {
+          await CandidatosService.vincularSubtipos(c.id, subtipoIds);
+        }
+
+        // vincular barreiras: vários formatos
+        // 1) barreiraIds + subtipoId (único)
+        const barreiraIdsSingle = parsePossibleArray(bodyAny.barreiraIds ?? bodyAny.selectedBarreiras ?? bodyAny.barreiras);
+        const subtipoIdSingle = bodyAny.subtipoId ? Number(bodyAny.subtipoId) : undefined;
+        if (subtipoIdSingle && barreiraIdsSingle.length > 0) {
+          await CandidatosService.vincularBarreiras(c.id, Number(subtipoIdSingle), barreiraIdsSingle);
+        }
+
+        // 2) barreirasBySubtipo: objeto JSON string mapping subtipoId -> array of barreiraIds
+        if (bodyAny.barreirasBySubtipo) {
+          try {
+            const parsed = typeof bodyAny.barreirasBySubtipo === 'string' ? JSON.parse(bodyAny.barreirasBySubtipo) : bodyAny.barreirasBySubtipo;
+            if (parsed && typeof parsed === 'object') {
+              for (const key of Object.keys(parsed)) {
+                const sid = Number(key);
+                if (isNaN(sid)) continue;
+                const list = Array.isArray(parsed[key]) ? parsed[key].map(Number).filter((n: any) => !isNaN(n)) : [];
+                if (list.length > 0) {
+                  await CandidatosService.vincularBarreiras(c.id, sid, list);
+                }
+              }
+            }
+          } catch (e) {
+            // ignora erros de parse
+          }
+        }
+      } catch (e) {
+        // não falhar o cadastro se a vinculação falhar; apenas log para debug
+        console.error('[CandidatosController] erro ao vincular subtipos/barreiras após criação:', e);
+      }
+
       res.status(201).json(c);
     } catch (e: any) {
       console.error('[CandidatosController] erro ao criar candidato:', e);
       console.error('[CandidatosController] stack:', e.stack);
 
       if (e && e.code === 'P2002') {
-        const target = String(e.meta?.target || 'campo');
-        if (target.toLowerCase().includes('cpf')) {
+        const metaTarget = e.meta?.target;
+        let targets: string[] = [];
+        if (Array.isArray(metaTarget)) targets = metaTarget.map((t: any) => String(t).toLowerCase());
+        else if (typeof metaTarget === 'string') targets = [metaTarget.toLowerCase()];
+
+        if (targets.some(t => t.includes('cpf'))) {
           return res.status(400).json({ error: 'Já existe uma conta cadastrada neste CPF' });
         }
-        if (target.toLowerCase().includes('email')) {
+        if (targets.some(t => t.includes('email'))) {
           return res.status(400).json({ error: 'Já existe uma conta cadastrada neste e-mail' });
         }
-        if (target.toLowerCase().includes('id')) {
-          return res.status(400).json({ error: 'Já existe um registro semelhante cadastrado. Tente atualizar ou revise os dados enviados.' });
-        }
-        return res.status(400).json({ error: `Conflito de unicidade: ${target}` });
+        // fallback: return a clearer duplicate message including target(s)
+        const joined = targets.length ? targets.join(', ') : String(metaTarget || 'campo');
+        return res.status(400).json({ error: `Registro duplicado (campo: ${joined}). Tente atualizar ou revise os dados enviados.` });
       }
 
       const rawMessage = String(e?.message ?? 'Erro ao criar candidato');

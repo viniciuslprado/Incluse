@@ -233,6 +233,8 @@ export default function CadastroCandidatoPage() {
     setSelectedBarreiras([]);
   }, [selectedSubtipoId]);
 
+  
+
   const toggleBarreira = (id: number) => {
     setSelectedBarreiras(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -275,6 +277,9 @@ export default function CadastroCandidatoPage() {
       fd.append('cidade', formData.cidade);
       fd.append('estado', formData.estado);
       fd.append('senha', formData.senha);
+      // Enviar subtipo/barreiras selecionadas no mesmo request (reduz round-trips)
+      if (selectedSubtipoId) fd.append('subtipoId', String(selectedSubtipoId));
+      if (selectedBarreiras.length > 0) fd.append('barreiraIds', JSON.stringify(selectedBarreiras));
       // Enviar campos opcionais se preenchidos
       // Removed non-existent fields 'curso' and 'situacao'
       if (formData.areaFormacao) fd.append('areaFormacao', formData.areaFormacao);
@@ -291,21 +296,8 @@ export default function CadastroCandidatoPage() {
       const created: any = await api.registerCandidatoWithFiles(fd);
       const candidatoId = created?.id;
       if (!candidatoId) throw new Error('Resposta inválida do servidor');
-      // vincular barreiras (se houver)
-      if (selectedBarreiras.length > 0) {
-        // Para cada barreira selecionada, buscar o subtipo correspondente e vincular
-        for (const tipo of tiposDeficiencia) {
-          if (tipo.id !== selectedTipoId) continue;
-          for (const subtipo of tipo.subtipos) {
-            // Busca as barreiras desse subtipo
-            const barreirasSubtipo = await api.listarBarreirasPorSubtipo(subtipo.id);
-            const barreirasSelecionadas = barreirasSubtipo.filter((b: any) => selectedBarreiras.includes(b.id));
-            if (barreirasSelecionadas.length > 0) {
-              await api.vincularBarreirasACandidato(candidatoId, subtipo.id, barreirasSelecionadas.map((b: any) => b.id));
-            }
-          }
-        }
-      }
+      // Observação: se enviamos 'subtipoId' e 'barreiraIds' no FormData, o backend já fará a vinculação.
+      // Mantemos a lógica anterior removida para evitar chamadas redundantes.
       // redirect to candidate dashboard
       navigate(`/candidato/${candidatoId}`);
     } catch (err: any) {
@@ -552,7 +544,9 @@ export default function CadastroCandidatoPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Barreiras (marque as que se aplicam) *</label>
                 <div className="mt-2 space-y-2 max-h-40 overflow-auto">
-                  {barreiras.length === 0 && <p className="text-sm text-gray-500">Selecione um subtipo para carregar barreiras.</p>}
+                  {barreiras.length === 0 && (
+                    <p className="text-sm text-gray-500">Selecione um subtipo para carregar barreiras.</p>
+                  )}
                   {barreiras.map(b => (
                     <div key={b.id} className="flex items-center">
                       <input id={`b-${b.id}`} type="checkbox" checked={selectedBarreiras.includes(b.id)} onChange={() => toggleBarreira(b.id)} className="h-4 w-4" />

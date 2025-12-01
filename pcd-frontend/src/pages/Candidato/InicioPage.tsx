@@ -145,20 +145,37 @@ export default function InicioPage() {
     
     if (already) {
       try {
-        // await api.retirarCandidatura(vaga.id, candidatoId); // Função não existe mais
+        // Tenta remover usando rota que aceita candidatoId ou usa token (se autenticado)
+        await api.retirarCandidatura(candidatoId, vaga.id);
+        // atualizar UI localmente
         removeCandidatura(candidatoId, vaga.id);
         setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, applied: false } : v));
         window.dispatchEvent(new CustomEvent('candidaturaCreated'));
         addToast({ type: 'info', title: 'Removido', message: 'Candidatura removida.' });
         return true;
       } catch (err: any) {
+        // fallback: tentar rota que usa apenas vagaId (deriva candidato do token)
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            await fetch(`/candidaturas/vaga/${vaga.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            removeCandidatura(candidatoId, vaga.id);
+            setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, applied: false } : v));
+            window.dispatchEvent(new CustomEvent('candidaturaCreated'));
+            addToast({ type: 'info', title: 'Removido', message: 'Candidatura removida.' });
+            return true;
+          }
+        } catch (_) {}
+
         addToast({ type: 'error', title: 'Erro', message: err?.message ?? 'Não foi possível remover.' });
         return false;
       }
     }
     
     try {
-      // await api.candidatarVaga(vaga.id, candidatoId); // Função removida
+      // Use token-based request (não enviar candidatoId evita mismatch entre token/URL)
+      const resp = await api.candidatarVaga(undefined, vaga.id);
+      // sucesso: atualizar UI local e localStorage como cache
       addCandidatura(candidatoId, vaga);
       setVagas(prev => prev.map(v => v.id === vaga.id ? { ...v, applied: true } : v));
       window.dispatchEvent(new CustomEvent('candidaturaCreated'));
@@ -256,6 +273,7 @@ export default function InicioPage() {
                 onView={() => navigate(`/vagas/${v.id}`)}
                 onApply={() => handleToggleApply(v)}
                 onToggleSave={() => handleToggleSave(v)}
+                candidatoId={candidatoId}
               />
             ))
           )}

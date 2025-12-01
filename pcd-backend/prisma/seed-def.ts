@@ -7,7 +7,7 @@ export async function seedDeficiencia() {
   const prisma = new PrismaClient();
 
   // Função utilitária para upsert de barreiras
-  async function upsertBarreira(descricao) {
+  async function upsertBarreira(descricao: string) {
     return prisma.barreira.upsert({
       where: { descricao },
       update: {},
@@ -16,7 +16,7 @@ export async function seedDeficiencia() {
   }
 
   // Função utilitária para upsert de acessibilidade
-  async function upsertAcessibilidade(descricao) {
+  async function upsertAcessibilidade(descricao: string) {
     return prisma.acessibilidade.upsert({
       where: { descricao },
       update: {},
@@ -172,7 +172,7 @@ export async function seedDeficiencia() {
   });
 
   // Função utilitária para upsert de subtipos
-  async function upsertSubtipo(nome, tipoId) {
+  async function upsertSubtipo(nome: string, tipoId: number) {
     return prisma.subtipoDeficiencia.upsert({
       where: { tipoId_nome: { tipoId, nome } },
       update: {},
@@ -306,23 +306,7 @@ export async function seedDeficiencia() {
     data: barreirasDislexia.flatMap(bar => acessDislexia.map(acess => ({ barreiraId: bar.id, acessibilidadeId: acess.id }))),
     skipDuplicates: true,
   });
-  // Função utilitária para upsert de barreiras
-  async function upsertBarreira(descricao) {
-    return prisma.barreira.upsert({
-      where: { descricao },
-      update: {},
-      create: { descricao }
-    });
-  }
 
-  // Função utilitária para upsert de acessibilidade
-  async function upsertAcessibilidade(descricao) {
-    return prisma.acessibilidade.upsert({
-      where: { descricao },
-      update: {},
-      create: { descricao }
-    });
-  }
 
   // Substituir as transações de barreiras e acessibilidades por upserts
   // Exemplo para barreiras gerais:
@@ -405,19 +389,31 @@ export async function seedDeficiencia() {
 
   // Vincular barreiras específicas
   await prisma.subtipoBarreira.createMany({
-    data: idxCadeiraRodas.flatMap(i => barreirasCadeiraRodas.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    data: idxCadeiraRodas.flatMap(i => {
+      const s = subtiposMotora[i];
+      return s ? barreirasCadeiraRodas.map(bar => ({ subtipoId: s.id, barreiraId: bar.id })) : [];
+    }),
     skipDuplicates: true,
   });
   await prisma.subtipoBarreira.createMany({
-    data: idxMuletas.flatMap(i => barreirasMuletas.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    data: idxMuletas.flatMap(i => {
+      const s = subtiposMotora[i];
+      return s ? barreirasMuletas.map(bar => ({ subtipoId: s.id, barreiraId: bar.id })) : [];
+    }),
     skipDuplicates: true,
   });
   await prisma.subtipoBarreira.createMany({
-    data: idxAmputSup.flatMap(i => barreirasAmputSup.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    data: idxAmputSup.flatMap(i => {
+      const s = subtiposMotora[i];
+      return s ? barreirasAmputSup.map(bar => ({ subtipoId: s.id, barreiraId: bar.id })) : [];
+    }),
     skipDuplicates: true,
   });
   await prisma.subtipoBarreira.createMany({
-    data: idxNeuromotoras.flatMap(i => barreirasNeuromotoras.map(bar => ({ subtipoId: subtiposMotora[i].id, barreiraId: bar.id }))),
+    data: idxNeuromotoras.flatMap(i => {
+      const s = subtiposMotora[i];
+      return s ? barreirasNeuromotoras.map(bar => ({ subtipoId: s.id, barreiraId: bar.id })) : [];
+    }),
     skipDuplicates: true,
   });
 

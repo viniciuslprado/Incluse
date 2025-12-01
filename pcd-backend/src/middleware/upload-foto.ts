@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Diretório para fotos de perfil
-const fotoDir = path.join(path.dirname(path.fileURLToPath(import.meta.url)), '..', '..', 'uploads', 'fotos');
+const fotoDir = path.join(process.cwd(), 'uploads', 'fotos');
 if (!fs.existsSync(fotoDir)) {
   fs.mkdirSync(fotoDir, { recursive: true });
 }

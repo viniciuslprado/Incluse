@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Diretório para laudos médicos
-const laudoDir = path.join(path.dirname(path.fileURLToPath(import.meta.url)), '..', '..', 'uploads', 'laudos');
+const laudoDir = path.join(process.cwd(), 'uploads', 'laudos');
 if (!fs.existsSync(laudoDir)) {
   fs.mkdirSync(laudoDir, { recursive: true });
 }

@@ -214,7 +214,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => navigate(`/empresas/${empresaId}/vagas/${vaga.id}`)}
+                  onClick={() => navigate(`/empresa/${empresaId}/vagas/${vaga.id}`)}
                   className="ml-4 p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                   aria-label="Editar vaga"
                 >

@@ -1,4 +1,5 @@
 import { CandidatosRepo } from "../../repositories/candidato/candidatos.repo";
+import prisma from '../../prismaClient';
 // Importação compatível com CommonJS/ESM para bcryptjs
 import bcryptjs from 'bcryptjs';
 const bcrypt = bcryptjs;
@@ -63,6 +64,19 @@ export const CandidatosService = {
       const b = await BarreirasRepo.findById(id);
       if (!b) throw Object.assign(new Error(`Barreira ${id} não encontrada`), { status: 404 });
     }
+    // Garantia: cada barreira selecionada deve ter ao menos uma acessibilidade vinculada
+    const barreiraAcess = await prisma.barreiraAcessibilidade.findMany({ where: { barreiraId: { in: barreiraIds } }, select: { barreiraId: true } });
+    const barreirasComAcessSet = new Set(barreiraAcess.map(b => b.barreiraId));
+    const missing = barreiraIds.filter(id => !barreirasComAcessSet.has(id));
+    if (missing.length) {
+      // busca nomes para mensagem mais amigável
+      const nomes = await Promise.all(missing.map(async (id) => {
+        const bb: any = await BarreirasRepo.findById(id);
+        return bb ? `${bb.id} - ${bb.descricao}` : String(id);
+      }));
+      throw Object.assign(new Error(`As seguintes barreiras não têm acessibilidades vinculadas: ${nomes.join(', ')}`), { status: 400 });
+    }
+
     await CandidatosRepo.replaceBarreiras(candidatoId, subtipoId, barreiraIds);
     return { ok: true };
   },
@@ -72,8 +86,8 @@ export const CandidatosService = {
     if (!nome?.trim()) throw Object.assign(new Error('Nome é obrigatório'), { status: 400 });
     if (!senha || senha.length < 6) throw Object.assign(new Error('Senha inválida (mínimo 6 caracteres)'), { status: 400 });
     // normaliza e valida
-    const normalizedEmail = email?.trim().toLowerCase() ?? undefined;
-    const normalizedCpf = cpf ? cpf.replace(/\D/g, '') : undefined;
+    const normalizedEmail = email?.trim() ? email.trim().toLowerCase() : undefined;
+    const normalizedCpf = cpf?.replace ? cpf.replace(/\D/g, '') : undefined;
     if (normalizedCpf && normalizedCpf.length !== 11) throw Object.assign(new Error('CPF inválido (deve conter 11 dígitos)'), { status: 400 });
 
     // Validação de telefone/celular: aceita 10 a 13 dígitos (com ou sem DDI)
@@ -94,7 +108,31 @@ export const CandidatosService = {
       if (c) throw Object.assign(new Error('Já existe uma conta cadastrada com este CPF'), { status: 400 });
     }
     const senhaHash = bcrypt.hashSync(senha, 8);
-    const created = await CandidatosRepo.create({ nome: nome.trim(), cpf: normalizedCpf, email: normalizedEmail, telefone, escolaridade: escolaridade ?? 'Não informado', curso, situacao, senhaHash, curriculo, laudo });
+    const createData: any = { nome: nome.trim(), cpf: normalizedCpf, email: normalizedEmail, telefone, escolaridade: escolaridade ?? 'Não informado', curso, situacao, senhaHash, curriculo, laudo };
+    let created: any;
+    try {
+      created = await CandidatosRepo.create(createData);
+    } catch (err: any) {
+      // Se o Prisma indicar conflito de unicidade no campo `id`, pode ser sequência do Postgres fora de sincronia.
+      if (err && err.code === 'P2002') {
+        const metaTarget = err.meta?.target;
+        const targets = Array.isArray(metaTarget) ? metaTarget.map((t: any) => String(t).toLowerCase()) : [String(metaTarget || '')];
+        if (targets.some((t: string) => t.includes('id'))) {
+          try {
+            // Ajusta a sequência do id para o maior id atual + 1 e tenta criar novamente
+            await prisma.$executeRawUnsafe("SELECT setval(pg_get_serial_sequence('candidato','id'), (SELECT COALESCE(MAX(id),0)+1 FROM candidato))");
+            created = await CandidatosRepo.create(createData);
+          } catch (e2: any) {
+            // se falhar, reaproveita o erro original para tratamento acima
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
     // don't return senhaHash to caller
     if (created) {
       const c: any = created;

@@ -352,6 +352,21 @@ export const api = {
     return axiosInstance.post(`/candidato/vagas-salvas/${vagaId}`).then(r => r.data);
   },
 
+  // --- CANDIDATURAS ---
+  candidatarVaga(candidatoId: number | undefined | null, vagaId: number) {
+    if (!vagaId || isNaN(Number(vagaId))) return Promise.reject(new Error('ID da vaga ausente ou inválido.'));
+    // Se candidatoId for fornecido, envie no corpo; caso contrário, confie no token (rota protegida)
+    if (candidatoId && !isNaN(Number(candidatoId))) {
+      return axiosInstance.post(`/candidaturas/${vagaId}`, { candidatoId }).then(r => r.data);
+    }
+    return axiosInstance.post(`/candidaturas/${vagaId}`).then(r => r.data);
+  },
+
+  retirarCandidatura(candidatoId: number, vagaId: number) {
+    if (!candidatoId || isNaN(Number(candidatoId))) return Promise.reject(new Error('ID do candidato ausente ou inválido.'));
+    return axiosInstance.delete(`/candidaturas/vaga/${vagaId}/candidato/${candidatoId}`).then(r => r.data);
+  },
+
   // --- AUTH ---
   login(identifier: string, senha: string, userType: string) {
     return axiosInstance.post(`/auth/login`, { identifier, senha, userType }).then(r => r.data);

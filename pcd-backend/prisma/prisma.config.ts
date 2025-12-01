@@ -1,10 +1,10 @@
-import { defineConfig } from '@prisma/internals';
-
-export default defineConfig({
+const config = {
   datasource: {
     url: process.env.DATABASE_URL,
   },
   migrations: {
     seed: 'tsx ./prisma/seed.ts',
   },
-});
+} as const;
+
+export default config;

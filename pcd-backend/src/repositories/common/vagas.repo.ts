@@ -57,31 +57,6 @@ export const VagasRepo = {
       }
     });
   },
-  list(empresaId?: number, filters?: any, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
-    const where: any = {};
-    if (empresaId) where.empresaId = empresaId;
-    if (filters?.status) where.status = filters.status;
-    if (filters?.areaId) where.areaId = Number(filters.areaId);
-    if (filters?.modeloTrabalho) where.modeloTrabalho = filters.modeloTrabalho;
-    return prisma.vaga.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        empresa: { select: { id: true, nome: true, email: true, cnpj: true } },
-        area: { select: { id: true, nome: true } },
-        descricaoVaga: true,
-        requisitos: true,
-        beneficios: true,
-        processos: { orderBy: { ordem: 'asc' } },
-        subtiposAceitos: { include: { subtipo: { select: { id: true, nome: true } } } },
-        acessibilidades: { include: { acessibilidade: { select: { id: true, descricao: true } } } },
-        _count: { select: { candidaturas: true } }
-      }
-    });
-  },
 
   async count(empresaId?: number, filters?: any) {
     const where: any = {};
@@ -280,7 +255,7 @@ export const VagasRepo = {
   },
 
   async getFiltros(empresaId: number) {
-    const areas = await prisma.vaga.findMany({ where: { empresaId, area: { not: null } }, select: { area: true }, distinct: ['area'] });
+    const areas = await prisma.vaga.findMany({ where: { empresaId, areaId: { not: null } }, select: { area: true }, distinct: ['areaId'] });
     const modelos = await prisma.vaga.findMany({ where: { empresaId, modeloTrabalho: { not: null } }, select: { modeloTrabalho: true }, distinct: ['modeloTrabalho'] });
     return { areas: areas.map(v => v.area).filter(Boolean), modelosTrabalho: modelos.map(v => v.modeloTrabalho).filter(Boolean), status: ['ativa', 'pausada', 'encerrada'] };
   },

@@ -1,6 +1,8 @@
 // import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Vaga } from '../../types';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
+import { isVagaApplied } from '../../lib/localStorage';
 
 
 type Props = {
@@ -14,21 +16,40 @@ type Props = {
   showStatus?: boolean;
 };
 
-export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited: _isCompanyFavorited, onToggleCompanyFavorite: _onToggleCompanyFavorite }: Props) {
+export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited: _isCompanyFavorited, onToggleCompanyFavorite: _onToggleCompanyFavorite, candidatoId, showStatus }: Props) {
 
   
   // Compatibilidade e candidatura já vêm do backend (vaga.matchPercent, vaga.compatibility, vaga.applied, etc.)
   const matchValue = vaga?.matchPercent ?? vaga?.compatibility ?? 0;
   const match = matchValue <= 1 ? matchValue * 100 : matchValue;
-  const isSaved = Boolean(vaga?.salvo || vaga?.isSaved || vaga?.saved);
-  const applied = vaga?.applied;
+  const isSavedProp = Boolean(vaga?.salvo || vaga?.isSaved || vaga?.saved);
+  const [isSaved, setIsSaved] = useState<boolean>(isSavedProp);
+
+  // Sync local optimistic state when vaga prop changes
+  useEffect(() => {
+    setIsSaved(isSavedProp);
+  }, [isSavedProp]);
+
+  // Applied state: prefer server-provided `vaga.applied`, fallback to localStorage cache when available
+  const [applied, setApplied] = useState<boolean>(() => Boolean(vaga?.applied));
+  useEffect(() => {
+    const fromServer = Boolean(vaga?.applied);
+    const fromLocal = typeof candidatoId === 'number' ? isVagaApplied(candidatoId, vaga?.id) : false;
+    setApplied(fromServer || fromLocal);
+  }, [vaga, candidatoId]);
+  // `applied` local state derived above
 
   return (
     <article className="relative bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer">
       {/* Ícone de favorito no canto superior direito */}
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); onToggleSave && onToggleSave(); }}
+        onClick={(e) => { 
+          e.stopPropagation(); 
+          // optimistic toggle for immediate UI feedback
+          setIsSaved(s => !s);
+          onToggleSave && onToggleSave(); 
+        }}
         className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-lg transition-colors"
         aria-label={isSaved ? 'Remover dos favoritos' : 'Favoritar vaga'}
       >
@@ -86,9 +107,11 @@ export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave,
                 className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300"
               />
             </div>
-            <span className="text-sm font-medium text-gray-700">
-              {`${Math.round(match)}% de compatibilidade`}
-            </span>
+            {Math.round(match) > 0 && (
+              <span className="text-sm font-medium text-gray-700">
+                {`${Math.round(match)}% de compatibilidade`}
+              </span>
+            )}
           </div>
 
           {/* Ações */}
@@ -108,10 +131,10 @@ export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave,
                   e.stopPropagation(); 
                   if (onApply) {
                     const success = await onApply();
-                    if (success) {
-                      // Atualizar estado local após candidatura bem-sucedida
-                       // setIsApplied(!applied);
-                    }
+                        if (success) {
+                          // atualizar estado local após candidatura bem-sucedida se necessário
+                          setApplied(true);
+                        }
                   }
                 }}
                 // disabled={checkingApplication}

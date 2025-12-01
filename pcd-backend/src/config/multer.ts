@@ -1,14 +1,10 @@
 import { diskStorage } from 'multer';
 import path, { extname, resolve } from 'path';
 import { mkdirSync } from 'fs';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export default {
   upload: (folder: string) => {
-    const dir = resolve(__dirname, '..', '..', folder);
+    const dir = resolve(process.cwd(), folder);
     try {
       mkdirSync(dir, { recursive: true });
     } catch (e) {}

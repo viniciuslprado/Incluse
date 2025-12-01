@@ -102,30 +102,18 @@ export const MatchService = {
     // Buscar candidato
     const candidato = await CandidatosRepo.findById(candidatoId);
     if (!candidato) throw new Error("Candidato não encontrado");
-    // Usar barreiras já presentes no objeto candidato
-    const barreiras = Array.isArray(candidato.barreiras) ? candidato.barreiras : [];
+
     // Buscar todas as vagas ativas
     const vagas = await VagasRepo.findAllAtivas();
-    // Para cada vaga, buscar acessibilidades (array de string)
-    const vagasComAcess = await Promise.all(
+
+    // Para cada vaga, usar a função consolidada em CandidatosRepo.checkVagaMatch
+    const resultados = await Promise.all(
       vagas.map(async (vaga: any) => {
-        let acessibilidades = await VagasRepo.listarAcessibilidades(vaga.id);
-        if (!Array.isArray(acessibilidades)) acessibilidades = [];
-        return { ...vaga, acessibilidades };
+        const ok = await CandidatosRepo.checkVagaMatch(candidatoId, vaga.id);
+        return ok ? vaga : null;
       })
     );
-    // Montar objeto candidato
-    const candidatoObj = {
-      id: candidato.id,
-      escolaridade: candidato.escolaridade,
-      barreiras: barreiras.map((b: any) => b.tipo || b),
-      subtipos: Array.isArray(candidato.subtipos) ? candidato.subtipos : []
-    };
-    // Filtrar vagas compatíveis
-    const vagasRecomendadas = vagasComAcess.filter((vaga: any) =>
-      matchVaga(candidatoObj, vaga)
-    );
-    // Retornar apenas vagas que passaram no match
-    return vagasRecomendadas;
+
+    return resultados.filter(Boolean) as any[];
   }
 };

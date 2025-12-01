@@ -58,14 +58,14 @@ export default function VagaDetalhePage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <button
-          onClick={() => navigate(`/empresas/${id}/gestao-vagas`)}
+          onClick={() => navigate(`/empresa/${id}/gestao-vagas`)}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
         >
           <FiArrowLeft className="w-5 h-5" />
           Voltar
         </button>
         <button
-          onClick={() => navigate(`/empresas/${id}/vagas/${vagaId}/editar`)}
+          onClick={() => navigate(`/empresa/${id}/vagas/${vagaId}/editar`)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <FiEdit className="w-4 h-4" />

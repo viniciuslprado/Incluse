@@ -99,7 +99,7 @@ export default function GestaoVagasPage() {
           <p className="text-gray-600 dark:text-gray-400 mt-2">Gerencie todas as suas vagas em um só lugar</p>
         </div>
         <button
-          onClick={() => navigate(`/empresas/${empresaId}/anunciar`)}
+          onClick={() => navigate(`/empresa/${empresaId}/anunciar`)}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
         >
           + Nova Vaga
@@ -243,14 +243,14 @@ export default function GestaoVagasPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => navigate(`/empresas/${empresaId}/vagas/${vaga.id}/editar`)}
+                          onClick={() => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/editar`) }
                           className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="Editar"
                         >
                           <FiEdit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => navigate(`/empresas/${empresaId}/vagas/${vaga.id}/candidatos`)}
+                          onClick={() => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/candidatos`) }
                           className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
                           title="Ver candidatos"
                         >
@@ -278,8 +278,8 @@ export default function GestaoVagasPage() {
                     { label: 'Criada em', value: new Date(vaga.createdAt).toLocaleDateString('pt-BR') },
                   ],
                   actions: [
-                    { label: 'Editar', onClick: () => navigate(`/empresas/${empresaId}/vagas/${vaga.id}/editar`), variant: 'blue' },
-                    { label: 'Ver candidatos', onClick: () => navigate(`/empresas/${empresaId}/vagas/${vaga.id}/candidatos`), variant: 'purple' },
+                    { label: 'Editar', onClick: () => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/editar`), variant: 'blue' },
+                    { label: 'Ver candidatos', onClick: () => navigate(`/empresa/${empresaId}/vagas/${vaga.id}/candidatos`), variant: 'purple' },
 
                     vaga.status === 'ativa'
                       ? { label: 'Arquivar', onClick: () => alterarStatus(vaga.id, 'encerrada'), variant: 'yellow', full: true }

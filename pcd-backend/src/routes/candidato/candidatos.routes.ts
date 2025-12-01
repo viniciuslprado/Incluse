@@ -88,7 +88,8 @@ router.get('/:id/vagas-recomendadas', async (req, res) => {
 		const vagas = await MatchService.matchVagasForCandidato(id);
 		res.json(vagas);
 	} catch (e) {
-		res.status(500).json({ error: e.message || 'Erro ao buscar vagas recomendadas' });
+		const err: any = e;
+		res.status(500).json({ error: err?.message || 'Erro ao buscar vagas recomendadas' });
 	}
 });
 
@@ -114,6 +115,28 @@ router.post("/curriculo", verifyJWT, ensureRole('candidato'), uploadCurriculo.si
 router.post("/:id/favoritos/:vagaId", CandidatosController.favoritarVaga);
 router.delete("/:id/favoritos/:vagaId", CandidatosController.desfavoritarVaga);
 router.get("/:id/favoritos", CandidatosController.listarFavoritos);
+
+// Compatibilidade com frontend: rotas que usam token para derivar candidato (sem :id)
+router.post("/favoritos/:vagaId", verifyJWT, async (req, res) => {
+	const candidatoId = (req as any).user?.id;
+	if (!candidatoId) return res.status(401).json({ error: 'Usuário não autenticado' });
+	req.params.id = String(candidatoId);
+	return CandidatosController.favoritarVaga(req as any, res as any);
+});
+
+router.delete("/favoritos/:vagaId", verifyJWT, async (req, res) => {
+	const candidatoId = (req as any).user?.id;
+	if (!candidatoId) return res.status(401).json({ error: 'Usuário não autenticado' });
+	req.params.id = String(candidatoId);
+	return CandidatosController.desfavoritarVaga(req as any, res as any);
+});
+
+router.get("/favoritos", verifyJWT, async (req, res) => {
+	const candidatoId = (req as any).user?.id;
+	if (!candidatoId) return res.status(401).json({ error: 'Usuário não autenticado' });
+	req.params.id = String(candidatoId);
+	return CandidatosController.listarFavoritos(req as any, res as any);
+});
 
 // Notificações (temporário sem auth para desenvolvimento)
 router.get("/:id/notificacoes", NotificacoesController.listar);

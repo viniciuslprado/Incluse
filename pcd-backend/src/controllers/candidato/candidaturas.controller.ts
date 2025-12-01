@@ -4,8 +4,10 @@ import { NotificacoesService } from "../../services/common/notificacoes.service"
 
 export class CandidaturasController {
   static async criar(req: Request, res: Response) {
-    const vagaId = Number(req.params.id);
-    const { candidatoId } = req.body;
+    // aceitar vagaId vindo de diferentes formatos de rota (/candidaturas/:id) ou (/vaga/:vagaId/...) 
+    const vagaId = Number(req.params.vagaId ?? req.params.id);
+    // candidatoId pode vir no body, nos params ou ser derivado do token
+    let candidatoId = Number(req.body?.candidatoId ?? req.params?.candidatoId ?? req.auth?.sub);
 
     console.log('[CandidaturasController.criar] ====== INÍCIO ======');
     console.log('[CandidaturasController.criar] req.params:', req.params);
@@ -16,6 +18,16 @@ export class CandidaturasController {
     if (!vagaId || !candidatoId) {
       console.log('[CandidaturasController.criar] Dados inválidos - retornando erro 400');
       return res.status(400).json({ error: "Dados inválidos" });
+    }
+
+    // Se o solicitante estiver autenticado como candidato, use o ID do token (evita tentativas de ceder a outro candidato)
+    if (req.auth && req.auth.role === 'candidato') {
+      const tokenId = Number(req.auth.sub);
+      if (!tokenId || isNaN(tokenId)) {
+        return res.status(401).json({ error: 'Token inválido' });
+      }
+      // Sobrescreve candidatoId com o do token para evitar impersonação
+      candidatoId = tokenId;
     }
 
     try {
@@ -237,10 +249,16 @@ export class CandidaturasController {
 
   static async retirarCandidatura(req: Request, res: Response) {
     const vagaId = Number(req.params.vagaId);
-    const candidatoId = Number(req.params.candidatoId);
-    
-    console.log('[CandidaturasController.retirarCandidatura] vagaId:', vagaId, 'candidatoId:', candidatoId);
-    
+    let candidatoId = Number(req.params.candidatoId ?? req.body?.candidatoId ?? req.auth?.sub);
+
+    console.log('[CandidaturasController.retirarCandidatura] vagaId:', vagaId, 'candidatoId:', candidatoId, 'auth:', req.auth?.sub);
+
+    if (req.auth && req.auth.role === 'candidato') {
+      const tokenId = Number(req.auth.sub);
+      if (!tokenId || isNaN(tokenId)) return res.status(401).json({ error: 'Token inválido' });
+      candidatoId = tokenId;
+    }
+
     if (!vagaId || !candidatoId) return res.status(400).json({ error: "Dados inválidos" });
     
     try {

@@ -374,7 +374,7 @@ function ComoFunciona() {
         </div>
         <div className="mt-10 flex justify-center gap-6">
           <Link to="/cadastro/candidato" className="px-8 py-3 bg-incluse-primary text-white rounded-full">Cadastrar meu currículo</Link>
-          <Link to="/cadastro/empresas" className="px-8 py-3 border-2 border-incluse-primary rounded-full">Anunciar vaga gratuitamente</Link>
+          <Link to="/cadastro/empresa" className="px-8 py-3 border-2 border-incluse-primary rounded-full">Anunciar vaga gratuitamente</Link>
         </div>
       </div>
     </section>

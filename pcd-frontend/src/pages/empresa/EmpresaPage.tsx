@@ -45,8 +45,8 @@ export default function EmpresaPage() {
 
   // Redirecionar para dashboard se estiver na rota raiz da empresa
   useEffect(() => {
-    if (location.pathname === `/empresas/${empresaId}`) {
-      navigate(`/empresas/${empresaId}/dashboard`, { replace: true });
+    if (location.pathname === `/empresa/${empresaId}`) {
+      navigate(`/empresa/${empresaId}/dashboard`, { replace: true });
     }
   }, [location.pathname, empresaId, navigate]);
 
@@ -68,14 +68,14 @@ export default function EmpresaPage() {
   const nome = empresa?.nome ?? 'Empresa';
 
   const menuItems = [
-    { to: `/empresas/${empresaId}/dashboard`, icon: FiHome, label: 'Dashboard' },
-    { to: `/empresas/${empresaId}/anunciar`, icon: FiPlusCircle, label: 'Anunciar Vaga' },
-    { to: `/empresas/${empresaId}/gestao-vagas`, icon: FiList, label: 'Gestão de Vagas' },
-    { to: `/empresas/${empresaId}/candidatos`, icon: FiUsers, label: 'Candidatos' },
+    { to: `/empresa/${empresaId}/dashboard`, icon: FiHome, label: 'Dashboard' },
+    { to: `/empresa/${empresaId}/anunciar`, icon: FiPlusCircle, label: 'Anunciar Vaga' },
+    { to: `/empresa/${empresaId}/gestao-vagas`, icon: FiList, label: 'Gestão de Vagas' },
+    { to: `/empresa/${empresaId}/candidatos`, icon: FiUsers, label: 'Candidatos' },
     // Notificações acima de Dados da Empresa
-    { to: `/empresas/${empresaId}/notificacoes`, icon: FiBell, label: 'Notificações' },
-    { to: `/empresas/${empresaId}/dados`, icon: FiFileText, label: 'Dados da Empresa' },
-    { to: `/empresas/${empresaId}/configuracoes`, icon: FiSettings, label: 'Configurações' },
+    { to: `/empresa/${empresaId}/notificacoes`, icon: FiBell, label: 'Notificações' },
+    { to: `/empresa/${empresaId}/dados`, icon: FiFileText, label: 'Dados da Empresa' },
+    { to: `/empresa/${empresaId}/configuracoes`, icon: FiSettings, label: 'Configurações' },
   ];
 
   return (

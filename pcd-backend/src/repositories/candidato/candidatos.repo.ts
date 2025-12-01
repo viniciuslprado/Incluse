@@ -105,21 +105,71 @@ export const CandidatosRepo = {
   },
 
   async checkVagaMatch(candidatoId: number, vagaId: number) {
-    const candidatoSubtipos = await prisma.candidatoSubtipo.findMany({
-      where: { candidatoId }
-    });
-    
-    if (!candidatoSubtipos.length) return false;
-    
-    const vagaSubtipos = await prisma.vagaSubtipo.findMany({
-      where: { vagaId }
-    });
-    
-    const hasSubtipoMatch = candidatoSubtipos.some((cs: any) =>
-      vagaSubtipos.some((vs: any) => vs.subtipoId === cs.subtipoId)
-    );
-    
-    return hasSubtipoMatch;
+    // Busca os subtipos do candidato
+    const candidatoSubtipos = await prisma.candidatoSubtipo.findMany({ where: { candidatoId } });
+
+    // Subtipos aceitos pela vaga
+    const vagaSubtipos = await prisma.vagaSubtipo.findMany({ where: { vagaId }, select: { subtipoId: true } });
+    const vagaSubtiposSet = new Set(vagaSubtipos.map(vs => vs.subtipoId));
+    // Acessibilidades configuradas para a vaga
+    const vagaAcess = await prisma.vagaAcessibilidade.findMany({ where: { vagaId }, select: { acessibilidadeId: true } });
+    const vagaAcessSet = new Set(vagaAcess.map(a => a.acessibilidadeId));
+
+    // Busca as barreiras do candidato (para todos os subtipos)
+    const candidatoBarreiras = await prisma.candidatoSubtipoBarreira.findMany({ where: { candidatoId }, select: { subtipoId: true, barreiraId: true } });
+
+    // Se a vaga exige subtipos e o candidato não tem nenhum (nem por barreira), não faz match
+    if (vagaSubtipos.length > 0 && candidatoSubtipos.length === 0 && candidatoBarreiras.length === 0) return false;
+
+    // Busca mapping barreira -> acessibilidade
+    const barreiraIds = Array.from(new Set(candidatoBarreiras.map(b => b.barreiraId))).filter(Boolean);
+    const barreiraAcess = barreiraIds.length ? await prisma.barreiraAcessibilidade.findMany({ where: { barreiraId: { in: barreiraIds } }, select: { barreiraId: true, acessibilidadeId: true } }) : [];
+    const barreiraToAcessMap = new Map<number, number[]>();
+    for (const ba of barreiraAcess) {
+      const arr = barreiraToAcessMap.get(ba.barreiraId) || [];
+      arr.push(ba.acessibilidadeId);
+      barreiraToAcessMap.set(ba.barreiraId, arr);
+    }
+
+    // Caso o candidato não tenha registros em CandidatoSubtipo, mas tenha
+    // barreiras registradas (CandidatoSubtipoBarreira), derive os subtipos
+    // a partir dos próprios registros de barreira.
+    const candidatoSubtiposEffective = candidatoSubtipos.length > 0
+      ? candidatoSubtipos
+      : Array.from(new Set(candidatoBarreiras.map(b => b.subtipoId))).map(id => ({ subtipoId: id } as any));
+
+    // DEBUG
+    console.log('[checkVagaMatch] vagaSubtipos:', vagaSubtipos.map(v => v.subtipoId));
+    console.log('[checkVagaMatch] vagaAcessIds:', vagaAcess.map(v => v.acessibilidadeId));
+    console.log('[checkVagaMatch] candidatoSubtiposEffective:', candidatoSubtiposEffective.map(c => c.subtipoId));
+    console.log('[checkVagaMatch] candidatoBarreiras:', candidatoBarreiras);
+
+    // Para cada subtipo do candidato que também é aceito pela vaga (ou para
+    // qualquer subtipo caso a vaga aceite todos), verifica se existe ao menos
+    // uma barreira informada cujo(s) acessibilidade(s) esteja(m) presente(s)
+    // nas acessibilidades da vaga. Se o candidato não informou barreiras,
+    // considera-se compatível (não há necessidades de acessibilidade).
+    for (const cs of candidatoSubtiposEffective) {
+      if (vagaSubtipos.length > 0 && !vagaSubtiposSet.has(cs.subtipoId)) continue;
+
+      // todas as barreiras do candidato para este subtipo
+      const barrasDoSubtipo = candidatoBarreiras.filter(b => b.subtipoId === cs.subtipoId).map(b => b.barreiraId);
+      // Se o candidato não tem barreiras registradas para este subtipo,
+      // consideramos que não há necessidade de acessibilidade — então
+      // essa combinação (subtipo + vaga) é compatível.
+      if (!barrasDoSubtipo.length) return true;
+
+      for (const barreiraId of barrasDoSubtipo) {
+        const acessForBarreira = barreiraToAcessMap.get(barreiraId) || [];
+        for (const aId of acessForBarreira) {
+          if (vagaAcessSet.has(aId)) {
+            return true; // encontrou compatibilidade (subtipo aceito e acessibilidade disponível)
+          }
+        }
+      }
+    }
+
+    return false;
   },
 
   createFavorito(candidatoId: number, vagaId: number) {

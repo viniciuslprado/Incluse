@@ -189,7 +189,7 @@ export default function EmpresasParceirasPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/cadastro/empresas"
+              to="/cadastro/empresa"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-incluse-primary to-incluse-accent hover:from-incluse-primary-dark hover:to-incluse-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-incluse-primary transition-all duration-300 transform hover:scale-105"
             >
               Cadastrar Empresa
