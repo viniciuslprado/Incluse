@@ -119,7 +119,7 @@ export default function VLibrasLoader() {
                 button.style.zIndex = '2147483647';
                 try { button.style.position = 'fixed'; } catch {}
                 try { button.style.right = '16px'; } catch {}
-                try { button.style.bottom = '96px'; } catch {}
+                try { button.style.bottom = '330px'; } catch {}
                 try { button.classList.add('active'); } catch {}
                 // simula clique para abrir o widget caso necessário
                 try { (button as HTMLElement).click(); } catch (e) { /* ignore */ }
@@ -171,7 +171,7 @@ export default function VLibrasLoader() {
         btn.setAttribute("aria-label", "Abrir VLibras");
         btn.style.position = "fixed";
         btn.style.right = "16px";
-        btn.style.bottom = "96px";
+        btn.style.bottom = "330px";
         btn.style.width = "48px";
         btn.style.height = "48px";
         btn.style.borderRadius = "8px";
