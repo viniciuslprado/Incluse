@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CustomSelect from '../common/CustomSelect';
 import { api } from "../../lib/api";
 
 interface VagaFormProps {
@@ -102,7 +103,7 @@ export default function VagaForm({ empresaId, onCreated }: VagaFormProps) {
           </label>
           <CustomSelect
             value={escolaridade}
-            onChange={setEscolaridade}
+            onChange={(v: string) => setEscolaridade(v)}
             options={[
               { value: '', label: 'Selecione...' },
               ...ESCOLARIDADE_OPTIONS.map(opcao => ({ value: opcao, label: opcao }))

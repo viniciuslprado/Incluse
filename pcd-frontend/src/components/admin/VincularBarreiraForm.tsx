@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CustomSelect from '../common/CustomSelect';
 import { api } from "../../lib/api";
 import type { Barreira, SubtipoDeficiencia } from "../../types";
 type Props = { onLinked: () => void };
@@ -56,12 +57,12 @@ export default function VincularBarreiraForm({ onLinked }: Props) {
                 <label className="label">Subtipo</label>
                 <CustomSelect
                     value={subtipoId?.toString() ?? ''}
-                    onChange={v => setSubtipoId(v ? Number(v) : '')}
+                    onChange={(v: string) => setSubtipoId(v ? Number(v) : '')}
                     options={[
                         { value: '', label: 'Selecione...' },
-                        ...subtipos.map(s => ({ value: s.id.toString(), label: s.nome }))
+                        ...subtipos.map(st => ({ value: st.id.toString(), label: st.nome }))
                     ]}
-                    disabled={loading}
+                    disabled={loading || !subtipos.length}
                     className="input"
                 />
             </div>

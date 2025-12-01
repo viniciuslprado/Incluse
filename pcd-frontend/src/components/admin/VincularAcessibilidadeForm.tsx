@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import CustomSelect from '../common/CustomSelect';
 import { api } from "../../lib/api";
 import type { Barreira, Acessibilidade } from "../../types";
 
@@ -20,7 +21,7 @@ export default function VincularAcessibilidadeForm({ onLinked }: Props) {
       try {
         const [barreirasData, acessibilidadesData] = await Promise.all([
           api.listarBarreiras(),
-          api.listarAcessibilidades()
+          api.listarAcessibilidadesPublicas()
         ]);
         setBarreiras(barreirasData);
         setAcessibilidades(acessibilidadesData);
@@ -71,39 +72,36 @@ export default function VincularAcessibilidadeForm({ onLinked }: Props) {
       <h3 className="text-lg font-semibold">Vincular Acessibilidades a Barreira</h3>
       
       <div>
-        <label className="label">Selecione a barreira</label>
+        <label className="label">Barreira</label>
         <CustomSelect
           value={barreiraId?.toString() ?? ''}
-          onChange={v => setBarreiraId(v ? Number(v) : null)}
+          onChange={(v: string) => setBarreiraId(v ? Number(v) : null)}
           options={[
-            { value: '', label: 'Escolha uma barreira...' },
+            { value: '', label: 'Selecione uma barreira...' },
             ...barreiras.map(b => ({ value: b.id.toString(), label: b.descricao }))
           ]}
-          disabled={loading}
+          disabled={loading || !barreiras.length}
           className="input"
         />
       </div>
-
       <div>
-        <label className="label">Selecione as acessibilidades</label>
-        <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded p-2">
-          {acessibilidades.length === 0 ? (
-            <p className="text-gray-500 text-sm">Nenhuma acessibilidade cadastrada</p>
-          ) : (
-            acessibilidades.map(acessibilidade => (
-              <label key={acessibilidade.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={acessibilidadeIds.includes(acessibilidade.id)}
-                  onChange={(e) => handleAcessibilidadeChange(acessibilidade.id, e.target.checked)}
-                  disabled={loading}
-                  className="rounded"
-                />
-                <span className="text-sm">{acessibilidade.descricao}</span>
-              </label>
-            ))
-          )}
-        </div>
+        <label className="label">Acessibilidades</label>
+        {acessibilidades.length === 0 ? (
+          <p className="text-gray-500 text-sm">Nenhuma acessibilidade disponível.</p>
+        ) : (
+          acessibilidades.map(acessibilidade => (
+            <label key={acessibilidade.id} className="flex items-center gap-2 mb-1">
+              <input
+                type="checkbox"
+                checked={acessibilidadeIds.includes(acessibilidade.id)}
+                onChange={e => handleAcessibilidadeChange(acessibilidade.id, e.target.checked)}
+                disabled={loading}
+                className="rounded"
+              />
+              <span className="text-sm">{acessibilidade.descricao}</span>
+            </label>
+          ))
+        )}
       </div>
 
       {erro && <p className="error">{erro}</p>}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import type { Vaga } from '../../../types';
-import { FiEye, FiEdit2, FiPause, FiXCircle } from 'react-icons/fi';
+// import { FiEye, FiEdit2, FiPause, FiXCircle } from 'react-icons/fi';
 
 function StatusBadge({ status }: { status: string }) {
   let color = 'bg-gray-300';

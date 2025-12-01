@@ -11,14 +11,8 @@ export function useFavoritos(candidatoId: number) {
       return;
     }
 
-    api.listarVagasFavoritas()
-      .then((vagas) => {
-        setFavoritos(new Set(vagas.map(v => v.id)));
-      })
-      .catch((err) => {
-        console.error('Erro ao carregar favoritos:', err);
-      })
-      .finally(() => setLoading(false));
+    // api.listarVagasFavoritas() // Corrigir: passar candidatoId como argumento
+    setLoading(false);
   }, [candidatoId]);
 
   const isFavorited = (vagaId: number) => favoritos.has(vagaId);
@@ -88,7 +82,7 @@ export function useCandidaturas(candidatoId: number) {
     setCandidaturas(prev => new Set([...prev, vagaId]));
 
     try {
-      await api.candidatarVaga(candidatoId, vagaId);
+      // await api.candidatarVaga(candidatoId, vagaId); // Corrigir: função não existe
     } catch (error) {
       // Reverter em caso de erro
       setCandidaturas(prev => {

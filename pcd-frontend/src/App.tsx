@@ -14,7 +14,7 @@ import PoliticaPrivacidadePage from "./pages/public/PoliticaPrivacidadePage";
 import QuemSomosPage from "./pages/public/QuemSomosPage";
 // import AcessibilidadePage from "./pages/AcessibilidadePage";
 import EmpresasParceirasPage from "./pages/empresa/EmpresasParceirasPage";
-import AdminPage from "./pages/admin/AdminPage";
+// import AdminPage from "./pages/admin/AdminPage";
 import NovaVagaPage from "./pages/empresa/NovaVagaPage";
 import PerfilCandidatoPage from "./pages/empresa/PerfilCandidatoPage";
 import VagaDetalhePage from "./pages/empresa/VagaDetalhePage";

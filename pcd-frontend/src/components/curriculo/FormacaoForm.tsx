@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CustomSelect from '../common/CustomSelect';
 import type { CandidatoFormacao, Escolaridade } from '../../types';
 
 type Props = {
@@ -76,7 +77,7 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
         </label>
         <CustomSelect
           value={escolaridade}
-          onChange={setEscolaridade}
+          onChange={(v: string) => setEscolaridade(v as Escolaridade)}
           options={[
             { value: '', label: 'Selecione...' },
             ...escolaridades.map(esc => ({ value: esc, label: esc }))
@@ -122,7 +123,7 @@ export default function FormacaoForm({ formacao, onSave, onCancel }: Props) {
             </label>
               <CustomSelect
                 value={situacao}
-                onChange={v => setSituacao(v as 'concluido' | 'cursando')}
+                onChange={(v: string) => setSituacao(v as 'concluido' | 'cursando')}
                 options={[
                   { value: 'concluido', label: 'Concluído' },
                   { value: 'cursando', label: 'Cursando' }

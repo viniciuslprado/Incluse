@@ -1,3 +1,9 @@
+// Declaração global para o VLibras no window
+declare global {
+  interface Window {
+    VLibras?: any;
+  }
+}
 import { useEffect } from "react";
 
 export default function VLibrasLoader() {

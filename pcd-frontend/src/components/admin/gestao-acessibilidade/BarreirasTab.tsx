@@ -77,7 +77,7 @@ export default function BarreirasTab() {
     setLoading(true);
     const op = editBarreira
       ? api.atualizarBarreira(editBarreira.id, descricao)
-      : api.criarBarreira(descricao); // Supondo que backend já vincula subtipoId
+          : api.criarBarreira(subtipoId, descricao); // Supondo que backend já vincula subtipoId
     op.then(() => {
       toast.addToast({ message: editBarreira ? "Barreira atualizada" : "Barreira criada", type: "success" });
       if (subtipoId) api.listarBarreiras().then(data => setBarreiras(data.filter((b: any) => b.subtipoId === subtipoId)));

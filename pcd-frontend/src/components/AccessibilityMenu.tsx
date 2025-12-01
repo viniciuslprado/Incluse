@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAccessibility } from "../hooks/useAccessibility";
 // import { createPortal } from "react-dom";
 

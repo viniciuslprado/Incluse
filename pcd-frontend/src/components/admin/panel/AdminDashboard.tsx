@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { FiUsers, FiBriefcase, FiCheckCircle, FiXCircle, FiUserCheck, FiBarChart2 } from 'react-icons/fi';
 

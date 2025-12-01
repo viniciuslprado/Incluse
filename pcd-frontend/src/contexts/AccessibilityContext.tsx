@@ -1,3 +1,7 @@
+// Tipos para acessibilidade
+export type FontSize = "normal" | "large" | "extra-large";
+export type FontFamily = "default" | "readable" | "serif";
+export type Theme = "light" | "dark";
 import React, { createContext, useState, useEffect } from "react";
 
 

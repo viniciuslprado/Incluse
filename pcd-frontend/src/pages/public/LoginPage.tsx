@@ -10,7 +10,7 @@ type UserType = 'candidato' | 'empresa' | 'admin';
 export default function LoginPage() {
 
   const navigate = useNavigate();
-  const { login: authLogin, user } = useAuth();
+  const { login: authLogin } = useAuth();
   const [userType, setUserType] = useState<UserType>('candidato');
   const [identifier, setIdentifier] = useState(''); // email ou CPF/CNPJ
   const [senha, setSenha] = useState('');

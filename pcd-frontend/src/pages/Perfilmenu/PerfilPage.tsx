@@ -81,7 +81,7 @@
         let c: any = null;
         try {
           if (id && !isNaN(id)) {
-            c = await api.obterPorIdCandidato ? await api.obterPorIdCandidato(id) : await api.getCandidato(id);
+            c = await api.getCandidato(id);
             console.log('[PerfilPage] Dados recebidos do backend:', c);
           }
         } catch (err: any) {

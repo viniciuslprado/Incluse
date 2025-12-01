@@ -20,7 +20,7 @@ export default function VagaAcessibilidadesForm({ vagaId }: Props) {
     setLoading(true);
     setErro(null);
     try {
-      const data = await api.listarAcessibilidades();
+      const data = await api.listarAcessibilidadesPublicas();
       setAcessibilidades(data);
     } catch (e: any) {
       setErro("Erro ao carregar acessibilidades");

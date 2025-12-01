@@ -1,4 +1,6 @@
+
 import { useState } from 'react';
+import CustomSelect from '../common/CustomSelect';
 import type { CandidatoCompetencia } from '../../types';
 
 type Props = {
@@ -14,9 +16,7 @@ export default function CompetenciaForm({ competencia, onSave, onCancel }: Props
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
-
     if (!nome.trim()) newErrors.nome = 'Nome da habilidade é obrigatório';
-
     // setErrors removido, pois não é mais utilizado
     return Object.keys(newErrors).length === 0;
   }

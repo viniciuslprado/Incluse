@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CustomSelect from '../common/CustomSelect';
 import type { CandidatoIdioma } from '../../types';
 
 type Props = {
@@ -53,7 +54,7 @@ export default function IdiomaForm({ idioma, onSave, onCancel }: Props) {
         </label>
         <CustomSelect
           value={nivel}
-          onChange={setNivel}
+          onChange={(v: string) => setNivel(v as CandidatoIdioma['nivel'])}
           options={[
             { value: 'A1', label: 'A1 - Iniciante' },
             { value: 'A2', label: 'A2 - Básico' },

@@ -14,10 +14,10 @@ function Modal({ open, onClose, children }: { open: boolean; onClose: () => void
   );
 }
 
-type CandidatoListResult = {
-  candidatos: (Candidato & { totalCandidaturas?: number })[];
-  total: number;
-};
+// type CandidatoListResult = {
+//   candidatos: (Candidato & { totalCandidaturas?: number })[];
+//   total: number;
+// };
 
 export default function AdminCandidates() {
   const [candidatos, setCandidatos] = useState<(Candidato & { totalCandidaturas?: number })[]>([]);
@@ -30,7 +30,7 @@ export default function AdminCandidates() {
   const [candidaturas, setCandidaturas] = useState<any[]>([]);
   const [loadingModal, setLoadingModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
-  const [nomeFilter, setNomeFilter] = useState('');
+  // const [nomeFilter, setNomeFilter] = useState('');
   const [dataFilter, setDataFilter] = useState('');
 
   function fetchCandidatos() {
@@ -51,7 +51,7 @@ export default function AdminCandidates() {
         }
         // Filtros locais (mock, pois API não suporta filtros ainda)
         if (statusFilter) candidatosArr = candidatosArr.filter((c: Candidato) => statusFilter === 'ativo' ? c.isActive : !c.isActive);
-        if (nomeFilter) candidatosArr = candidatosArr.filter((c: Candidato) => (c.nome || '').toLowerCase().includes(nomeFilter.toLowerCase()));
+        // filtro por nome removido
         if (dataFilter) candidatosArr = candidatosArr.filter((c: Candidato) => c.createdAt && new Date(c.createdAt).toISOString().slice(0,10) === dataFilter);
         setCandidatos(candidatosArr);
         setTotal(candidatosArr.length);
@@ -77,7 +77,7 @@ export default function AdminCandidates() {
   useEffect(() => {
     fetchCandidatos();
     // eslint-disable-next-line
-  }, [page, statusFilter, nomeFilter, dataFilter]);
+  }, [page, statusFilter, dataFilter]);
 
   // Contadores
   const ativos = candidatos.filter(c => c.isActive).length;
@@ -173,7 +173,7 @@ export default function AdminCandidates() {
             <div className="mb-2 text-sm text-gray-700"><b>Escolaridade:</b> {selected.escolaridade || '-'}</div>
             <div className="mb-2 text-sm text-gray-700"><b>Curso:</b> {selected.curso || '-'}</div>
             <div className="mb-2 text-sm text-gray-700"><b>Situação:</b> {selected.situacao || '-'}</div>
-            <div className="mb-2 text-sm text-gray-700"><b>Disponibilidade Geográfica:</b> {selected.disponibilidadeGeografica || '-'}</div>
+            {/* <div className="mb-2 text-sm text-gray-700"><b>Disponibilidade Geográfica:</b> {selected.disponibilidadeGeografica || '-'}</div> */}
             <div className="mb-2 text-sm text-gray-700"><b>Aceita Mudança:</b> {selected.aceitaMudanca ? 'Sim' : 'Não'}</div>
             <div className="mb-2 text-sm text-gray-700"><b>Aceita Viajar:</b> {selected.aceitaViajar ? 'Sim' : 'Não'}</div>
             <div className="mb-2 text-sm text-gray-700"><b>Pretensão Salarial Mínima:</b> {selected.pretensaoSalarialMin || '-'}</div>

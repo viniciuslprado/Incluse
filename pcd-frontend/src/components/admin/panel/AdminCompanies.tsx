@@ -16,7 +16,7 @@ export default function AdminCompanies() {
   const [erro, setErro] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [areaFilter, setAreaFilter] = useState<string>('');
-  const [nomeFilter, setNomeFilter] = useState<string>('');
+  // const [nomeFilter, setNomeFilter] = useState<string>('');
   const [dataFilter, setDataFilter] = useState<string>('');
   const [detalheEmpresa, setDetalheEmpresa] = useState<Empresa | null>(null);
   const [loadingDetalhe, setLoadingDetalhe] = useState(false);
@@ -32,7 +32,7 @@ export default function AdminCompanies() {
         // Filtros locais (mock, pois API não suporta filtros ainda)
         if (statusFilter) lista = lista.filter((e: Empresa) => statusFilter === 'ativa' ? e.isActive : !e.isActive);
         if (areaFilter) lista = lista.filter((e: Empresa) => (e.areaAtuacao || '').toLowerCase().includes(areaFilter.toLowerCase()));
-        if (nomeFilter) lista = lista.filter((e: Empresa) => (e.nome || '').toLowerCase().includes(nomeFilter.toLowerCase()));
+        // filtro por nome removido
         if (dataFilter) lista = lista.filter((e: Empresa) => e.createdAt && new Date(e.createdAt).toISOString().slice(0,10) === dataFilter);
         setEmpresas(lista);
         setTotal(lista.length);
@@ -47,7 +47,7 @@ export default function AdminCompanies() {
   useEffect(() => {
     fetchEmpresas();
     // eslint-disable-next-line
-  }, [page, statusFilter, areaFilter, nomeFilter, dataFilter]);
+  }, [page, statusFilter, areaFilter, dataFilter]);
 
   // openModal removido pois não é utilizado
 

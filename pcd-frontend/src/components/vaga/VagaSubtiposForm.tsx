@@ -17,7 +17,7 @@ export default function VagaSubtiposForm({ vagaId, onChange, onUpdated }: Props)
 
   async function carregarSubtipos() {
     try {
-      const data = await api.listarTiposComSubtipos(); // GET /tipos/com-subtipos
+      const data = await api.listarTiposComSubtiposPublico(); // GET /tipos/com-subtipos
       setTiposComSubtipos(data);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao carregar subtipos");

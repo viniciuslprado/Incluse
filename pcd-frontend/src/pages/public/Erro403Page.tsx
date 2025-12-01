@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { FiAlertTriangle } from "react-icons/fi";
 
 export default function Erro403Page() {

@@ -7,7 +7,7 @@ export default function BarreiraForm({ onCreated }: Props) {
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
     // Adicione subtipoId como estado ou prop
-    const [subtipoId, setSubtipoId] = useState<number | null>(null);
+    const [subtipoId] = useState<number | null>(null);
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setErro(null);

@@ -731,7 +731,7 @@ export default function NovaVagaPage() {
               </div>
               {/* Lista de benefícios personalizados marcados */}
               <div className="mt-2 space-y-1">
-                {vagaData.beneficios.filter(ben => !['Vale alimentação', 'Vale transporte', 'Plano de saúde', 'Plano odontológico', 'Gympass', 'Home office', 'Horário flexível', 'Day off aniversário'].includes(ben)).map((ben, idx) => (
+                {vagaData.beneficios.filter(ben => !['Vale alimentação', 'Vale transporte', 'Plano de saúde', 'Plano odontológico', 'Gympass', 'Home office', 'Horário flexível', 'Day off aniversário'].includes(ben)).map((ben) => (
                   <div key={ben} className="flex items-center gap-2">
                     <input
                       type="checkbox"

@@ -1,6 +1,6 @@
 type SavedVaga = { id: number; titulo?: string; empresaNome?: string; savedAt: string };
 type Candidatura = { id: number; titulo?: string; empresaNome?: string; appliedAt: string };
-import type { Vaga, Empresa } from '../types';
+import type { Vaga } from '../types';
 
 const keySaved = (candidatoId: number) => `incluse:saved:${candidatoId}`;
 const keyApplied = (candidatoId: number) => `incluse:candidaturas:${candidatoId}`;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import CustomSelect from '../../components/common/CustomSelect';
-import { useParams } from 'react-router-dom';
+// ...existing code...
 import { api } from '../../lib/api';
 
 interface EmpresaData {
@@ -25,8 +25,8 @@ interface EmpresaData {
 }
 
 export default function DadosEmpresaPage() {
-  const { id } = useParams<{ id: string }>();
-  const empresaId = Number(id);
+  // ...existing code...
+  // const empresaId = Number(id);
   const [empresa, setEmpresa] = useState<EmpresaData>({
     id: 0,
     nome: '',
@@ -246,7 +246,7 @@ export default function DadosEmpresaPage() {
                 <label htmlFor="quantidadeFuncionarios" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantidade de Funcionários *</label>
                 <CustomSelect
                   value={empresa.quantidadeFuncionarios || ''}
-                  onChange={val => handleInputChange({ target: { name: 'quantidadeFuncionarios', value: val } })}
+                  onChange={val => handleInputChange({ target: { name: 'quantidadeFuncionarios', value: val } } as any)}
                   options={[
                     { value: '', label: 'Selecione...' },
                     { value: '1-10', label: '1 a 10 funcionários' },

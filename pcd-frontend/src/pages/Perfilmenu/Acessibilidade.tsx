@@ -15,7 +15,7 @@ type Props = {
 };
 
 // export default function Acessibilidade({ candidatoId, candidateSubtipos, setCandidateSubtipos, candidateBarreiras, setCandidateBarreiras, handleLaudoChange, laudoName, laudoSize, removeLaudo, barreirasBySubtipo }: Props) {
-export default function Acessibilidade({ candidatoId, candidateSubtipos, setCandidateSubtipos, candidateBarreiras, setCandidateBarreiras, barreirasBySubtipo }: Props) {
+export default function Acessibilidade({ candidatoId, candidateSubtipos, setCandidateSubtipos, candidateBarreiras, setCandidateBarreiras }: Props) {
     // Laudo removido
   const [openTipo, setOpenTipo] = useState(true);
   const [openBarreiras, setOpenBarreiras] = useState(true);
@@ -248,7 +248,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                         </h5>
                         <CandidatoBarreirasForm
                           candidatoId={candidatoId}
-                          subtipo={{ id: tipoObj.id, nome: tipoObj.nome }}
+                          subtipo={{ id: tipoObj.id, nome: tipoObj.nome, tipoId: tipoObj.tipoId }}
                           disableActions={false}
                           autoSync={true}
                           initialSelecionadas={candidateBarreiras?.[tipoObj.id]?.selecionadas ?? []}

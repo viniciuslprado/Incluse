@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CustomSelect from '../common/CustomSelect';
 import { api } from "../../lib/api";
 import type { TipoDeficiencia } from "../../types";
 
@@ -47,7 +48,7 @@ export default function SubtipoForm({ pedro }: Props) {
           <label className="label">Tipo</label>
           <CustomSelect
             value={tipoId?.toString() ?? ''}
-            onChange={v => setTipoId(v ? Number(v) : '')}
+            onChange={(v: string) => setTipoId(v ? Number(v) : '')}
             options={[
               { value: '', label: 'Selecione um tipo...' },
               ...tipos.map(t => ({ value: t.id.toString(), label: t.nome }))

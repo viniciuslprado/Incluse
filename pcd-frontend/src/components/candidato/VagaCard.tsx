@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+// import { useEffect, useState } from 'react';
 import type { Vaga } from '../../types';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import { useParams } from 'react-router-dom';
 
 
 type Props = {
@@ -15,10 +14,8 @@ type Props = {
   showStatus?: boolean;
 };
 
-export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited: _isCompanyFavorited, onToggleCompanyFavorite: _onToggleCompanyFavorite, candidatoId }: Props) {
-  const { id } = useParams();
-  const currentCandidatoId = candidatoId || Number(id);
-  // Compatibilidade e candidatura agora vêm do backend, não é necessário buscar manualmente.
+export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave, isCompanyFavorited: _isCompanyFavorited, onToggleCompanyFavorite: _onToggleCompanyFavorite }: Props) {
+
   
   // Compatibilidade e candidatura já vêm do backend (vaga.matchPercent, vaga.compatibility, vaga.applied, etc.)
   const matchValue = vaga?.matchPercent ?? vaga?.compatibility ?? 0;
@@ -113,7 +110,7 @@ export default function VagaCardCandidate({ vaga, onView, onApply, onToggleSave,
                     const success = await onApply();
                     if (success) {
                       // Atualizar estado local após candidatura bem-sucedida
-                      setIsApplied(!applied);
+                       // setIsApplied(!applied);
                     }
                   }
                 }}

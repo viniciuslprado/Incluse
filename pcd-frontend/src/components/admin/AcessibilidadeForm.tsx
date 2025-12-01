@@ -6,7 +6,7 @@ export default function AcessibilidadeForm({ onCreated }: Props) {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   // Adicione barreiraId como estado ou prop
-  const [barreiraId, setBarreiraId] = useState<number | null>(null);
+  const [barreiraId] = useState<number | null>(null);
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
