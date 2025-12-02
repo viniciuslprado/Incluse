@@ -1,3 +1,4 @@
+// ...existing code...
   // ...existing code...
 // ...existing code...
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
@@ -114,6 +115,9 @@ const axiosInstance = createInstance();
 
 // Objeto da API
 export const api = {
+          listarEmpresasAdmin() {
+            return axiosInstance.get('/admin/empresas').then(r => r.data);
+          },
         // --- ADMINISTRADORES ---
         listarAdministradores() {
           return axiosInstance.get('/admin/administradores').then(r => r.data);

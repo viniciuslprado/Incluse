@@ -26,7 +26,7 @@ export default function AdminCompanies() {
     setLoading(true);
     setErro(null);
     api
-      .listarEmpresas()
+      .listarEmpresasAdmin()
       .then((data) => {
         let lista = data.empresas || [];
         // Filtros locais (mock, pois API não suporta filtros ainda)
