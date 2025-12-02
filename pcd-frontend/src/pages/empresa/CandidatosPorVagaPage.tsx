@@ -1,4 +1,54 @@
 import { useState, useEffect } from 'react';
+
+// Componente de abas para o modal de currículo
+import type { FC } from 'react';
+interface ModalTabsProps {
+  curriculoPdfUrl: string;
+  curriculoBasico: CurriculoBasico | null;
+  candidatoNome?: string;
+}
+const ModalTabs: FC<ModalTabsProps> = ({ curriculoPdfUrl, curriculoBasico, candidatoNome }) => {
+  // Só mostra a aba PDF se a URL for não vazia e diferente de null/undefined
+  const hasPdf = !!curriculoPdfUrl && curriculoPdfUrl.trim() !== '';
+  const hasCurriculo = !!curriculoBasico;
+  const [tab, setTab] = useState(hasPdf ? 'pdf' : 'preenchido');
+  return (
+    <div>
+      <div className="flex border-b mb-4">
+        {hasPdf && (
+          <button
+            className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm focus:outline-none transition-colors duration-150 ${tab === 'pdf' ? 'border-green-600 text-green-700 dark:text-green-300' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
+            onClick={() => setTab('pdf')}
+            type="button"
+          >
+            PDF Anexado
+          </button>
+        )}
+        {hasCurriculo && (
+          <button
+            className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm focus:outline-none transition-colors duration-150 ${tab === 'preenchido' ? 'border-purple-600 text-purple-700 dark:text-purple-300' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
+            onClick={() => setTab('preenchido')}
+            type="button"
+          >
+            Currículo Preenchido
+          </button>
+        )}
+      </div>
+      <div>
+        {tab === 'pdf' && hasPdf && (
+          <div className="border rounded bg-gray-50 dark:bg-gray-900 p-2 mb-4">
+            <PdfViewer pdfUrl={curriculoPdfUrl} candidatoNome={candidatoNome} onClose={() => {}} />
+          </div>
+        )}
+        {tab === 'preenchido' && hasCurriculo && (
+          <div className="border rounded bg-gray-50 dark:bg-gray-900 p-2">
+            <CurriculoViewer curriculo={curriculoBasico} candidatoNome={candidatoNome} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 import CustomSelect from '../../components/common/CustomSelect';
 import { useRef } from 'react';
 const STATUS_OPTIONS = [
@@ -99,9 +149,8 @@ export default function CandidatosPorVagaPage() {
     }, [statusMenuOpen]);
   const [showModal, setShowModal] = useState(false);
   const [curriculoBasico, setCurriculoBasico] = useState<CurriculoBasico | null>(null);
+  const [curriculoPdfUrl, setCurriculoPdfUrl] = useState<string>('');
   const [showCurriculoModal, setShowCurriculoModal] = useState(false);
-  const [showPdfModal, setShowPdfModal] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string>('');
 
 
 // Função utilitária para normalizar status vindos do backend ou dados antigos
@@ -174,19 +223,39 @@ function normalizaStatus(status: string | undefined): 'pendente' | 'em_analise' 
     }
   };
 
-  const handleVerCurriculoBasico = async (candidatoId: number) => {
+  // Novo handler: mostra ambos (currículo preenchido e PDF) juntos
+  const handleVerCurriculoCompleto = async (candidato: Candidato) => {
     try {
-      const curriculo = await api.obterCurriculoBasico(candidatoId);
+      // Buscar dados completos do candidato para garantir que o campo curriculo esteja atualizado
+      let candidatoCompleto: Candidato = candidato;
+      try {
+        const detalhes = await api.getCandidato(candidato.id);
+        candidatoCompleto = { ...candidato, ...detalhes };
+      } catch (e) {
+        // fallback para o candidato da lista
+      }
+      let curriculo: CurriculoBasico | null = null;
+      try {
+        curriculo = await api.obterCurriculoBasico(candidato.id);
+      } catch (e) {
+        curriculo = null;
+      }
       setCurriculoBasico(curriculo);
+      let pdfUrl = '';
+      if (candidatoCompleto.curriculo && candidatoCompleto.curriculo.trim() !== '') {
+        pdfUrl = `http://localhost:3000/${candidatoCompleto.curriculo}`;
+        setCurriculoPdfUrl(pdfUrl);
+      } else {
+        setCurriculoPdfUrl('');
+      }
+      // Log para debug
+      console.log('[handleVerCurriculoCompleto] candidatoCompleto.curriculo:', candidatoCompleto.curriculo);
+      console.log('[handleVerCurriculoCompleto] curriculoPdfUrl:', pdfUrl);
+      setSelectedCandidato(candidatoCompleto);
       setShowCurriculoModal(true);
     } catch (error) {
       console.error('Erro ao carregar currículo:', error);
     }
-  };
-
-  const handleVerPdf = (pdfPath: string) => {
-    setPdfUrl(`http://localhost:3000/${pdfPath}`);
-    setShowPdfModal(true);
   };
 
   // status badge render moved to ResponsiveCardList via badge mapping
@@ -388,19 +457,11 @@ function normalizaStatus(status: string | undefined): 'pendente' | 'em_analise' 
                         </div>
                         <div className="space-x-2">
                           <button
-                            onClick={() => handleVerCurriculoBasico(candidato.id)}
+                            onClick={() => handleVerCurriculoCompleto(candidato)}
                             className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
                           >
                             Currículo
                           </button>
-                          {candidato.curriculo && (
-                            <button
-                              onClick={() => handleVerPdf(candidato.curriculo!)}
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                            >
-                              PDF Currículo
-                            </button>
-                          )}
                         </div>
                       </div>
                     </td>
@@ -459,8 +520,7 @@ function normalizaStatus(status: string | undefined): 'pendente' | 'em_analise' 
               ],
               actions: [
                 { label: 'Ver Perfil', onClick: () => handleVerPerfil(candidato), variant: 'blue' },
-                { label: 'Currículo', onClick: () => handleVerCurriculoBasico(candidato.id), variant: 'purple', full: true },
-                ...(candidato.curriculo ? [{ label: 'PDF Currículo', onClick: () => handleVerPdf(candidato.curriculo!), variant: 'green', full: true }] as any : []),
+                { label: 'Currículo', onClick: () => handleVerCurriculoCompleto(candidato), variant: 'purple', full: true },
               ],
             }))}
           />
@@ -699,8 +759,8 @@ function normalizaStatus(status: string | undefined): 'pendente' | 'em_analise' 
         </div>
       )}
 
-      {/* Modal de Currículo */}
-      {showCurriculoModal && curriculoBasico && (
+      {/* Modal Currículo Completo (PDF + preenchido) com abas */}
+      {showCurriculoModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
@@ -716,9 +776,16 @@ function normalizaStatus(status: string | undefined): 'pendente' | 'em_analise' 
                 </svg>
               </button>
             </div>
-
-            <CurriculoViewer curriculo={curriculoBasico} candidatoNome={selectedCandidato?.nome} />
-
+            {/* Abas */}
+            {(curriculoPdfUrl || curriculoBasico) ? (
+              <ModalTabs
+                curriculoPdfUrl={curriculoPdfUrl}
+                curriculoBasico={curriculoBasico}
+                candidatoNome={selectedCandidato?.nome}
+              />
+            ) : (
+              <div className="text-gray-500 dark:text-gray-400">Nenhum currículo disponível para este candidato.</div>
+            )}
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowCurriculoModal(false)}
@@ -731,14 +798,6 @@ function normalizaStatus(status: string | undefined): 'pendente' | 'em_analise' 
         </div>
       )}
 
-      {/* Modal de PDF */}
-      {showPdfModal && pdfUrl && (
-        <PdfViewer 
-          pdfUrl={pdfUrl} 
-          candidatoNome={selectedCandidato?.nome} 
-          onClose={() => setShowPdfModal(false)} 
-        />
-      )}
     </div>
   );
 }

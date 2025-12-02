@@ -178,8 +178,12 @@ export default function CadastroCandidatoPage() {
     if (!formData.nomeCompleto.trim()) return 'Nome completo é obrigatório.';
     if (formData.cpf.replace(/\D/g, '').length !== 11) return 'CPF deve ter 11 dígitos.';
     if (!formData.telefone.trim()) return 'Telefone é obrigatório.';
-    const telefoneNumerico = formData.telefone.replace(/\D/g, '');
-    if (telefoneNumerico.length < 10 || telefoneNumerico.length > 13) return 'Telefone deve ter entre 10 e 13 dígitos (apenas números, com ou sem DDI).';
+    let telefoneNumerico = formData.telefone.replace(/\D/g, '');
+    // Remove DDI se vier com 55 no início
+    if (telefoneNumerico.startsWith('55') && telefoneNumerico.length > 11) {
+      telefoneNumerico = telefoneNumerico.slice(2);
+    }
+    if (!(telefoneNumerico.length === 10 || telefoneNumerico.length === 11)) return 'Telefone deve ter DDD + número (10 ou 11 dígitos, sem DDI).';
     if (!formData.email.trim()) return 'E-mail é obrigatório.';
     // simple email regex
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return 'E-mail inválido.';
@@ -257,19 +261,18 @@ export default function CadastroCandidatoPage() {
       fd.append('cpf', formData.cpf);
       // Remove todos os caracteres não numéricos do telefone antes de enviar
       let telefoneNumerico = formData.telefone.replace(/\D/g, '');
-      // Corrige bug de duplicação do último dígito (ex: 55168529634522 -> 5516852963452)
-      if (telefoneNumerico.length > 13 && telefoneNumerico.slice(-2, -1) === telefoneNumerico.slice(-1)) {
-        telefoneNumerico = telefoneNumerico.slice(0, -1);
+      // Remove DDI se vier com 55 no início
+      if (telefoneNumerico.startsWith('55') && telefoneNumerico.length > 11) {
+        telefoneNumerico = telefoneNumerico.slice(2);
+      }
+      if (!(telefoneNumerico.length === 10 || telefoneNumerico.length === 11)) {
+        setErro('Telefone deve ter DDD + número (10 ou 11 dígitos, sem DDI).');
+        setLoading(false);
+        return;
       }
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
         console.log('[CadastroCandidato] Telefone enviado ao backend:', telefoneNumerico);
-      }
-      // Validação extra: só permite 10 a 13 dígitos
-      if (telefoneNumerico.length < 10 || telefoneNumerico.length > 13) {
-        setErro('Telefone deve ter entre 10 e 13 dígitos (apenas números, com ou sem DDI).');
-        setLoading(false);
-        return;
       }
       fd.append('telefone', telefoneNumerico);
       fd.append('email', formData.email);
@@ -506,15 +509,24 @@ export default function CadastroCandidatoPage() {
                   )}
                 </div>
               </div>
+
+              <div className="flex justify-between">
+                <button type="button" onClick={() => navigate('/')} className="py-2 px-4 text-sm text-gray-700 dark:text-gray-200">Cancelar</button>
+                <div className="space-x-2">
+                  <button type="button" onClick={() => setStep(1)} className="py-2 px-4 text-sm border border-gray-300 rounded hover:bg-gray-50">Voltar</button>
+                  <button type="submit" disabled={loading} className="py-2 px-4 bg-blue-600 text-white rounded disabled:opacity-50">Continuar</button>
+                </div>
+              </div>
             </form>
           )}
 
           {step === 3 && (
-            <div className="space-y-6">
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded text-sm text-yellow-800">
+            <>
+              <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded text-sm text-yellow-800">
                 <strong>Observação:</strong> Caso você possua mais de uma deficiência, é possível adicionar outras na aba <b>Perfil</b> disponível no menu após o cadastro.
               </div>
-              <div>
+              <div className="space-y-6">
+                <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Deficiência *</label>
                 <CustomSelect
                   value={selectedTipoId !== null ? selectedTipoId.toString() : ''}
@@ -585,6 +597,7 @@ export default function CadastroCandidatoPage() {
                 </div>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>

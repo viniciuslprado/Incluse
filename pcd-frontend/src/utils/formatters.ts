@@ -1,16 +1,20 @@
 export function formatPhone(value: string): string {
   const numbers = value.replace(/\D/g, '');
-  const limited = numbers.slice(0, 13);
-  if (limited.length <= 2) {
-    return limited;
-  } else if (limited.length <= 4) {
-    return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-  } else if (limited.length <= 9) {
-    return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-  } else if (limited.length <= 11) {
-    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
+  let tel = numbers;
+  // Remove DDI se vier com 55 no início
+  if (tel.startsWith('55') && tel.length > 11) {
+    tel = tel.slice(2);
+  }
+  if (tel.length <= 2) {
+    return tel;
+  } else if (tel.length <= 6) {
+    return `(${tel.slice(0, 2)}) ${tel.slice(2)}`;
+  } else if (tel.length === 10) {
+    return `(${tel.slice(0, 2)}) ${tel.slice(2, 6)}-${tel.slice(6)}`;
+  } else if (tel.length === 11) {
+    return `(${tel.slice(0, 2)}) ${tel.slice(2, 7)}-${tel.slice(7)}`;
   } else {
-    return `+${limited.slice(0, 2)} (${limited.slice(2, 4)}) ${limited.slice(4, 9)}-${limited.slice(9)}`;
+    return `(${tel.slice(0, 2)}) ${tel.slice(2, 7)}-${tel.slice(7, 11)}`;
   }
 }
 

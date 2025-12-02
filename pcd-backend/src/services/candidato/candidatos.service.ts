@@ -90,11 +90,13 @@ export const CandidatosService = {
     const normalizedCpf = cpf?.replace ? cpf.replace(/\D/g, '') : undefined;
     if (normalizedCpf && normalizedCpf.length !== 11) throw Object.assign(new Error('CPF inválido (deve conter 11 dígitos)'), { status: 400 });
 
-    // Validação de telefone/celular: aceita 10 a 13 dígitos (com ou sem DDI)
+    // Validação de telefone/celular: aceita apenas DDD + número (10 ou 11 dígitos, sem DDI)
     if (telefone) {
       const normalizedTel = telefone.replace(/\D/g, '');
-      if (!(normalizedTel.length >= 10 && normalizedTel.length <= 13)) {
-        throw Object.assign(new Error('Celular inválido. Use o formato: (DD) XXXXX-XXXX ou com DDI'), { status: 400 });
+      // Remove DDI se vier com +55 ou 55 no início
+      const tel = (normalizedTel.startsWith('55') && normalizedTel.length > 11) ? normalizedTel.slice(2) : normalizedTel;
+      if (!(tel.length === 10 || tel.length === 11)) {
+        throw Object.assign(new Error('Celular inválido. Use apenas DDD + número, ex: 11999999999'), { status: 400 });
       }
     }
 

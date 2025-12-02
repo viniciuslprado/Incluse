@@ -138,7 +138,15 @@ export const CandidatosController = {
       const nome = (body.nome ?? body.nomeCompleto ?? body.name) as string | undefined;
       // Normaliza CPF e telefone para conter apenas números
       const cpf = typeof body.cpf === 'string' ? body.cpf.replace(/\D/g, '') : undefined;
-      const telefone = typeof body.telefone === 'string' ? body.telefone.replace(/\D/g, '') : undefined;
+      // Remove DDI se vier com +55 ou 55 no início
+      let telefone: string | undefined = undefined;
+      if (typeof body.telefone === 'string') {
+        let tel = body.telefone.replace(/\D/g, '');
+        if (tel.startsWith('55') && tel.length > 11) {
+          tel = tel.slice(2);
+        }
+        telefone = tel;
+      }
       const email = body.email as string | undefined;
       const escolaridade = body.escolaridade as string | undefined;
       const senha = body.senha as string | undefined;
@@ -240,9 +248,8 @@ export const CandidatosController = {
         if (targets.some(t => t.includes('email'))) {
           return res.status(400).json({ error: 'Já existe uma conta cadastrada neste e-mail' });
         }
-        // fallback: return a clearer duplicate message including target(s)
-        const joined = targets.length ? targets.join(', ') : String(metaTarget || 'campo');
-        return res.status(400).json({ error: `Registro duplicado (campo: ${joined}). Tente atualizar ou revise os dados enviados.` });
+        // Se não for CPF ou email, apenas retorna erro genérico
+        return res.status(400).json({ error: 'Erro de duplicidade de registro.' });
       }
 
       const rawMessage = String(e?.message ?? 'Erro ao criar candidato');

@@ -23,6 +23,7 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
   useEffect(() => {
     // Sempre exibe todos os subtipos públicos
     setSubtipos(allSubtipos || []);
+    console.log('[CandidatoSubtiposForm] allSubtipos:', allSubtipos);
   }, [allSubtipos]);
 
   // Exibe todos os subtipos como lista, sem filtro/pesquisa
@@ -30,8 +31,10 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
 
   // initialize selection from prop if provided (apenas IDs vindos do backend)
   useEffect(() => {
+    console.log('[CandidatoSubtiposForm] initialSelected:', initialSelected, 'selecionados:', selecionados);
     if (initialSelected && initialSelected.length && selecionados.length === 0) {
       setSelecionados(initialSelected);
+      console.log('[CandidatoSubtiposForm] setSelecionados (init):', initialSelected);
     }
   }, [initialSelected]);
 
@@ -42,6 +45,7 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
       if (currentKey !== previousSelecionadosRef.current) {
         previousSelecionadosRef.current = currentKey;
         const selectedObjects = subtipos.filter((s) => selecionados.includes(s.id));
+        console.log('[CandidatoSubtiposForm] onChange disparado:', selectedObjects);
         onChange?.(selectedObjects);
       }
     }
@@ -61,13 +65,12 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
   function toggle(id: number) {
     setSelecionados((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      
+      console.log('[CandidatoSubtiposForm] toggle', { id, prev, next });
       // Validação: não permitir desmarcar o último subtipo
       if (next.length === 0) {
         setErro("Você deve ter pelo menos um tipo de deficiência selecionado.");
         return prev; // mantém seleção anterior
       }
-      
       setErro(null);
       if (autoSync && !disableActions) {
         sync(next);
