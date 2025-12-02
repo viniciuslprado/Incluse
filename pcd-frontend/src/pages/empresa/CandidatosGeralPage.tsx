@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import CustomSelect from '../../components/common/CustomSelect';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { FiSearch, FiUser, FiCalendar, FiMessageSquare, FiX, FiCheckCircle, FiFileText, FiDownload } from 'react-icons/fi';
+import { FiSearch, FiUser, FiCalendar, FiMessageSquare, FiX, FiFileText, FiDownload } from 'react-icons/fi';
 
 interface Candidato {
   id: number;
@@ -14,6 +14,29 @@ interface Candidato {
   vagaTitulo?: string;
   etapa?: string;
   compatibilidade?: number;
+  // Campos extras para o perfil completo
+    escolaridade?: string;
+    subtipos?: any[];
+  cpf?: string;
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  curso?: string;
+  sobre?: string;
+  aceitaMudanca?: boolean;
+  aceitaViajar?: boolean;
+  pretensaoSalarialMin?: string;
+  areasFormacao?: any[];
+  barras?: any[];
+  experiencias?: any[];
+  formacoes?: any[];
+  cursos?: any[];
+  competencias?: any[];
+  idiomas?: any[];
+  laudo?: string;
 }
 
 export default function CandidatosGeralPage() {
@@ -25,6 +48,22 @@ export default function CandidatosGeralPage() {
   const [busca, setBusca] = useState('');
   const [filtroEtapa, setFiltroEtapa] = useState<string>('todas');
   const [candidatoSelecionado, setCandidatoSelecionado] = useState<Candidato | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loadingDetalhes, setLoadingDetalhes] = useState(false);
+  // Busca detalhes completos do candidato ao abrir o modal de perfil
+  const handleVerPerfil = async (candidato: Candidato) => {
+    setLoadingDetalhes(true);
+    try {
+      const detalhes = await api.getCandidato(candidato.id);
+      setCandidatoSelecionado({ ...candidato, ...detalhes });
+      setShowModal(true);
+    } catch (error) {
+      setCandidatoSelecionado(candidato); // fallback
+      setShowModal(true);
+    } finally {
+      setLoadingDetalhes(false);
+    }
+  };
 
   useEffect(() => {
     carregarCandidatos();
@@ -76,14 +115,6 @@ export default function CandidatosGeralPage() {
     }
   }
 
-  async function avancarEtapa(candidato: Candidato) {
-    try {
-      // Implementar lógica de avanço de etapa
-      alert(`Candidato ${candidato.nome} avançado para próxima etapa`);
-    } catch (error) {
-      console.error('Erro ao avançar etapa:', error);
-    }
-  }
 
   async function rejeitarCandidato(candidato: Candidato) {
     if (!confirm(`Deseja rejeitar o candidato ${candidato.nome}?`)) return;
@@ -253,19 +284,13 @@ export default function CandidatosGeralPage() {
 
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setCandidatoSelecionado(candidato)}
+                      onClick={() => handleVerPerfil(candidato)}
                       className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                       title="Ver perfil"
                     >
                       <FiFileText className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => avancarEtapa(candidato)}
-                      className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                      title="Avançar etapa"
-                    >
-                      <FiCheckCircle className="w-4 h-4" />
-                    </button>
+                    {/* Botão de avançar etapa removido */}
                     <button
                       onClick={() => alert('Funcionalidade de mensagem em desenvolvimento')}
                       className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
@@ -289,54 +314,199 @@ export default function CandidatosGeralPage() {
       </div>
 
       {/* Modal de Perfil do Candidato */}
-      {candidatoSelecionado && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setCandidatoSelecionado(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      {showModal && candidatoSelecionado && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowModal(false); setCandidatoSelecionado(null); }}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Perfil do Candidato</h2>
                 <button
-                  onClick={() => setCandidatoSelecionado(null)}
+                  onClick={() => { setShowModal(false); setCandidatoSelecionado(null); }}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   <FiX className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Nome</label>
-                  <p className="text-lg text-gray-900 dark:text-gray-100">{candidatoSelecionado.nome}</p>
+              {loadingDetalhes ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-gray-600 dark:text-gray-300">Carregando detalhes...</span>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
-                  <p className="text-lg text-gray-900 dark:text-gray-100">{candidatoSelecionado.email}</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Nome e Email sempre exibidos */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.nome}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.email}</p>
+                    </div>
+                    {/* Telefone */}
+                    {candidatoSelecionado.telefone && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefone</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.telefone}</p>
+                      </div>
+                    )}
+                    {/* CPF */}
+                    {candidatoSelecionado.cpf && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">CPF</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.cpf}</p>
+                      </div>
+                    )}
+                    {/* Endereço */}
+                    {(candidatoSelecionado.rua || candidatoSelecionado.numero || candidatoSelecionado.bairro || candidatoSelecionado.cidade || candidatoSelecionado.estado || candidatoSelecionado.cep) && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Endereço</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {[candidatoSelecionado.rua, candidatoSelecionado.numero].filter(Boolean).join(' ')}{(candidatoSelecionado.rua || candidatoSelecionado.numero) && (candidatoSelecionado.bairro ? ', ' : '')}{candidatoSelecionado.bairro}<br />
+                          {[candidatoSelecionado.cidade, candidatoSelecionado.estado].filter(Boolean).join(' - ')} {candidatoSelecionado.cep}
+                        </p>
+                      </div>
+                    )}
+                    {/* Escolaridade */}
+                    {candidatoSelecionado.escolaridade && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Escolaridade</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.escolaridade}</p>
+                      </div>
+                    )}
+                    {/* Curso */}
+                    {candidatoSelecionado.curso && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Curso</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.curso}</p>
+                      </div>
+                    )}
+                    {/* Sobre */}
+                    {candidatoSelecionado.sobre && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Sobre</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.sobre}</p>
+                      </div>
+                    )}
+                    {/* Aceita Mudança */}
+                    {candidatoSelecionado.aceitaMudanca !== undefined && candidatoSelecionado.aceitaMudanca !== null && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Aceita Mudança?</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.aceitaMudanca === true ? 'Sim' : 'Não'}</p>
+                      </div>
+                    )}
+                    {/* Aceita Viajar */}
+                    {candidatoSelecionado.aceitaViajar !== undefined && candidatoSelecionado.aceitaViajar !== null && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Aceita Viajar?</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.aceitaViajar === true ? 'Sim' : 'Não'}</p>
+                      </div>
+                    )}
+                    {/* Pretensão Salarial */}
+                    {candidatoSelecionado.pretensaoSalarialMin && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pretensão Salarial</label>
+                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{candidatoSelecionado.pretensaoSalarialMin}</p>
+                      </div>
+                    )}
+                    {/* Áreas de Formação */}
+                    {candidatoSelecionado.areasFormacao && candidatoSelecionado.areasFormacao.length > 0 && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Áreas de Formação</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.areasFormacao.map((a: any, i: number) => (
+                            <li key={i}>{a.nome}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Subtipos de Deficiência */}
+                    {candidatoSelecionado.subtipos && candidatoSelecionado.subtipos.length > 0 && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtipos de Deficiência</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.subtipos.map((s: any, i: number) => (
+                            <li key={i}>{s.subtipo?.nome || s.nome}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Barreiras */}
+                    {candidatoSelecionado.barras && candidatoSelecionado.barras.length > 0 && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Barreiras</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.barras.map((b: any, i: number) => (
+                            <li key={i}>{b.barreira?.descricao || b.descricao}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Experiências Profissionais */}
+                    {candidatoSelecionado.experiencias && candidatoSelecionado.experiencias.length > 0 && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Experiências Profissionais</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.experiencias.map((exp: any, i: number) => (
+                            <li key={i} className="mb-2">
+                              <strong>{exp.cargo}</strong> em {exp.empresa} ({exp.dataInicio} - {exp.dataTermino || 'Atual'})<br />
+                              {exp.descricao}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Formações */}
+                    {candidatoSelecionado.formacoes && candidatoSelecionado.formacoes.length > 0 && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Formações</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.formacoes.map((f: any, i: number) => (
+                            <li key={i} className="mb-2">
+                              <strong>{f.curso}</strong> - {f.instituicao} ({f.escolaridade}, {f.situacao})<br />
+                              {f.inicio} - {f.termino || 'Atual'}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Cursos */}
+                    {candidatoSelecionado.cursos && candidatoSelecionado.cursos.length > 0 && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cursos</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.cursos.map((c: any, i: number) => (
+                            <li key={i} className="mb-2">
+                              <strong>{c.nome}</strong> - {c.instituicao} ({c.cargaHoraria || '?'}h)
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Competências */}
+                    {candidatoSelecionado.competencias && candidatoSelecionado.competencias.length > 0 && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Competências</label>
+                        <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                          {candidatoSelecionado.competencias.map((comp: any, i: number) => (
+                            <li key={i} className="mb-2">
+                              <strong>{comp.nome}</strong> - {comp.tipo} ({comp.nivel})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Campo Idiomas removido conforme solicitado */}
+                    {/* Campos Currículo e Laudo removidos conforme solicitado */}
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Vaga</label>
-                  <p className="text-lg text-gray-900 dark:text-gray-100">{candidatoSelecionado.vagaTitulo}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Etapa Atual</label>
-                  <p className="text-lg text-gray-900 dark:text-gray-100">{candidatoSelecionado.etapa}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Data da Candidatura</label>
-                  <p className="text-lg text-gray-900 dark:text-gray-100">
-                    {new Date(candidatoSelecionado.dataCandidatura).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              </div>
+              )}
 
               <div className="mt-6 flex gap-3">
                 <button
-                  onClick={() => navigate(`/empresas/${empresaId}/candidato/${candidatoSelecionado.id}`)}
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  Ver Perfil Completo
-                </button>
-                <button
-                  onClick={() => setCandidatoSelecionado(null)}
+                  onClick={() => { setShowModal(false); setCandidatoSelecionado(null); }}
                   className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg font-medium transition-colors"
                 >
                   Fechar
