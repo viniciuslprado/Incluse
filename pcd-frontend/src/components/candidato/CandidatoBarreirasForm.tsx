@@ -27,7 +27,9 @@ export default function CandidatoBarreirasForm({ candidatoId, subtipo, disableAc
   if (!subtipo || subtipo.id === undefined || subtipo.id === null) {
     return (
       <div className="card space-y-3">
-        <div className="text-sm text-gray-500">Subtipo inválido ou não selecionado.</div>
+        <div className="text-sm text-gray-500">
+          Selecione primeiro um <b>Subtipo de Deficiência</b> para escolher as barreiras correspondentes.
+        </div>
       </div>
     );
   }

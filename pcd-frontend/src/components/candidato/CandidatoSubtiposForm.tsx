@@ -20,23 +20,32 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
   const [ok, setOk] = useState(false);
   const previousSelecionadosRef = useRef<string>('');
 
+
+  // Sempre exibe todos os subtipos públicos
   useEffect(() => {
-    // Sempre exibe todos os subtipos públicos
     setSubtipos(allSubtipos || []);
-    console.log('[CandidatoSubtiposForm] allSubtipos:', allSubtipos);
   }, [allSubtipos]);
+
+  // Se não receber initialSelected, busca do backend ao montar
+  useEffect(() => {
+    if ((!initialSelected || initialSelected.length === 0) && candidatoId) {
+      api.listarSubtiposCandidato(candidatoId)
+        .then((res: any[]) => {
+          setSelecionados(res.map((s: any) => s.subtipo?.id || s.id));
+        })
+        .catch(() => {});
+    }
+  }, [candidatoId, initialSelected]);
 
   // Exibe todos os subtipos como lista, sem filtro/pesquisa
   const visiveis = subtipos;
 
-  // initialize selection from prop if provided (apenas IDs vindos do backend)
+  // Sempre sincroniza seleção com initialSelected, se mudar
   useEffect(() => {
-    console.log('[CandidatoSubtiposForm] initialSelected:', initialSelected, 'selecionados:', selecionados);
-    if (initialSelected && initialSelected.length && selecionados.length === 0) {
+    if (initialSelected && initialSelected.length) {
       setSelecionados(initialSelected);
-      console.log('[CandidatoSubtiposForm] setSelecionados (init):', initialSelected);
     }
-  }, [initialSelected]);
+  }, [JSON.stringify(initialSelected)]);
 
   // Notify parent when selection changes (evita loops comparando valor anterior)
   useEffect(() => {
@@ -56,6 +65,9 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
       await api.vincularSubtiposACandidato(candidatoId, nextIds);
       setOk(true);
       onUpdated?.();
+      // Após salvar, buscar do backend para garantir consistência
+      const atualizados = await api.listarSubtiposCandidato(candidatoId);
+      setSelecionados(atualizados.map((s: any) => s.subtipo?.id || s.id));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setErro(msg || "Erro ao sincronizar subtipos");
@@ -114,7 +126,7 @@ export default function CandidatoSubtiposForm({ candidatoId, onUpdated, disableA
                   </button>
                 </div>
               ) : (
-                <div>Não há subtipos disponíveis no momento.</div>
+                <div>Selecione primeiro o <b>Tipo de Deficiência</b> para ver os subtipos disponíveis.</div>
               )}
             </div>
           ) : (

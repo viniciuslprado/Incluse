@@ -64,11 +64,14 @@ export const CandidatosRepo = {
   },
 
   async replaceSubtipos(candidatoId: number, subtipoIds: number[]) {
-    await prisma.candidatoSubtipo.deleteMany({ where: { candidatoId } });
-    if (!subtipoIds.length) return { ok: true };
-    await prisma.candidatoSubtipo.createMany({
-      data: subtipoIds.map((subtipoId) => ({ candidatoId, subtipoId })),
-      skipDuplicates: true,
+    await prisma.$transaction(async (tx) => {
+      await tx.candidatoSubtipo.deleteMany({ where: { candidatoId } });
+      if (subtipoIds.length) {
+        await tx.candidatoSubtipo.createMany({
+          data: subtipoIds.map((subtipoId) => ({ candidatoId, subtipoId })),
+          skipDuplicates: true,
+        });
+      }
     });
     return { ok: true };
   },

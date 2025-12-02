@@ -1,56 +1,58 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FaWheelchair, FaTag, FaShieldAlt, FaExclamationTriangle } from 'react-icons/fa';
 import CandidatoSubtiposForm from '../../components/candidato/CandidatoSubtiposForm';
 import CandidatoBarreirasForm from '../../components/candidato/CandidatoBarreirasForm';
+
 import { api } from '../../lib/api';
 
-type Props = {
-  candidatoId: number;
-  candidateSubtipos: any[];
-  setCandidateSubtipos: (s: any[]) => void;
-  candidateBarreiras: Record<number, { selecionadas: number[]; niveis: Record<number,string> }>;
-  setCandidateBarreiras: (b: any) => void;
-  barreirasBySubtipo: Record<number, any[]>;
-};
-
-// export default function Acessibilidade({ candidatoId, candidateSubtipos, setCandidateSubtipos, candidateBarreiras, setCandidateBarreiras, handleLaudoChange, laudoName, laudoSize, removeLaudo, barreirasBySubtipo }: Props) {
-export default function Acessibilidade({ candidatoId, candidateSubtipos, setCandidateSubtipos, candidateBarreiras, setCandidateBarreiras }: Props) {
-    // Laudo removido
+// export default function Acessibilidade({ candidatoId, ... }: Props) {
+export default function Acessibilidade({ candidatoId }: { candidatoId: number }) {
   const [openTipo, setOpenTipo] = useState(true);
   const [openBarreiras, setOpenBarreiras] = useState(true);
   const [tiposComSubtipos, setTiposComSubtipos] = useState<any[]>([]);
-  // Map tipoId -> all public barriers for that tipo
   const [allBarreirasByTipo, setAllBarreirasByTipo] = useState<Record<number, any[]>>({});
   const [selectedTipoIds, setSelectedTipoIds] = useState<number[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [candidateSubtipos, setCandidateSubtipos] = useState<any[]>([]);
+  const [candidateBarreiras, setCandidateBarreiras] = useState<Record<number, { selecionadas: number[]; niveis: Record<number, string> }>>({});
+
+  // Carregar tipos com subtipos e subtipos do candidato
+  const carregarDados = useCallback(async () => {
+    setLoadingData(true);
+    try {
+      const [tipos, subtiposCandidato] = await Promise.all([
+        api.listarTiposComSubtiposPublico(),
+        api.listarSubtiposCandidato(candidatoId),
+      ]);
+      setTiposComSubtipos(tipos);
+      // Normaliza para sempre ser array de objetos {id, nome, tipoId}
+      const normalizados = subtiposCandidato.map((s: any) => {
+        if (s.subtipo) return { id: s.subtipo.id, nome: s.subtipo.nome, tipoId: s.subtipo.tipoId };
+        return { id: s.id, nome: s.nome, tipoId: s.tipoId };
+      });
+      setCandidateSubtipos(normalizados);
+      // Identificar tipos selecionados
+      const tiposIds = new Set<number>();
+      normalizados.forEach((subtipo: any) => {
+        tipos.forEach((tipo: any) => {
+          if (tipo.subtipos?.some((s: any) => s.id === subtipo.id)) {
+            tiposIds.add(tipo.id);
+          }
+        });
+      });
+      setSelectedTipoIds(Array.from(tiposIds));
+    } catch (err) {
+      setTiposComSubtipos([]);
+      setCandidateSubtipos([]);
+    } finally {
+      setLoadingData(false);
+    }
+  }, [candidatoId]);
 
   useEffect(() => {
-    // Carregar tipos com subtipos (público)
-    api.listarTiposComSubtiposPublico()
-      .then(async (r) => {
-        setTiposComSubtipos(r);
-        // Após carregar tipos, identificar quais tipos estão selecionados baseado nos subtipos já passados via props
-        if (candidateSubtipos && candidateSubtipos.length > 0) {
-          const tiposIds = new Set<number>();
-          candidateSubtipos.forEach((subtipo: any) => {
-            const subtipoId = typeof subtipo === 'number' ? subtipo : subtipo.id;
-            r.forEach((tipo: any) => {
-              if (tipo.subtipos?.some((s: any) => s.id === subtipoId)) {
-                tiposIds.add(tipo.id);
-              }
-            });
-          });
-          setSelectedTipoIds(Array.from(tiposIds));
-        }
-        setLoadingData(false);
-      })
-      .catch((err) => {
-        console.error('Erro ao carregar tipos com subtipos:', err);
-        setTiposComSubtipos([]);
-        setLoadingData(false);
-      });
-  }, []);
+    carregarDados();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidatoId]);
 
   // Fetch barriers for selected types
   useEffect(() => {
@@ -97,28 +99,7 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
     }
   }, [loadingData, candidateSubtipos, tiposComSubtipos]);
 
-  function toggleTipo(tipoId: number) {
-    const tipo = tiposComSubtipos.find((t) => t.id === tipoId);
-    if (!tipo) return;
-    const subtipoIdsOfTipo: number[] = (tipo.subtipos || []).map((s: any) => s.id);
-    const currentIds = candidateSubtipos?.map((s: any) => (typeof s === 'number' ? s : s.id)) ?? [];
 
-    let newIds: number[];
-    if (selectedTipoIds.includes(tipoId)) {
-      // uncheck: remove subtipo ids of this tipo
-      newIds = currentIds.filter((id) => !subtipoIdsOfTipo.includes(id));
-      setSelectedTipoIds((prev) => prev.filter((x) => x !== tipoId));
-    } else {
-      // check: add subtipo ids
-      newIds = Array.from(new Set([...currentIds, ...subtipoIdsOfTipo]));
-      setSelectedTipoIds((prev) => [...prev, tipoId]);
-    }
-
-    // build selected objects from tiposComSubtipos
-    const allSubtipos = tiposComSubtipos.flatMap((t) => t.subtipos || []);
-    const selectedObjects = allSubtipos.filter((s: any) => newIds.includes(s.id));
-    setCandidateSubtipos(selectedObjects);
-  }
 
   return (
     <section id="acessibilidade" className="space-y-6">
@@ -170,32 +151,61 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
             <div className="space-y-4">
               {tiposComSubtipos.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {tiposComSubtipos.map((t) => (
-                    <label key={`tipo-${t.id}`} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedTipoIds.includes(t.id)} 
-                        onChange={() => toggleTipo(t.id)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="ml-3 font-medium text-gray-900">{t.nome}</span>
-                    </label>
-                  ))}
+                  {tiposComSubtipos.map((t) => {
+                    // Está marcado se há pelo menos um subtipo desse tipo selecionado
+                    const isChecked = candidateSubtipos.some((s: any) => s.tipoId === t.id);
+                    return (
+                      <label key={`tipo-${t.id}`} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            // Ao marcar, apenas exibe subtipos para seleção, não marca todos
+                            if (!isChecked) {
+                              setSelectedTipoIds((prev) => Array.from(new Set([...prev, t.id])));
+                            } else {
+                              // Ao desmarcar, remove todos os subtipos desse tipo
+                              const novosSubtipos = candidateSubtipos.filter((s: any) => s.tipoId !== t.id);
+                              setCandidateSubtipos(novosSubtipos);
+                              setSelectedTipoIds((prev) => prev.filter((id) => id !== t.id));
+                              // Atualiza no backend
+                              api.vincularSubtiposACandidato(candidatoId, novosSubtipos.map((s: any) => s.id)).catch(() => {});
+                            }
+                          }}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-3 font-medium text-gray-900">{t.nome}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
 
               <div className="border-t pt-4">
-                {/* Filtra subtipos apenas dos tipos selecionados */}
-                <CandidatoSubtiposForm
-                  candidatoId={candidatoId}
-                  disableActions={false}
-                  autoSync={true}
-                  allSubtipos={tiposComSubtipos.filter((tipo: any) => selectedTipoIds.includes(tipo.id)).flatMap((tipo: any) => tipo.subtipos || [])}
-                  initialSelected={candidateSubtipos && candidateSubtipos.length > 0
-                    ? candidateSubtipos.map((s: any) => (typeof s === 'number' ? s : s.id))
-                    : []}
-                  onChange={(sel) => setCandidateSubtipos(sel)}
-                />
+                {/* Exibe subtipos para todos os tipos marcados, permitindo múltiplas deficiências */}
+                {selectedTipoIds.map((tipoId) => {
+                  const tipo = tiposComSubtipos.find((t: any) => t.id === tipoId);
+                  if (!tipo) return null;
+                  return (
+                    <div key={`subtipos-tipo-${tipo.id}`} className="mb-4">
+                      <div className="font-semibold mb-2 text-gray-800">{tipo.nome}</div>
+                      <CandidatoSubtiposForm
+                        candidatoId={candidatoId}
+                        disableActions={false}
+                        autoSync={true}
+                        allSubtipos={tipo.subtipos || []}
+                        initialSelected={candidateSubtipos.filter((s: any) => s.tipoId === tipo.id).map((s: any) => s.id)}
+                        onChange={(selecionados) => {
+                          // Atualiza apenas os subtipos desse tipo
+                          const outros = candidateSubtipos.filter((s: any) => s.tipoId !== tipo.id);
+                          setCandidateSubtipos([...outros, ...selecionados]);
+                          // Atualiza no backend
+                          api.vincularSubtiposACandidato(candidatoId, [...outros, ...selecionados].map((s: any) => s.id)).catch(() => {});
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -209,8 +219,8 @@ export default function Acessibilidade({ candidatoId, candidateSubtipos, setCand
                 <FaShieldAlt className="text-orange-600 text-sm" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900">Barreiras e Necessidades <span className="text-red-500">*</span></h4>
-                <p className="text-sm text-gray-600">Identifique as adaptações que você precisa no ambiente de trabalho</p>
+                <h4 className="font-semibold text-gray-900">Barreiras <span className="text-red-500">*</span></h4>
+                <p className="text-sm text-gray-600">Identifique suas barreiras no ambiente de trabalho</p>
               </div>
             </div>
             <button 
