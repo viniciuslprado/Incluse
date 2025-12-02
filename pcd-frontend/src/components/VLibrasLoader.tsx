@@ -137,10 +137,10 @@ export default function VLibrasLoader() {
               const wrapper = document.querySelector('[vw-plugin-wrapper]') as HTMLElement | null;
 
               if (button) {
-                button.style.display = 'flex';
-                button.style.visibility = 'visible';
-                button.style.opacity = '1';
-                button.style.zIndex = '2147483647';
+                try { button.style.display = 'flex'; } catch {}
+                try { button.style.visibility = 'visible'; } catch {}
+                try { button.style.opacity = '1'; } catch {}
+                try { button.style.zIndex = '2147483647'; } catch {}
                 try { button.style.position = 'fixed'; } catch {}
                 try { button.style.right = '16px'; } catch {}
                 try { button.style.bottom = '330px'; } catch {}
@@ -150,9 +150,9 @@ export default function VLibrasLoader() {
               }
 
               if (wrapper) {
-                wrapper.style.display = 'block';
-                wrapper.style.visibility = 'visible';
-                wrapper.style.zIndex = '2147483646';
+                try { wrapper.style.display = 'block'; } catch {}
+                try { wrapper.style.visibility = 'visible'; } catch {}
+                try { wrapper.style.zIndex = '2147483646'; } catch {}
               }
               console.log('VLibrasLoader: tentativa de exibir botão do plugin executada');
             } catch (e) {
