@@ -37,7 +37,13 @@ export default function GestaoVagasPage() {
         vagasArray.map(async (vaga: any) => {
           try {
             const candidatos = await api.listarCandidatosPorVaga(vaga.id);
-            return { ...vaga, totalCandidatos: candidatos.length };
+            // Se a resposta for paginada (objeto com .data), usa o length do array interno
+            const totalCandidatos = Array.isArray(candidatos)
+              ? candidatos.length
+              : Array.isArray(candidatos?.data)
+                ? candidatos.data.length
+                : 0;
+            return { ...vaga, totalCandidatos };
           } catch {
             return { ...vaga, totalCandidatos: 0 };
           }

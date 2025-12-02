@@ -144,9 +144,12 @@ export const VagasController = {
       const vagaId = Number(req.params.id);
       const candidatoId = Number(req.params.cid);
       const { status, anotacoes } = req.body;
+      console.log('[atualizarStatusCandidato] chamada recebida:', { vagaId, candidatoId, status, anotacoes });
       const candidatura = await VagasService.atualizarStatusCandidato(vagaId, candidatoId, { status, anotacoes });
+      console.log('[atualizarStatusCandidato] sucesso, retorno:', candidatura);
       res.json(candidatura);
     } catch (e: any) {
+      console.error('[atualizarStatusCandidato] erro:', e);
       res.status(400).json({ error: e.message ?? "Erro ao atualizar status do candidato" });
     }
   },

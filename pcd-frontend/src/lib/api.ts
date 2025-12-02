@@ -279,7 +279,7 @@ export const api = {
     return axiosInstance.post('/vagas', data).then(r => r.data);
   },
   listarCandidatosPorVaga(vagaId: number) { return axiosInstance.get(`/vagas/${vagaId}/candidatos`).then(r => r.data); },
-  atualizarStatusCandidato(candidatoId: number, vagaId: number, status: string) { return axiosInstance.put(`/vagas/${vagaId}/candidatos/${candidatoId}/status`, { status }).then(r => r.data); },
+  atualizarStatusCandidato(candidatoId: number, vagaId: number, status: string) { return axiosInstance.post(`/vagas/${vagaId}/candidato/${candidatoId}/status`, { status }).then(r => r.data); },
   salvarAnotacoesCandidato(candidatoId: number, vagaId: number, anotacoes: string) { return axiosInstance.put(`/vagas/${vagaId}/candidatos/${candidatoId}/anotacoes`, { anotacoes }).then(r => r.data); },
   
   // --- VINCULOS / ACESSIBILIDADE ---

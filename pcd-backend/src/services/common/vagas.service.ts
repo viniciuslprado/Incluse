@@ -191,11 +191,34 @@ export const VagasService = {
   },
 
   async obterCandidatos(vagaId: number, page = 1, limit = 20) {
-    const candidatos = await VagasRepo.getCandidatos(vagaId, page, limit);
+    const candidaturas = await VagasRepo.getCandidatos(vagaId, page, limit);
     const total = await VagasRepo.countCandidatos(vagaId);
-    
+
+    // Normalizar cada candidato igual ao perfil completo
+    const data = candidaturas.map((c: any) => {
+      const cand = c.candidato || {};
+      return {
+        id: cand.id,
+        nome: cand.nome || '',
+        email: cand.email || '',
+        telefone: cand.telefone || '',
+        escolaridade: cand.escolaridade || '',
+        curriculo: cand.curriculo || '',
+        subtipos: Array.isArray(cand.subtipos) ? cand.subtipos.map((s: any) => ({
+          id: s.subtipoId ?? s.id,
+          nome: s.subtipo?.nome ?? s.nome ?? '',
+          tipoId: s.subtipo?.tipoId ?? null,
+          ...s.subtipo
+        })) : [],
+        // Adicione outros campos do perfil conforme necessário
+        status: c.status || 'analisado',
+        createdAt: c.createdAt,
+        anotacoes: c.anotacoes || '',
+      };
+    });
+
     return {
-      data: candidatos,
+      data,
       pagination: {
         page,
         limit,
@@ -213,6 +236,7 @@ export const VagasService = {
 
   async atualizarStatusCandidato(vagaId: number, candidatoId: number, data: any) {
     const { status } = data;
+    // Aceita os status do frontend: 'pendente', 'em_analise', 'aprovado', 'rejeitado'
     if (status) {
       const statusValidos = ['pendente', 'em_analise', 'aprovado', 'rejeitado'];
       if (!statusValidos.includes(status)) {

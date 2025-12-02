@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
 import CustomSelect from '../../components/common/CustomSelect';
+import { useRef } from 'react';
+const STATUS_OPTIONS = [
+  { value: 'em_analise', label: 'Em análise', color: 'bg-yellow-500' },
+  { value: 'pendente', label: 'Pendente', color: 'bg-blue-500' },
+  { value: 'aprovado', label: 'Aprovado', color: 'bg-green-500' },
+  { value: 'rejeitado', label: 'Rejeitado', color: 'bg-red-500' },
+];
+
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { CurriculoBasico } from '../../types';
@@ -18,6 +26,27 @@ interface Candidato {
   subtipos?: any[];
   anotacoes?: string;
   createdAt: string;
+  // Campos extras para o perfil completo
+  cpf?: string;
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  curso?: string;
+  sobre?: string;
+  aceitaMudanca?: boolean;
+  aceitaViajar?: boolean;
+  pretensaoSalarialMin?: string;
+  areasFormacao?: any[];
+  barras?: any[];
+  experiencias?: any[];
+  formacoes?: any[];
+  cursos?: any[];
+  competencias?: any[];
+  idiomas?: any[];
+  laudo?: string;
 }
 
 export default function CandidatosPorVagaPage() {
@@ -34,6 +63,24 @@ export default function CandidatosPorVagaPage() {
     tipoDeficiencia: ''
   });
   const [selectedCandidato, setSelectedCandidato] = useState<Candidato | null>(null);
+  const [statusMenuOpen, setStatusMenuOpen] = useState<number | null>(null);
+  const statusMenuRef = useRef<HTMLDivElement | null>(null);
+    // Fecha o menu de status ao clicar fora
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
+          setStatusMenuOpen(null);
+        }
+      }
+      if (statusMenuOpen !== null) {
+        document.addEventListener('mousedown', handleClickOutside);
+      } else {
+        document.removeEventListener('mousedown', handleClickOutside);
+      }
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, [statusMenuOpen]);
   const [showModal, setShowModal] = useState(false);
   const [curriculoBasico, setCurriculoBasico] = useState<CurriculoBasico | null>(null);
   const [showCurriculoModal, setShowCurriculoModal] = useState(false);
@@ -45,9 +92,9 @@ export default function CandidatosPorVagaPage() {
       try {
         const data = await api.listarCandidatosPorVaga(vagaIdNum);
         if (Array.isArray(data)) {
-          setCandidatos(data.map((c: any) => ({ ...c, status: c.status || 'novo' })));
+          setCandidatos(data.map((c: any) => ({ ...c, status: c.status || 'pendente' })));
         } else if (data && Array.isArray(data.data)) {
-          setCandidatos(data.data.map((c: any) => ({ ...c, status: c.status || 'novo' })));
+          setCandidatos(data.data.map((c: any) => ({ ...c, status: c.status || 'pendente' })));
         } else {
           setCandidatos([]);
         }
@@ -251,18 +298,36 @@ export default function CandidatosPorVagaPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <CustomSelect
-                        value={candidato.status || 'novo'}
-                        onChange={val => handleStatusChange(candidato.id, val)}
-                        options={[
-                          { value: 'novo', label: 'Novo' },
-                          { value: 'analisado', label: 'Analisado' },
-                          { value: 'aprovado', label: 'Aprovado' },
-                          { value: 'reprovado', label: 'Reprovado' },
-                        ]}
-                        className="w-full"
-                      />
+                    <td className="px-6 py-4 relative">
+                      <div className="flex flex-col items-center relative">
+                        <div className="relative">
+                          <button
+                            type="button"
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer ${STATUS_OPTIONS.find(opt => opt.value === (candidato.status || 'novo'))?.color || 'bg-gray-400'}`}
+                            onClick={() => setStatusMenuOpen(statusMenuOpen === candidato.id ? null : candidato.id)}
+                          >
+                            {STATUS_OPTIONS.find(opt => opt.value === (candidato.status || 'novo'))?.label || 'Status'}
+                            <svg className="ml-2 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                          </button>
+                          {statusMenuOpen === candidato.id && (
+                            <div ref={statusMenuRef} className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 z-20 flex flex-row bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg px-2 py-1">
+                              {STATUS_OPTIONS.map(opt => (
+                                <button
+                                  key={opt.value}
+                                  className={`mx-1 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 ${opt.color} ${opt.value === (candidato.status || 'novo') ? 'ring-2 ring-blue-400' : ''}`}
+                                  style={{ color: 'white', minWidth: 60 }}
+                                  onClick={() => {
+                                    handleStatusChange(candidato.id, opt.value);
+                                    setStatusMenuOpen(null);
+                                  }}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                       {candidato.escolaridade}
@@ -282,12 +347,6 @@ export default function CandidatosPorVagaPage() {
                           >
                             Ver Perfil
                           </button>
-                          <Link
-                            to={`/empresas/${empresaId}/visualizar-candidato/${candidato.id}`}
-                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                          >
-                            Detalhes
-                          </Link>
                         </div>
                         <div className="space-x-2">
                           <button
@@ -322,30 +381,45 @@ export default function CandidatosPorVagaPage() {
               id: candidato.id,
               title: candidato.nome,
               subtitle: candidato.email,
-              badge: { text: (candidato.status || 'novo').replace(/^./, s => s.toUpperCase()), color: (candidato.status === 'aprovado' ? 'green' : candidato.status === 'reprovado' ? 'red' : candidato.status === 'analisado' ? 'yellow' : 'blue') as any },
-              description: (
-                <div>
-                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
-                  <CustomSelect
-                    value={candidato.status || 'novo'}
-                    onChange={val => handleStatusChange(candidato.id, val)}
-                    options={[
-                      { value: 'novo', label: 'Novo' },
-                      { value: 'analisado', label: 'Analisado' },
-                      { value: 'aprovado', label: 'Aprovado' },
-                      { value: 'reprovado', label: 'Reprovado' },
-                    ]}
-                    className="w-full"
-                  />
-                </div>
-              ),
+              badge: {
+                text: STATUS_OPTIONS.find(opt => opt.value === candidato.status)?.label || 'Em análise',
+                color: (() => {
+                  const cor = STATUS_OPTIONS.find(opt => opt.value === candidato.status)?.color;
+                  if (!cor) return 'gray';
+                  if (cor.includes('blue')) return 'blue';
+                  if (cor.includes('green')) return 'green';
+                  if (cor.includes('yellow')) return 'yellow';
+                  if (cor.includes('red')) return 'red';
+                  if (cor.includes('purple')) return 'purple';
+                  return 'gray';
+                })(),
+                onClick: () => setStatusMenuOpen(statusMenuOpen === candidato.id ? null : candidato.id)
+              } as any,
+              description: statusMenuOpen === candidato.id
+                ? (
+                  <div ref={statusMenuRef} className="flex flex-row justify-center mt-2 mb-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg px-2 py-1 z-20">
+                    {STATUS_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        className={`mx-1 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 ${opt.color} ${opt.value === candidato.status ? 'ring-2 ring-blue-400' : ''}`}
+                        style={{ color: 'white', minWidth: 60 }}
+                        onClick={() => {
+                          handleStatusChange(candidato.id, opt.value);
+                          setStatusMenuOpen(null);
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )
+                : null,
               meta: [
                 { label: 'Escolaridade', value: candidato.escolaridade },
                 { label: 'Inscrição', value: new Date(candidato.createdAt).toLocaleDateString() },
               ],
               actions: [
                 { label: 'Ver Perfil', onClick: () => { setSelectedCandidato(candidato); setShowModal(true); }, variant: 'blue' },
-                { label: 'Detalhes', to: `/empresas/${empresaId}/visualizar-candidato/${candidato.id}`, variant: 'indigo' },
                 { label: 'Currículo', onClick: () => handleVerCurriculoBasico(candidato.id), variant: 'purple', full: true },
                 ...(candidato.curriculo ? [{ label: 'PDF Currículo', onClick: () => handleVerPdf(candidato.curriculo!), variant: 'green', full: true }] as any : []),
               ],
@@ -357,7 +431,7 @@ export default function CandidatosPorVagaPage() {
       {/* Modal de Perfil do Candidato */}
       {showModal && selectedCandidato && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Perfil do Candidato
@@ -387,24 +461,146 @@ export default function CandidatosPorVagaPage() {
                   <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.telefone || 'Não informado'}</p>
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">CPF</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.cpf || 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Endereço</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {selectedCandidato.rua || ''} {selectedCandidato.numero || ''}, {selectedCandidato.bairro || ''}<br />
+                    {selectedCandidato.cidade || ''} - {selectedCandidato.estado || ''} {selectedCandidato.cep || ''}
+                  </p>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Escolaridade</label>
                   <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.escolaridade}</p>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Anotações Internas</label>
-                <textarea
-                  rows={3}
-                  value={selectedCandidato.anotacoes || ''}
-                  onChange={(e) => {
-                    const novasAnotacoes = e.target.value;
-                    setSelectedCandidato(prev => prev ? { ...prev, anotacoes: novasAnotacoes } : null);
-                  }}
-                  onBlur={(e) => handleAnotacoes(selectedCandidato.id, e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                  placeholder="Adicione suas anotações sobre este candidato..."
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Curso</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.curso || 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Sobre</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.sobre || 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Aceita Mudança?</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.aceitaMudanca === true ? 'Sim' : selectedCandidato.aceitaMudanca === false ? 'Não' : 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Aceita Viajar?</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.aceitaViajar === true ? 'Sim' : selectedCandidato.aceitaViajar === false ? 'Não' : 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pretensão Salarial</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedCandidato.pretensaoSalarialMin || 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Áreas de Formação</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.areasFormacao && selectedCandidato.areasFormacao.length > 0) ? selectedCandidato.areasFormacao.map((a: any, i: number) => (
+                      <li key={i}>{a.nome}</li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Subtipos de Deficiência</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.subtipos && selectedCandidato.subtipos.length > 0) ? selectedCandidato.subtipos.map((s: any, i: number) => (
+                      <li key={i}>{s.subtipo?.nome || s.nome}</li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Barreiras</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.barras && selectedCandidato.barras.length > 0) ? selectedCandidato.barras.map((b: any, i: number) => (
+                      <li key={i}>{b.barreira?.descricao || b.descricao}</li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Experiências Profissionais</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.experiencias && selectedCandidato.experiencias.length > 0) ? selectedCandidato.experiencias.map((exp: any, i: number) => (
+                      <li key={i} className="mb-2">
+                        <strong>{exp.cargo}</strong> em {exp.empresa} ({exp.dataInicio} - {exp.dataTermino || 'Atual'})<br />
+                        {exp.descricao}
+                      </li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Formações</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.formacoes && selectedCandidato.formacoes.length > 0) ? selectedCandidato.formacoes.map((f: any, i: number) => (
+                      <li key={i} className="mb-2">
+                        <strong>{f.curso}</strong> - {f.instituicao} ({f.escolaridade}, {f.situacao})<br />
+                        {f.inicio} - {f.termino || 'Atual'}
+                      </li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cursos</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.cursos && selectedCandidato.cursos.length > 0) ? selectedCandidato.cursos.map((c: any, i: number) => (
+                      <li key={i} className="mb-2">
+                        <strong>{c.nome}</strong> - {c.instituicao} ({c.cargaHoraria || '?'}h)
+                      </li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Competências</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.competencias && selectedCandidato.competencias.length > 0) ? selectedCandidato.competencias.map((comp: any, i: number) => (
+                      <li key={i} className="mb-2">
+                        <strong>{comp.nome}</strong> - {comp.tipo} ({comp.nivel})
+                      </li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Idiomas</label>
+                  <ul className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {(selectedCandidato.idiomas && selectedCandidato.idiomas.length > 0) ? selectedCandidato.idiomas.map((idioma: any, i: number) => (
+                      <li key={i} className="mb-2">
+                        <strong>{idioma.idioma}</strong> ({idioma.nivel})
+                      </li>
+                    )) : <li>Não informado</li>}
+                  </ul>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Currículo</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {selectedCandidato.curriculo ? (
+                      <a href={selectedCandidato.curriculo} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Ver Currículo</a>
+                    ) : 'Não informado'}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Laudo</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {selectedCandidato.laudo ? (
+                      <a href={selectedCandidato.laudo} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Ver Laudo</a>
+                    ) : 'Não informado'}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Anotações Internas</label>
+                  <textarea
+                    rows={3}
+                    value={selectedCandidato.anotacoes || ''}
+                    onChange={(e) => {
+                      const novasAnotacoes = e.target.value;
+                      setSelectedCandidato(prev => prev ? { ...prev, anotacoes: novasAnotacoes } : null);
+                    }}
+                    onBlur={(e) => handleAnotacoes(selectedCandidato.id, e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                    placeholder="Adicione suas anotações sobre este candidato..."
+                  />
+                </div>
               </div>
             </div>
 

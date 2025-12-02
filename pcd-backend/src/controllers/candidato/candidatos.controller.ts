@@ -14,7 +14,7 @@ export const CandidatosController = {
       if (!candidato) {
         return res.status(404).json({ error: 'Candidato não encontrado' });
       }
-      // Normalização dos campos esperados pelo frontend
+      // Normalização dos campos esperados pelo frontend, garantindo arrays e subcampos
       const c: any = candidato as any;
       const normalizado = {
         id: c.id,
@@ -35,13 +35,61 @@ export const CandidatosController = {
         aceitaViajar: c.aceitaViajar ?? null,
         pretensaoSalarialMin: c.pretensaoSalarialMin ?? '',
         areasFormacao: Array.isArray(c.areasFormacao) ? c.areasFormacao.map((a: any) => ({ id: a.areaId ?? a.id, nome: a.area?.nome ?? a.nome ?? '' })) : [],
-        subtipos: Array.isArray(c.subtipos) ? c.subtipos : [],
-        barras: Array.isArray(c.barras) ? c.barras : [],
+        subtipos: Array.isArray(c.subtipos) ? c.subtipos.map((s: any) => ({
+          id: s.subtipoId ?? s.id,
+          nome: s.subtipo?.nome ?? s.nome ?? '',
+          tipoId: s.subtipo?.tipoId ?? null,
+          ...s.subtipo
+        })) : [],
+        barras: Array.isArray(c.barras) ? c.barras.map((b: any) => ({
+          id: b.barreiraId ?? b.id,
+          descricao: b.barreira?.descricao ?? b.descricao ?? '',
+          subtipoId: b.subtipoId ?? null,
+          ...b.barreira
+        })) : [],
         curriculo: c.curriculo ?? '',
         laudo: c.laudo ?? '',
         isActive: c.isActive ?? true,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
+        experiencias: Array.isArray(c.experiencias) ? c.experiencias.map((exp: any) => ({
+          id: exp.id,
+          cargo: exp.cargo ?? '',
+          empresa: exp.empresa ?? '',
+          dataInicio: exp.dataInicio ?? '',
+          dataTermino: exp.dataTermino ?? '',
+          atualmenteTrabalha: exp.atualmenteTrabalha ?? false,
+          descricao: exp.descricao ?? ''
+        })) : [],
+        formacoes: Array.isArray(c.formacoes) ? c.formacoes.map((f: any) => ({
+          id: f.id,
+          escolaridade: f.escolaridade ?? '',
+          instituicao: f.instituicao ?? '',
+          curso: f.curso ?? '',
+          situacao: f.situacao ?? '',
+          inicio: f.inicio ?? '',
+          termino: f.termino ?? '',
+          anoConclusao: f.anoConclusao ?? ''
+        })) : [],
+        cursos: Array.isArray(c.cursos) ? c.cursos.map((curs: any) => ({
+          id: curs.id,
+          nome: curs.nome ?? '',
+          instituicao: curs.instituicao ?? '',
+          cargaHoraria: curs.cargaHoraria ?? '',
+          certificado: curs.certificado ?? ''
+        })) : [],
+        competencias: Array.isArray(c.competencias) ? c.competencias.map((comp: any) => ({
+          id: comp.id,
+          tipo: comp.tipo ?? '',
+          nome: comp.nome ?? '',
+          nivel: comp.nivel ?? ''
+        })) : [],
+        idiomas: Array.isArray(c.idiomas) ? c.idiomas.map((idi: any) => ({
+          id: idi.id,
+          idioma: idi.idioma ?? '',
+          nivel: idi.nivel ?? '',
+          certificado: idi.certificado ?? ''
+        })) : [],
       };
       res.json(normalizado);
     } catch (e: any) {

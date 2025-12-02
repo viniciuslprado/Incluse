@@ -66,15 +66,25 @@ export default function ResponsiveCardList({ items, emptyMessage = 'Nenhum item 
                 <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-300">{item.subtitle}</p>
               ) : null}
               {item.description ? (
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{item.description}</p>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{item.description}</div>
               ) : null}
             </div>
             {item.badge && (
-              typeof item.badge === 'object' && 'text' in item.badge ? (
-                <span className={badgeClasses(item.badge.color)}>{item.badge.text}</span>
-              ) : (
-                <>{item.badge}</>
-              )
+              typeof item.badge === 'object' && 'text' in item.badge
+                ? item.badge.onClick
+                  ? (
+                    <button
+                      type="button"
+                      className={badgeClasses(item.badge.color) + ' cursor-pointer focus:outline-none'}
+                      onClick={item.badge.onClick}
+                    >
+                      {item.badge.text}
+                    </button>
+                  )
+                  : (
+                    <span className={badgeClasses(item.badge.color)}>{item.badge.text}</span>
+                  )
+                : <>{item.badge}</>
             )}
           </div>
 
