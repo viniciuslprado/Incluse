@@ -5,10 +5,34 @@ declare global {
     __vlibras_inited?: boolean;
   }
 }
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 
 export default function VLibrasLoader() {
+  const [open, setOpen] = useState(true);
+
+  // Remove todos os elementos VLibras do DOM
+  const removeVLibras = () => {
+    // Remove script
+    const s = document.getElementById("vlibras-script");
+    if (s) s.remove();
+    // Remove marcações
+    const vws = document.querySelectorAll('[vw], [vp], [vw-plugin-wrapper], [vw-access-button], .vp-access-button, #vlibras-fallback-btn');
+    vws.forEach((el) => el.remove());
+    // Remove widget criado pelo plugin
+    const widget = document.querySelector('.vw-plugin-wrapper');
+    if (widget) widget.remove();
+    // Reseta flag global
+    window.__vlibras_inited = false;
+    window.VLibras = undefined;
+  };
+
   useEffect(() => {
+    if (!open) {
+      removeVLibras();
+      return;
+    }
+
     // Inicializa VLibras apenas uma vez e evita remover o widget
     if (window.__vlibras_inited) {
       console.log("VLibrasLoader: Já inicializado, ignorando");
@@ -184,7 +208,7 @@ export default function VLibrasLoader() {
         btn.style.justifyContent = "center";
         btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
         btn.innerHTML = `
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#047481"/>
             <path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -237,6 +261,87 @@ export default function VLibrasLoader() {
     return () => {
       window.removeEventListener("error", onError);
     };
-  }, []);
-  return null;
+    // eslint-disable-next-line
+  }, [open]);
+
+  // Botão de fechar
+
+  if (!open) {
+    return (
+      <button
+        style={{
+          position: "fixed",
+          right: 16,
+          bottom: 330,
+          width: 48,
+          height: 48,
+          borderRadius: 8,
+          border: "none",
+          background: "#2563eb",
+          color: "white",
+          zIndex: 2147483647,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 12px rgba(37,99,235,0.18)",
+          cursor: "pointer",
+          transition: "background 0.2s, box-shadow 0.2s, transform 0.15s",
+        }}
+        onClick={() => {
+          // Remove scripts e widgets antigos antes de reabrir
+          removeVLibras();
+          setTimeout(() => setOpen(true), 50);
+        }}
+        aria-label="Abrir VLibras"
+        title="Abrir VLibras"
+        onMouseOver={e => (e.currentTarget.style.background = '#1d4ed8')}
+        onMouseOut={e => (e.currentTarget.style.background = '#2563eb')}
+        onFocus={e => (e.currentTarget.style.background = '#1d4ed8')}
+        onBlur={e => (e.currentTarget.style.background = '#2563eb')}
+      >
+        <span style={{position: 'absolute', left: '-9999px'}}>Abrir VLibras</span>
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+          <rect x="4" y="4" width="24" height="24" rx="7" fill="#2563eb"/>
+          <path d="M12 18l4 4 8-8" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+    );
+  }
+
+  // Botão de fechar visível quando aberto
+  return (
+    <button
+      style={{
+        position: "fixed",
+        right: 16,
+        bottom: 325,
+        width: 48,
+        height: 48,
+        borderRadius: 8,
+        border: "none",
+        background: "#ef4444",
+        color: "white",
+        zIndex: 2147483647,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 4px 12px rgba(239,68,68,0.18)",
+        cursor: "pointer",
+        transition: "background 0.2s, box-shadow 0.2s, transform 0.15s",
+      }}
+      onClick={() => setOpen(false)}
+      aria-label="Fechar VLibras"
+      title="Fechar VLibras"
+      onMouseOver={e => (e.currentTarget.style.background = '#dc2626')}
+      onMouseOut={e => (e.currentTarget.style.background = '#ef4444')}
+      onFocus={e => (e.currentTarget.style.background = '#dc2626')}
+      onBlur={e => (e.currentTarget.style.background = '#ef4444')}
+    >
+      <span style={{position: 'absolute', left: '-9999px'}}>Fechar VLibras</span>
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <rect x="4" y="4" width="24" height="24" rx="7" fill="#b91c1c"/>
+        <path d="M12 12l8 8M20 12l-8 8" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </button>
+  );
 }
