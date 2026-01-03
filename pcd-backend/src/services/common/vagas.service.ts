@@ -69,7 +69,8 @@ export const VagasService = {
     // Notificar candidatos compatíveis
     if (processedData.subtipoIds && processedData.subtipoIds.length) {
       // Buscar todos candidatos que tenham pelo menos um subtipo compatível
-      const prisma = require('../../prismaClient').prisma;
+      const { prisma } = await import('../../prismaClient');
+      const { NotificacoesService } = await import('./notificacoes.service');
       const candidatos = await prisma.candidato.findMany({
         where: {
           subtipos: {
@@ -80,7 +81,6 @@ export const VagasService = {
         },
         select: { id: true }
       });
-      const { NotificacoesService } = require('./notificacoes.service');
       for (const c of candidatos) {
         try {
           await NotificacoesService.criarNotificacaoNovaVaga(c.id, vaga.id, vaga.titulo);
@@ -246,9 +246,9 @@ export const VagasService = {
     const updated = await VagasRepo.updateCandidatoStatus(vagaId, candidatoId, data);
     // Notificar candidato sobre atualização de status
     if (status) {
-      const prisma = require('../../prismaClient').prisma;
+      const { prisma } = await import('../../prismaClient');
+      const { NotificacoesService } = await import('./notificacoes.service');
       const vaga = await prisma.vaga.findUnique({ where: { id: vagaId }, select: { titulo: true } });
-      const { NotificacoesService } = require('./notificacoes.service');
       try {
         await NotificacoesService.criarNotificacaoAtualizacao(candidatoId, vagaId, vaga?.titulo || '', status);
       } catch (err) {
