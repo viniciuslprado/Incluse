@@ -6,7 +6,7 @@
     "install-all": "npm install && cd pcd-backend && npm install && cd ../pcd-frontend && npm install",
     "backend": "cd pcd-backend && npm run dev",
     "frontend": "cd pcd-frontend && npm run dev",
-    "build": "cd pcd-backend && npm run build && cd ../pcd-frontend && npm run build"
+    "build": "npm --prefix pcd-backend run build && npm --prefix pcd-frontend run build"
   },
   "dependencies": {
     "@prisma/client": "^7.0.1",
